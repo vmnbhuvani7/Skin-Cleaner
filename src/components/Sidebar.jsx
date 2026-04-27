@@ -11,14 +11,16 @@ import {
   Settings,
   ChevronRight,
   ArrowLeft,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import Button from './ui/Button';
 
 export default function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { chats, currentChatId, setCurrentChatId, createNewChat, deleteChat } = useChat();
   const [view, setView] = useState('main'); // 'main' or 'chat'
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,16 +45,25 @@ export default function Sidebar() {
   );
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard' },
-    {
-      icon: Bot,
-      label: 'AI Helper (Beta)',
-      hasSubmenu: true,
+    { 
+      icon: LayoutDashboard, 
+      label: 'Dashboard', 
+      onClick: () => router.push('/dashboard'),
+      isActive: pathname === '/dashboard'
+    },
+    { 
+      icon: User, 
+      label: 'Doctors', 
+      onClick: () => router.push('/doctors'),
+      isActive: pathname === '/doctors'
+    },
+    { 
+      icon: Bot, 
+      label: 'AI Helper (Beta)', 
+      hasSubmenu: true, 
       onClick: () => setView('chat'),
       isActive: view === 'chat'
     },
-    // { icon: FileText, label: 'Templates' },
-    // { icon: LineChart, label: 'Backtesting' },
   ];
 
   return (
