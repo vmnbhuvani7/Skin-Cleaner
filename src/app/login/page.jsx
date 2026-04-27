@@ -45,32 +45,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#fafaf9] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full bg-[#0a0c10] flex items-center justify-center p-6 relative overflow-hidden font-sans">
       {/* Background Decor */}
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-100/40 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-rose-100/40 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[100px] rounded-full pointer-events-none"></div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[480px] z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md z-10"
       >
-        <div className="bg-white/70 backdrop-blur-3xl border border-white rounded-[3rem] p-10 md:p-14 shadow-2xl shadow-stone-200/50 relative overflow-hidden">
-          <div className="mb-12 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-stone-50 border border-stone-100 mb-8 group transition-all duration-500 hover:rotate-12 hover:scale-110 shadow-sm">
-              <Sparkles className="text-stone-900" size={36} />
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden">
+          {/* Accent Line */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
+
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/20 mb-6 group transition-all duration-500 hover:scale-110">
+              <Sparkles className="text-indigo-400 group-hover:text-indigo-300 transition-colors" size={32} />
             </div>
-            <h1 className="text-4xl font-bold text-stone-900 tracking-tight mb-3">Welcome Back</h1>
-            <p className="text-stone-400 text-sm font-medium">Continue your journey to radiant skin</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
+            <p className="text-gray-400 text-sm">Please enter your details to sign in</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-xs font-bold uppercase tracking-wider text-center">
+            <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold uppercase tracking-wider text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Email or Mobile"
               icon={Mail}
@@ -92,7 +95,7 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
               <div className="flex justify-end pr-1">
-                <Link href="#" className="text-[11px] font-bold text-stone-900 hover:text-stone-700 uppercase tracking-wider transition-colors">Forgot Password?</Link>
+                <Link href="#" className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider transition-colors">Forgot Password?</Link>
               </div>
             </div>
 
@@ -106,38 +109,16 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* <div className="mt-12">
-            <div className="relative mb-10">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-stone-100"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] font-bold">
-                <span className="bg-white/0 px-6 text-stone-300">Or enter with</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-5">
-              <button className="flex items-center justify-center gap-3 bg-white hover:bg-stone-50 border border-stone-100 py-4 rounded-2xl transition-all text-xs font-bold text-stone-600 shadow-sm hover:shadow-md">
-                <Chrome size={18} className="text-rose-500" />
-                GOOGLE
-              </button>
-              <button className="flex items-center justify-center gap-3 bg-white hover:bg-stone-50 border border-stone-100 py-4 rounded-2xl transition-all text-xs font-bold text-stone-600 shadow-sm hover:shadow-md">
-                <Github size={18} className="text-stone-900" />
-                GITHUB
-              </button>
-            </div>
-          </div> */}
-
-          <p className="mt-12 text-center text-sm text-stone-400 font-medium">
-            New to Skin Cleaner?{' '}
-            <Link href="/signup" className="text-stone-900 font-bold hover:text-stone-700 transition-colors border-b-2 border-stone-100 pb-0.5">
+          <p className="mt-10 text-center text-sm text-gray-500">
+            Don't have an account?{' '}
+            <Link href="/signup" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors underline underline-offset-4 decoration-2 decoration-indigo-400/30">
               Create Account
             </Link>
           </p>
         </div>
 
-        <div className="mt-10 text-center">
-          <p className="text-[11px] text-stone-300 font-bold uppercase tracking-[0.3em]">
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em]">
             Skin Cleaner AI • Pure Intelligence
           </p>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from '@/context/ChatContext';
-import { Send, Bot, User, Sparkles, ShieldCheck, Heart, Info } from 'lucide-react';
+import { Send, Bot, User, Sparkles, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 
@@ -49,49 +49,42 @@ export default function ChatWindow() {
 
   if (!currentChatId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#fafaf9] text-stone-400 p-8">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-32 h-32 rounded-[2.5rem] bg-white shadow-xl shadow-stone-200/50 flex items-center justify-center mb-10 relative overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-stone-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <Bot size={56} className="text-stone-400 relative z-10 transition-transform group-hover:scale-110" />
-        </motion.div>
-        <h3 className="text-2xl font-bold text-stone-800 mb-3 tracking-tight">Your Skin Concierge</h3>
-        <p className="text-sm text-stone-400 max-w-sm text-center leading-relaxed">
-          Ask anything about skincare routines, hair health, or product recommendations. We're here to help you glow.
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#0a0c10] text-gray-500 p-8 relative">
+        <div className="w-24 h-24 rounded-3xl bg-white/5 flex items-center justify-center mb-8 relative group">
+          <Bot size={48} className="text-indigo-500/50 group-hover:text-indigo-400 transition-colors" />
+          <div className="absolute inset-0 rounded-3xl border border-white/10 animate-pulse"></div>
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Ready to assist you</h3>
+        <p className="text-sm text-gray-500 max-w-xs text-center leading-relaxed font-medium">
+          Select an existing conversation or start a new one to experience the power of Skin Cleaner AI.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#fafaf9] overflow-hidden relative">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-stone-100/30 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-stone-100/30 blur-[100px] rounded-full -z-0 pointer-events-none"></div>
+    <div className="flex-1 flex flex-col bg-[#0a0c10] overflow-hidden relative">
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/10 blur-[100px] rounded-full -z-0 pointer-events-none"></div>
 
       {/* Header */}
-      <div className="h-24 border-b border-stone-100 flex items-center justify-between px-10 shrink-0 bg-white/80 backdrop-blur-xl z-10 shadow-sm">
-        <div className="flex items-center gap-5">
-          <div className="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center shadow-sm">
-            <Sparkles size={22} className="text-stone-900" />
+      <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 shrink-0 bg-[#0a0c10]/80 backdrop-blur-xl z-10 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <Bot size={20} className="text-indigo-400" />
           </div>
           <div>
-            <h2 className="font-bold text-stone-900 tracking-tight text-lg">{currentChat?.title || 'New Analysis'}</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-              <span className="text-[11px] text-stone-400 font-bold uppercase tracking-wider">Expert AI Mode</span>
+            <h2 className="font-bold text-white tracking-tight">{currentChat?.title || 'New Chat'}</h2>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div>
+              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">AI Model Online</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="p-3 text-stone-400 hover:text-stone-900 transition-all bg-stone-50 rounded-xl hover:shadow-md">
+        <div className="flex items-center gap-2">
+          <button className="p-2.5 text-gray-500 hover:text-indigo-400 transition-all bg-white/5 rounded-lg border border-transparent hover:border-white/10">
             <ShieldCheck size={20} />
-          </button>
-          <button className="p-3 text-stone-400 hover:text-stone-900 transition-all bg-stone-50 rounded-xl hover:shadow-md">
-            <Heart size={20} />
           </button>
         </div>
       </div>
@@ -99,7 +92,7 @@ export default function ChatWindow() {
       {/* Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-10 space-y-10 scroll-smooth z-10 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth z-10 custom-scrollbar"
       >
         <AnimatePresence initial={false}>
           {currentChat?.messages.length === 0 && (
@@ -108,39 +101,37 @@ export default function ChatWindow() {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center py-20 text-center"
             >
-              <div className="w-16 h-16 rounded-3xl bg-stone-50 flex items-center justify-center mb-6 text-stone-900">
-                <Info size={32} />
-              </div>
-              <h4 className="text-xl font-bold text-stone-800 mb-3">Begin Your Consultation</h4>
-              <p className="text-sm text-stone-400 max-w-xs leading-relaxed">
-                Describe your concern or ask for a routine. For better results, be specific about your skin type.
+              <Sparkles size={40} className="text-indigo-500 mb-6 opacity-50" />
+              <h4 className="text-lg font-bold text-white mb-2">New Conversation</h4>
+              <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+                Type your first message below to start chatting with our advanced AI assistant.
               </p>
             </motion.div>
           )}
           {currentChat?.messages.map((message) => (
             <motion.div
               key={message.id}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               className={twMerge(
-                "flex gap-6",
+                "flex gap-4",
                 message.role === 'user' ? "flex-row-reverse" : ""
               )}
             >
               <div className={twMerge(
-                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm transition-transform hover:scale-105",
+                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all",
                 message.role === 'user' 
-                  ? "bg-stone-900 border-stone-900 text-white" 
-                  : "bg-white border-stone-100 text-stone-900"
+                  ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20" 
+                  : "bg-white/5 border-white/10 text-indigo-400"
               )}>
-                {message.role === 'user' ? <User size={20} /> : <Bot size={20} />}
+                {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
               </div>
               <div className={twMerge(
-                "max-w-[70%] px-7 py-5 rounded-[2rem] text-[15px] leading-relaxed shadow-sm",
+                "max-w-[75%] px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm",
                 message.role === 'user' 
-                  ? "bg-stone-900 text-white rounded-tr-none" 
-                  : "bg-white text-stone-700 rounded-tl-none border border-stone-100"
+                  ? "bg-indigo-600 text-white rounded-tr-none" 
+                  : "bg-white/5 text-gray-200 rounded-tl-none border border-white/10"
               )}>
                 {message.content}
               </div>
@@ -151,16 +142,16 @@ export default function ChatWindow() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex gap-6"
+            className="flex gap-4"
           >
-            <div className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shrink-0 text-stone-900 shadow-sm">
-              <Bot size={20} />
+            <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-indigo-400">
+              <Bot size={18} />
             </div>
-            <div className="bg-white px-7 py-5 rounded-[2rem] rounded-tl-none border border-stone-100 shadow-sm">
-              <div className="flex gap-2">
-                <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            <div className="bg-white/5 px-5 py-3.5 rounded-2xl rounded-tl-none border border-white/10">
+              <div className="flex gap-1.5">
+                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
             </div>
           </motion.div>
@@ -168,26 +159,26 @@ export default function ChatWindow() {
       </div>
 
       {/* Input */}
-      <div className="p-10 shrink-0 bg-gradient-to-t from-[#fafaf9] via-[#fafaf9] to-transparent z-10">
-        <form onSubmit={handleSubmit} className="relative max-w-5xl mx-auto group">
-          <div className="absolute inset-0 bg-indigo-500/10 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-[2.5rem]"></div>
+      <div className="p-8 shrink-0 bg-gradient-to-t from-[#0a0c10] via-[#0a0c10] to-transparent z-10">
+        <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto group">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl"></div>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your skin concern or product question..."
-            className="w-full bg-white border border-stone-100 rounded-[2.5rem] px-10 py-6 pr-20 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-base text-stone-800 placeholder:text-stone-400 relative z-10 shadow-xl shadow-stone-200/50"
+            placeholder="Describe your request..."
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pr-14 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-white placeholder:text-gray-600 relative z-10"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-50 disabled:text-stone-300 text-white rounded-[1.75rem] transition-all shadow-lg shadow-stone-900/20 z-10 group-active:scale-95"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-gray-600 text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 z-10"
           >
-            <Send size={24} />
+            <Send size={20} />
           </button>
         </form>
-        <p className="text-[11px] text-center text-stone-400 mt-6 font-bold uppercase tracking-[0.2em]">
-          Dermatologically Minded AI • Personal Care
+        <p className="text-[10px] text-center text-gray-600 mt-4 font-bold uppercase tracking-[0.2em]">
+          Skin Cleaner AI • Pure Intelligence
         </p>
       </div>
     </div>
