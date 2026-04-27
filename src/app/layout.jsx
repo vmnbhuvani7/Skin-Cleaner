@@ -17,6 +17,8 @@ export const metadata = {
 };
 
 import GraphQLProvider from "@/lib/apollo-client";
+import AuthGuard from "@/components/AuthGuard";
+import { ChatProvider } from "@/context/ChatContext";
 
 export default function RootLayout({ children }) {
   return (
@@ -26,7 +28,11 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col bg-stone-50">
         <GraphQLProvider>
-          {children}
+          <ChatProvider>
+            <AuthGuard>
+              {children}
+            </AuthGuard>
+          </ChatProvider>
         </GraphQLProvider>
       </body>
     </html>
