@@ -18,10 +18,12 @@ function ChatContent() {
   }, [id, setCurrentChatId]);
 
   return (
-    <main className="flex h-screen w-full bg-stone-50 overflow-hidden text-stone-800 font-sans selection:bg-indigo-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)] overflow-hidden">
       <Sidebar />
-      <ChatWindow />
-    </main>
+      <main className="flex-1 relative pt-16 lg:pt-0 overflow-hidden">
+        <ChatWindow />
+      </main>
+    </div>
   );
 }
 

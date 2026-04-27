@@ -5,9 +5,9 @@ import { clsx } from 'clsx';
 const Button = ({ className, variant = 'primary', size = 'md', isLoading, children, icon: Icon, ...props }) => {
   const variants = {
     primary: "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/20",
-    secondary: "bg-white/10 hover:bg-white/15 text-white border border-white/10",
-    outline: "bg-transparent border border-white/10 hover:border-white/20 text-gray-400 hover:text-white",
-    ghost: "bg-transparent hover:bg-white/5 text-gray-400 hover:text-white",
+    secondary: "bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] border border-[var(--border)]",
+    outline: "bg-transparent border border-[var(--border)] hover:border-indigo-500/50 text-[var(--text-muted)] hover:text-indigo-500",
+    ghost: "bg-transparent hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--foreground)]",
   };
 
   const sizes = {

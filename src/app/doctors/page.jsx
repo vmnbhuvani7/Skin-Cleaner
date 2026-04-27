@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useTheme } from '@/context/ThemeContext';
 
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { UPDATE_DOCTOR, DELETE_DOCTOR } from '@/graphql/mutations/doctor';
@@ -113,11 +114,13 @@ export default function DoctorsPage() {
     }
   };
 
+  const { theme } = useTheme();
+
   return (
-    <div className="flex h-screen bg-[#0a0c10]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto p-10">
-        <ToastContainer theme="dark" />
+      <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10">
+        <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
         
         {/* Delete Confirmation Modal */}
         <Modal 
@@ -155,26 +158,26 @@ export default function DoctorsPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl font-bold text-white tracking-tight">Clinical Staff</h1>
+                <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight">Clinical Staff</h1>
                 <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border border-indigo-500/20">
                   {data?.getDoctors?.totalCount || 0} Total Available
                 </span>
               </div>
-              <p className="text-gray-500 text-sm">Manage your specialized skin and hair medical team.</p>
+              <p className="text-[var(--text-muted)] text-sm">Manage your specialized skin and hair medical team.</p>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="relative group min-w-[300px]">
+            <div className="flex  sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <div className="relative group w-full max-w-[200px] sm:max-w-none sm:min-w-[300px]">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
                 <input 
                   type="text" 
                   placeholder="Search by name or specialty..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all placeholder:text-gray-600"
+                  className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-sm text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all placeholder:text-[var(--text-muted)]"
                 />
               </div>
-              <Button onClick={() => router.push('/doctors/add')} icon={Plus}>Add Doctor</Button>
+              <Button className="min-w-[155px]" onClick={() => router.push('/doctors/add')} icon={Plus}>Add Doctor</Button>
             </div>
           </div>
 
@@ -183,7 +186,7 @@ export default function DoctorsPage() {
               <div 
                 key={doctor.id} 
                 ref={index === listData.doctors.length - 1 ? lastDoctorElementRef : null}
-                className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 hover:bg-white/[0.07] transition-all relative overflow-hidden group"
+                className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
@@ -199,20 +202,20 @@ export default function DoctorsPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-1">{doctor.name}</h3>
+                <h3 className="text-xl font-bold text-[var(--foreground)] mb-1">{doctor.name}</h3>
                 <p className="text-indigo-400 text-xs font-bold uppercase tracking-widest mb-6">{doctor.specialization} Specialist</p>
 
                 <div className="space-y-4 mb-8">
-                  <div className="flex items-center gap-3 text-gray-400 text-sm">
-                    <Phone size={16} className="text-gray-600" />
+                  <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm">
+                    <Phone size={16} className="text-[var(--text-muted)] opacity-50" />
                     <span>{doctor.mobile}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-400 text-sm">
-                    <Award size={16} className="text-gray-600" />
+                  <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm">
+                    <Award size={16} className="text-[var(--text-muted)] opacity-50" />
                     <span>{doctor.experience} Years Experience</span>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-400 text-sm">
-                    <DollarSign size={16} className="text-gray-600" />
+                  <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm">
+                    <DollarSign size={16} className="text-[var(--text-muted)] opacity-50" />
                     <span>Consultation: ₹{doctor.consultationFee}</span>
                   </div>
                 </div>
@@ -246,8 +249,8 @@ export default function DoctorsPage() {
             )}
 
             {!loading && listData.doctors.length === 0 && (
-              <div className="col-span-full py-20 text-center bg-white/5 border border-white/10 border-dashed rounded-[2.5rem]">
-                <p className="text-gray-500 font-medium">No doctors found matching your search.</p>
+              <div className="col-span-full py-20 text-center bg-[var(--surface)] border border-[var(--border)] border-dashed rounded-[2.5rem]">
+                <p className="text-[var(--text-muted)] font-medium">No doctors found matching your search.</p>
               </div>
             )}
           </div>

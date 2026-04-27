@@ -13,9 +13,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#0a0c10]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto p-10 relative">
+      <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10 relative">
         {/* Background Decor */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
         
@@ -29,7 +29,7 @@ export default function DashboardPage() {
               <Sparkles size={12} />
               Admin Portal
             </div>
-            <h1 className="text-5xl font-bold text-white tracking-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-[var(--foreground)] tracking-tight mb-4">
               Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Skin Cleaner</span>
             </h1>
             <p className="text-gray-500 text-lg max-w-2xl leading-relaxed">
@@ -44,24 +44,24 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.07] transition-all group"
+                className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-8 hover:bg-[var(--surface-hover)] transition-all group"
               >
-                <div className={twMerge("w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform", stat.color)}>
+                <div className={twMerge("w-12 h-12 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform", stat.color)}>
                   <stat.icon size={24} />
                 </div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">{stat.label}</p>
-                <h3 className="text-3xl font-bold text-white tracking-tight">{stat.value}</h3>
+                <p className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-widest mb-2">{stat.label}</p>
+                <h3 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">{stat.value}</h3>
               </motion.div>
             ))}
           </div>
 
           <div className="bg-gradient-to-br from-indigo-600/10 to-purple-600/10 border border-white/10 rounded-[2.5rem] p-12 relative overflow-hidden">
             <div className="relative z-10">
-              <h2 className="text-2xl font-bold text-white mb-4">Start your daily review</h2>
-              <p className="text-gray-400 text-sm max-w-md mb-8 leading-relaxed">
+              <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Start your daily review</h2>
+              <p className="text-[var(--text-muted)] text-sm max-w-md mb-8 leading-relaxed">
                 Check recent AI analysis reports or manage your clinical team through the sidebar navigation.
               </p>
-              <button className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-all text-sm">
+              <button className="px-8 py-4 bg-indigo-500 text-white font-bold rounded-2xl hover:bg-indigo-600 transition-all text-sm shadow-lg shadow-indigo-500/20">
                 View Reports
               </button>
             </div>

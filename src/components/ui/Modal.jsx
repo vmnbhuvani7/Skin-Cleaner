@@ -28,17 +28,17 @@ const Modal = ({ isOpen, onClose, title, children, className }) => {
       {/* Modal Content */}
       <div className={twMerge(
         clsx(
-          "relative w-full max-w-lg bg-[#0f1115] border border-white/10 rounded-[2.5rem] shadow-2xl",
+          "relative w-full max-w-lg bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] shadow-2xl",
           "overflow-hidden animate-in fade-in zoom-in duration-300"
         ),
         className
       )}>
         {/* Header */}
         <div className="px-8 pt-8 flex items-center justify-between">
-          <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] tracking-tight">{title}</h3>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all"
+            className="p-2 hover:bg-[var(--surface-hover)] rounded-xl text-[var(--text-muted)] hover:text-[var(--foreground)] transition-all"
           >
             <X size={20} />
           </button>

@@ -6,21 +6,21 @@ const Input = React.forwardRef(({ className, icon: Icon, label, error, ...props 
   return (
     <div className="w-full space-y-1.5">
       {label && (
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1">
+        <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">
           {label}
         </label>
       )}
       <div className="relative group">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Icon size={18} className="text-gray-600 group-focus-within:text-indigo-400 transition-colors" />
+            <Icon size={18} className="text-[var(--text-muted)] group-focus-within:text-indigo-400 transition-colors" />
           </div>
         )}
         <input
           ref={ref}
           className={twMerge(
             clsx(
-              "w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 px-4 text-white placeholder:text-gray-600",
+              "w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
               "focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm shadow-sm",
               Icon && "pl-12",
               error && "border-rose-500 focus:ring-rose-500/10 focus:border-rose-500"
