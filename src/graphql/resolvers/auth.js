@@ -39,7 +39,6 @@ export const authResolvers = {
     },
 
     signup: async (_, { name, email, mobile, password }) => {
-      console.log("🚀 ~ email:", email)
       await dbConnect();
 
       // 1. Email Validation using deep-email-validator
