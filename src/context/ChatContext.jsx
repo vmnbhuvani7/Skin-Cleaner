@@ -35,6 +35,7 @@ export function ChatProvider({ children }) {
     };
     setChats([newChat, ...chats]);
     setCurrentChatId(newChat.id);
+    return newChat.id;
   };
 
   const addMessage = (chatId, messageData) => {

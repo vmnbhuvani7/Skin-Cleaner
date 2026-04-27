@@ -16,13 +16,19 @@ export const metadata = {
   description: "Experience the next generation of AI assistance with Skin Cleaner.",
 };
 
+import GraphQLProvider from "@/lib/apollo-client";
+
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0c10]">{children}</body>
+      <body className="min-h-full flex flex-col bg-stone-50">
+        <GraphQLProvider>
+          {children}
+        </GraphQLProvider>
+      </body>
     </html>
   );
 }
