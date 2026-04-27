@@ -9,18 +9,7 @@ import * as Apollo from '@apollo/client';
 const { useMutation, gql } = Apollo;
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-
-const SIGNUP_MUTATION = gql`
-  mutation Signup($name: String!, $email: String!, $mobile: String!, $password: String!) {
-    signup(name: $name, email: $email, mobile: $mobile, password: $password) {
-      token
-      user {
-        id
-        name
-      }
-    }
-  }
-`;
+import { SIGNUP_MUTATION } from '@/graphql/mutations/auth';
 
 export default function SignupPage() {
   const router = useRouter();

@@ -9,19 +9,7 @@ import * as Apollo from '@apollo/client';
 const { useMutation, gql } = Apollo;
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-
-const LOGIN_MUTATION = gql`
-  mutation Login($identifier: String!, $password: String!) {
-    login(identifier: $identifier, password: $password) {
-      token
-      user {
-        id
-        name
-        email
-      }
-    }
-  }
-`;
+import { LOGIN_MUTATION } from '@/graphql/mutations/auth';
 
 export default function LoginPage() {
   const router = useRouter();
