@@ -26,11 +26,20 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('theme', theme);
   }, [theme, isMounted]);
 
+  const activeTheme = !isMounted ? 'light' : theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+
   const value = {
     theme,
+    activeTheme,
     setTheme,
     toggleTheme: () => {
-      setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+      setTheme(prev => {
+        if (prev === 'system') {
+          const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          return systemTheme === 'dark' ? 'light' : 'dark';
+        }
+        return prev === 'dark' ? 'light' : 'dark';
+      });
     }
   };
 
