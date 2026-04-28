@@ -2,7 +2,7 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import { clsx } from 'clsx';
 
-const Button = ({ className, variant = 'primary', size = 'md', isLoading, children, icon: Icon, ...props }) => {
+const Button = ({ className, variant = 'primary', size = 'md', isLoading, loading, children, icon: Icon, ...props }) => {
   const variants = {
     primary: "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/20",
     secondary: "bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] border border-[var(--border)]",
@@ -16,6 +16,8 @@ const Button = ({ className, variant = 'primary', size = 'md', isLoading, childr
     lg: "py-4 px-8 text-base rounded-2xl",
   };
 
+  const isButtonLoading = isLoading || loading;
+
   return (
     <button
       className={twMerge(
@@ -26,10 +28,10 @@ const Button = ({ className, variant = 'primary', size = 'md', isLoading, childr
         ),
         className
       )}
-      disabled={isLoading}
+      disabled={isButtonLoading}
       {...props}
     >
-      {isLoading ? (
+      {isButtonLoading ? (
         <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
       ) : (
         <>

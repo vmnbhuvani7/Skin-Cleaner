@@ -27,62 +27,27 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { useQuery } from '@apollo/client';
+import { GET_SERVICES } from '@/graphql/queries/service';
+import { testimonials, faqs } from '@/constants/page-data';
+
+const iconMap = {
+  Zap,
+  Droplets,
+  Scissors,
+  Smile,
+  Heart
+};
+
 export default function LandingPage() {
-  const services = [
-    {
-      title: "Laser Hair Removal",
-      desc: "Painless, high-precision laser technology for permanent hair reduction on all skin types.",
-      icon: Zap,
-      image: "/dermatology_treatment_visual_1777282762115.png"
-    },
-    {
-      title: "Acne & Pimple Treatment",
-      desc: "Advanced dermatological protocols to clear active acne and prevent future breakouts.",
-      icon: Droplets,
-    },
-    {
-      title: "Hair Growth Therapy",
-      desc: "Medical-grade hair restoration treatments including PRP and growth factor injections.",
-      icon: Scissors,
-    },
-    {
-      title: "Facial & Skin Care",
-      desc: "Deep cleansing and nourishing facials tailored to your unique skin concerns.",
-      icon: Smile,
-    },
-    {
-      title: "Skin Rejuvenation",
-      desc: "Reverse aging signs with chemical peels, micro-needling, and collagen boosters.",
-      icon: Heart,
-    }
-  ];
+  const [page, setPage] = React.useState(1);
+  const { data, loading } = useQuery(GET_SERVICES, {
+    variables: { page, limit: 6, isActive: true },
+    fetchPolicy: 'cache-and-network'
+  });
 
-  const testimonials = [
-    {
-      name: "Sarah Jenkins",
-      text: "The laser hair removal results are incredible. Almost painless and visible from the first session!",
-      role: "Client since 2023",
-      rating: 5
-    },
-    {
-      name: "Michael Chen",
-      text: "Cleared my adult acne after years of struggling. The doctors here are truly expert dermatologists.",
-      role: "Skin Care Patient",
-      rating: 5
-    },
-    {
-      name: "Emma Wilson",
-      text: "Premium atmosphere and excellent service. My skin has never looked more radiant.",
-      role: "Regular Member",
-      rating: 5
-    }
-  ];
-
-  const faqs = [
-    { q: "Is laser hair removal safe?", a: "Yes, our US-FDA approved laser technology is safe for all skin types when performed by our certified experts." },
-    { q: "How many sessions are required?", a: "Most patients see significant results in 6-8 sessions, depending on the treatment area and hair type." },
-    { q: "Are the results permanent?", a: "Many treatments offer long-lasting or permanent results. We provide maintenance sessions if needed." }
-  ];
+  const services = data?.getServices?.services || [];
+  const totalPages = data?.getServices?.totalPages || 1;
 
   return (
     <div className="bg-white min-h-screen selection:bg-indigo-100 selection:text-indigo-900">
@@ -141,24 +106,47 @@ export default function LandingPage() {
             <p className="text-gray-500">Comprehensive dermatological care using the latest technology to ensure the best results for your skin and hair health.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 transition-transform">
-                  <service.icon size={28} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed mb-8">{service.desc}</p>
-                <button className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
-                  Learn More <ChevronRight size={16} />
-                </button>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {services.map((service, idx) => {
+              const IconComponent = iconMap[service.icon] || Zap;
+              return (
+                <motion.div 
+                  key={service.id}
+                  whileHover={{ y: -10 }}
+                  className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 transition-transform">
+                    <IconComponent size={28} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3">{service.desc}</p>
+                  <button className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
+                    Learn More <ChevronRight size={16} />
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-indigo-600 hover:text-indigo-600 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-200 transition-all"
+              >
+                <ChevronRight size={20} className="rotate-180" />
+              </button>
+              <span className="text-sm font-bold text-gray-900">Page {page} of {totalPages}</span>
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-indigo-600 hover:text-indigo-600 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-200 transition-all"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -329,10 +317,10 @@ export default function LandingPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1">Interested Service</label>
                   <select className="w-full bg-white border border-gray-100 rounded-2xl py-3.5 px-4 text-sm text-gray-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all appearance-none cursor-pointer">
-                    <option>Laser Hair Removal</option>
-                    <option>Acne Treatment</option>
-                    <option>Hair Growth</option>
-                    <option>Skin Rejuvenation</option>
+                    {services.map(s => (
+                      <option key={s.id}>{s.title}</option>
+                    ))}
+                    {services.length === 0 && <option>No services available</option>}
                   </select>
                 </div>
                 <Button className="w-full py-5 text-base mt-4 shadow-xl shadow-indigo-600/20">
