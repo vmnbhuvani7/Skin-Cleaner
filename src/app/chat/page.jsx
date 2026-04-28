@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import ChatWindow from '@/components/ChatWindow';
 import { ChatProvider, useChat } from '@/context/ChatContext';
+import Loader from '@/components/ui/Loader';
 
 function ChatContent() {
   const searchParams = useSearchParams();
@@ -30,9 +31,10 @@ function ChatContent() {
 export default function ChatPage() {
   return (
     <ChatProvider>
-      <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-stone-50 text-stone-400 font-bold uppercase tracking-widest">Initializing...</div>}>
         <ChatContent />
-      </Suspense>
+      {/* <Suspense fallback={<Loader fullScreen />}>
+        <ChatContent />
+      </Suspense> */}
     </ChatProvider>
   );
 }
