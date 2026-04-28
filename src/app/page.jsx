@@ -107,25 +107,41 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {services.map((service, idx) => {
-              const IconComponent = iconMap[service.icon] || Zap;
-              return (
-                <motion.div 
-                  key={service.id}
-                  whileHover={{ y: -10 }}
-                  className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 transition-transform">
-                    <IconComponent size={28} />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3">{service.desc}</p>
-                  <button className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
-                    Learn More <ChevronRight size={16} />
-                  </button>
-                </motion.div>
-              );
-            })}
+            {loading ? (
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm animate-pulse">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-50/50 mb-8"></div>
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-4 bg-gray-100 rounded w-full mb-2"></div>
+                  <div className="h-4 bg-gray-100 rounded w-5/6 mb-8"></div>
+                  <div className="h-4 bg-gray-100 rounded w-1/3"></div>
+                </div>
+              ))
+            ) : services.length > 0 ? (
+              services.map((service, idx) => {
+                const IconComponent = iconMap[service.icon] || Zap;
+                return (
+                  <motion.div 
+                    key={service.id}
+                    whileHover={{ y: -10 }}
+                    className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 transition-transform">
+                      <IconComponent size={28} />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3">{service.desc}</p>
+                    <button className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
+                      Learn More <ChevronRight size={16} />
+                    </button>
+                  </motion.div>
+                );
+              })
+            ) : (
+              <div className="col-span-full text-center py-10 text-gray-500">
+                No services found.
+              </div>
+            )}
           </div>
 
           {totalPages > 1 && (
