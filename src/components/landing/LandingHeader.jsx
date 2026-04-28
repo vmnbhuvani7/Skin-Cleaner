@@ -38,10 +38,9 @@ export default function LandingHeader() {
             <Zap size={22} className="text-white fill-white" />
           </div>
           <div>
-            <span className={twMerge(
-              "font-bold text-xl tracking-tight transition-colors",
-              isScrolled ? "text-gray-900" : "text-gray-900 md:text-white"
-            )}>Skin Cleaner</span>
+            <span className="font-bold text-xl tracking-tight transition-colors text-gray-900">
+              Skin Cleaner
+            </span>
             <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest leading-none">Aesthetic Clinic</p>
           </div>
         </Link>
@@ -49,13 +48,10 @@ export default function LandingHeader() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link 
-              key={link.label} 
+            <Link
+              key={link.label}
               href={link.href}
-              className={twMerge(
-                "text-sm font-semibold transition-colors hover:text-indigo-500",
-                isScrolled ? "text-gray-600" : "text-gray-600 md:text-white/90"
-              )}
+              className="text-sm font-semibold transition-colors hover:text-indigo-500 text-gray-600"
             >
               {link.label}
             </Link>
@@ -64,10 +60,7 @@ export default function LandingHeader() {
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/login" className={twMerge(
-            "text-sm font-bold transition-colors",
-            isScrolled ? "text-gray-600 hover:text-indigo-500" : "text-white/90 hover:text-white"
-          )}>
+          <Link href="/login" className="text-sm font-bold transition-colors text-gray-600 hover:text-indigo-500">
             Login
           </Link>
           <Button onClick={() => window.location.href = '#appointment'} size="sm">
@@ -76,7 +69,7 @@ export default function LandingHeader() {
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button 
+        <button
           className="md:hidden p-2 text-gray-900"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
@@ -88,8 +81,8 @@ export default function LandingHeader() {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
           {navLinks.map((link) => (
-            <Link 
-              key={link.label} 
+            <Link
+              key={link.label}
               href={link.href}
               className="text-lg font-bold text-gray-900"
               onClick={() => setIsMobileMenuOpen(false)}

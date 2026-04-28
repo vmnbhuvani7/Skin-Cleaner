@@ -59,7 +59,7 @@ export default function EditServicePage() {
     }
   };
 
-  if (queryLoading) return <Loader />;
+  if (queryLoading) return <Loader fullScreen />;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">

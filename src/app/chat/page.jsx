@@ -31,10 +31,9 @@ function ChatContent() {
 export default function ChatPage() {
   return (
     <ChatProvider>
+      <Suspense fallback={<Loader fullScreen />}>
         <ChatContent />
-      {/* <Suspense fallback={<Loader fullScreen />}>
-        <ChatContent />
-      </Suspense> */}
+      </Suspense>
     </ChatProvider>
   );
 }
