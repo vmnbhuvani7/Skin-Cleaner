@@ -23,19 +23,37 @@ export default function DoctorsPage() {
     doctors: [],
     hasMore: true
   });
+  const [statusFilter, setStatusFilter] = useState('both'); // 'active', 'inactive', 'both'
   
+  const getIsActiveValue = (filter) => {
+    if (filter === 'active') return true;
+    if (filter === 'inactive') return false;
+    return undefined;
+  };
+
   const { data, loading, refetch, fetchMore } = useQuery(GET_DOCTORS, {
-    variables: { page: 1, limit: 10, search: debouncedSearch },
+    variables: { 
+      page: 1, 
+      limit: 10, 
+      search: debouncedSearch,
+      isActive: getIsActiveValue(statusFilter)
+    },
     notifyOnNetworkStatusChange: true,
-    onCompleted: (data) => {
-      if (data?.getDoctors) {
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (res) => {
+      if (res?.getDoctors && page === 1) {
         setListData({
-          doctors: data.getDoctors.doctors || [],
-          hasMore: data.getDoctors.hasMore
+          doctors: res.getDoctors.doctors || [],
+          hasMore: res.getDoctors.hasMore
         });
       }
     }
   });
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
 
   const [updateDoctor] = useMutation(UPDATE_DOCTOR);
   const [deleteDoctor] = useMutation(DELETE_DOCTOR);
@@ -44,17 +62,25 @@ export default function DoctorsPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(1);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    refetch();
+  }, [statusFilter]);
 
   const loadMore = async () => {
     if (!listData.hasMore || loading) return;
     
     const nextPage = page + 1;
     const { data: moreData } = await fetchMore({
-      variables: { page: nextPage, limit: 10, search: debouncedSearch },
+      variables: { 
+        page: nextPage, 
+        limit: 10, 
+        search: debouncedSearch,
+        isActive: getIsActiveValue(statusFilter)
+      },
     });
 
     if (moreData?.getDoctors) {
@@ -177,6 +203,28 @@ export default function DoctorsPage() {
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-sm text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all placeholder:text-[var(--text-muted)]"
                 />
               </div>
+              
+              <div className="flex bg-[var(--surface)] border border-[var(--border)] p-1 rounded-2xl">
+                <button 
+                  onClick={() => setStatusFilter('both')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'both' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setStatusFilter('active')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'active' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  Active
+                </button>
+                <button 
+                  onClick={() => setStatusFilter('inactive')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'inactive' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  Inactive
+                </button>
+              </div>
+
               <Button className="min-w-[155px]" onClick={() => router.push('/doctors/add')} icon={Plus}>Add Doctor</Button>
             </div>
           </div>

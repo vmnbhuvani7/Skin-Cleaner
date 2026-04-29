@@ -27,13 +27,43 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [listData, setListData] = useState({
+    services: [],
+    hasMore: true
+  });
   const { theme } = useTheme();
 
-  const { data, loading, refetch } = useQuery(GET_SERVICES, {
-    variables: { page, limit: 6, search: debouncedSearch },
+  const [statusFilter, setStatusFilter] = useState('both'); // 'active', 'inactive', 'both'
+
+  const getIsActiveValue = (filter) => {
+    if (filter === 'active') return true;
+    if (filter === 'inactive') return false;
+    return undefined;
+  };
+
+  const { data, loading, refetch, fetchMore } = useQuery(GET_SERVICES, {
+    variables: { 
+      page: 1, 
+      limit: 6, 
+      search: debouncedSearch,
+      isActive: getIsActiveValue(statusFilter)
+    },
     notifyOnNetworkStatusChange: true,
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (res) => {
+      if (res?.getServices && page === 1) {
+        setListData({
+          services: res.getServices.services || [],
+          hasMore: page < (res.getServices.totalPages || 1)
+        });
+      }
+    }
   });
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
 
   const [updateService] = useMutation(UPDATE_SERVICE);
   const [deleteService] = useMutation(DELETE_SERVICE);
@@ -54,10 +84,13 @@ export default function ServicesPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(1);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    refetch();
+  }, [statusFilter]);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
@@ -82,7 +115,42 @@ export default function ServicesPage() {
     }
   };
 
-  const services = data?.getServices?.services || [];
+  const loadMore = async () => {
+    if (!listData.hasMore || loading) return;
+    
+    const nextPage = page + 1;
+    const { data: moreData } = await fetchMore({
+      variables: { 
+        page: nextPage, 
+        limit: 6, 
+        search: debouncedSearch,
+        isActive: getIsActiveValue(statusFilter)
+      },
+    });
+
+    if (moreData?.getServices) {
+      setListData(prev => ({
+        services: [...prev.services, ...moreData.getServices.services],
+        hasMore: nextPage < (moreData.getServices.totalPages || 1)
+      }));
+      setPage(nextPage);
+    }
+  };
+
+  // Intersection Observer for infinite scroll
+  const observer = React.useRef();
+  const lastServiceElementRef = React.useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && listData.hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, listData.hasMore, page]);
+
+  const services = listData.services;
   const totalPages = data?.getServices?.totalPages || 1;
 
   return (
@@ -146,16 +214,39 @@ export default function ServicesPage() {
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-sm text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all placeholder:text-[var(--text-muted)]"
                 />
               </div>
+
+              <div className="flex bg-[var(--surface)] border border-[var(--border)] p-1 rounded-2xl">
+                <button 
+                  onClick={() => setStatusFilter('both')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'both' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setStatusFilter('active')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'active' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  Active
+                </button>
+                <button 
+                  onClick={() => setStatusFilter('inactive')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === 'inactive' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                >
+                  Inactive
+                </button>
+              </div>
+
               <Button className="whitespace-nowrap min-w-fit" onClick={() => router.push('/services/add')} icon={Plus}>Add Service</Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            {services.map((service) => {
+            {services.map((service, index) => {
               const IconComponent = iconMap[service.icon] || Zap;
               return (
                 <div 
                   key={service.id} 
+                  ref={index === services.length - 1 ? lastServiceElementRef : null}
                   className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm"
                 >
                   <div className="flex items-start justify-between mb-6">
@@ -208,6 +299,7 @@ export default function ServicesPage() {
             {loading && (
               <div className="col-span-full py-10 text-center">
                 <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Loading more services...</p>
               </div>
             )}
 
@@ -217,27 +309,6 @@ export default function ServicesPage() {
               </div>
             )}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pb-10">
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span className="text-sm text-[var(--text-muted)]">Page {page} of {totalPages}</span>
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
         </div>
       </main>
     </div>

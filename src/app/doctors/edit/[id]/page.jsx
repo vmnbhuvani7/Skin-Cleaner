@@ -41,6 +41,7 @@ export default function EditDoctorPage() {
   const [errors, setErrors] = useState({});
 
   const [updateDoctor, { loading: mutationLoading }] = useMutation(UPDATE_DOCTOR, {
+    refetchQueries: ['GetDoctors'],
     onCompleted: () => {
       toast.success('Doctor information updated!');
       setTimeout(() => router.push('/doctors'), 1500);

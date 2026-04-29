@@ -17,7 +17,7 @@ export const doctorTypeDefs = `#graphql
   }
 
   extend type Query {
-    getDoctors(page: Int, limit: Int, search: String): DoctorsResponse
+    getDoctors(page: Int, limit: Int, search: String, isActive: Boolean): DoctorsResponse
     getDoctor(id: ID!): Doctor
   }
 

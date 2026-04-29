@@ -3,15 +3,21 @@ import dbConnect from '@/lib/mongodb';
 
 export const doctorResolvers = {
   Query: {
-    getDoctors: async (_, { page = 1, limit = 10, search = "" }) => {
+    getDoctors: async (_, { page = 1, limit = 10, search = "", isActive }) => {
       await dbConnect();
       
-      const query = search ? {
-        $or: [
+      let query = {};
+      
+      if (search) {
+        query.$or = [
           { name: { $regex: search, $options: 'i' } },
           { specialization: { $regex: search, $options: 'i' } }
-        ]
-      } : {};
+        ];
+      }
+
+      if (typeof isActive === 'boolean') {
+        query.isActive = isActive;
+      }
 
       const skip = (page - 1) * limit;
       const doctors = await Doctor.find(query)

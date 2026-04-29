@@ -26,6 +26,7 @@ export default function AddDoctorPage() {
   const [errors, setErrors] = useState({});
 
   const [createDoctor, { loading }] = useMutation(CREATE_DOCTOR, {
+    refetchQueries: ['GetDoctors'],
     onCompleted: () => {
       toast.success('Doctor added successfully!');
       setTimeout(() => router.push('/doctors'), 1500);
