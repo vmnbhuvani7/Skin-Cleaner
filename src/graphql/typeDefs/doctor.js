@@ -13,6 +13,8 @@ export const doctorTypeDefs = `#graphql
   type DoctorsResponse {
     doctors: [Doctor]
     totalCount: Int
+    totalPages: Int
+    currentPage: Int
     hasMore: Boolean
   }
 

@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Edit, Trash2, Phone, Award, DollarSign, UserCheck, UserMinus, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Award, DollarSign, Search } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from '@/context/ThemeContext';
+import { Waypoint } from 'react-waypoint';
 
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { UPDATE_DOCTOR, DELETE_DOCTOR } from '@/graphql/mutations/doctor';
@@ -31,28 +32,44 @@ export default function DoctorsPage() {
     return undefined;
   };
 
-  const { data, loading, refetch, fetchMore } = useQuery(GET_DOCTORS, {
-    variables: { 
-      page: 1, 
-      limit: 10, 
-      search: debouncedSearch,
-      isActive: getIsActiveValue(statusFilter)
-    },
+  const [getDoctors, { data, loading }] = useLazyQuery(GET_DOCTORS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-and-network',
     onCompleted: (res) => {
-      if (res?.getDoctors && page === 1) {
-        setListData({
-          doctors: res.getDoctors.doctors || [],
-          hasMore: res.getDoctors.hasMore
-        });
+      if (res?.getDoctors) {
+        if (page === 1) {
+          setListData({
+            doctors: res.getDoctors.doctors || [],
+            hasMore: res.getDoctors.currentPage < res.getDoctors.totalPages
+          });
+        } else {
+          setListData(prev => ({
+            doctors: [...prev.doctors, ...res.getDoctors.doctors],
+            hasMore: res.getDoctors.currentPage < res.getDoctors.totalPages
+          }));
+        }
       }
     }
   });
 
+  useEffect(() => {
+    getDoctors({
+      variables: { 
+        page, 
+        limit: 10, 
+        search: debouncedSearch,
+        isActive: getIsActiveValue(statusFilter)
+      },
+    });
+  }, [page, debouncedSearch, statusFilter, getDoctors]);
+
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setPage(1);
+    setListData({
+      doctors: [],
+      hasMore: true
+    });
   }, [debouncedSearch, statusFilter]);
 
   const [updateDoctor] = useMutation(UPDATE_DOCTOR);
@@ -66,44 +83,13 @@ export default function DoctorsPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  useEffect(() => {
-    refetch();
-  }, [statusFilter]);
-
-  const loadMore = async () => {
-    if (!listData.hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    const { data: moreData } = await fetchMore({
-      variables: { 
-        page: nextPage, 
-        limit: 10, 
-        search: debouncedSearch,
-        isActive: getIsActiveValue(statusFilter)
-      },
-    });
-
-    if (moreData?.getDoctors) {
-      setListData(prev => ({
-        doctors: [...prev.doctors, ...moreData.getDoctors.doctors],
-        hasMore: moreData.getDoctors.hasMore
-      }));
-      setPage(nextPage);
+  const loadMore = () => {
+    const current = data?.getDoctors?.currentPage || 1;
+    const total = data?.getDoctors?.totalPages || 1;
+    if (current < total && !loading) {
+      setPage(prev => prev + 1);
     }
   };
-
-  // Intersection Observer for infinite scroll
-  const observer = React.useRef();
-  const lastDoctorElementRef = React.useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && listData.hasMore) {
-        loadMore();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, listData.hasMore, page]);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState(null);
@@ -113,7 +99,14 @@ export default function DoctorsPage() {
       await updateDoctor({ 
         variables: { id, isActive: !currentStatus },
       });
-      refetch();
+      getDoctors({
+        variables: { 
+          page: 1, 
+          limit: 10, 
+          search: debouncedSearch,
+          isActive: getIsActiveValue(statusFilter)
+        },
+      });
       toast.success(`Doctor status updated successfully`);
     } catch (err) {
       toast.error('Failed to update status');
@@ -230,10 +223,9 @@ export default function DoctorsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-            {listData.doctors.map((doctor, index) => (
+            {listData.doctors.map((doctor) => (
               <div 
                 key={doctor.id} 
-                ref={index === listData.doctors.length - 1 ? lastDoctorElementRef : null}
                 className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm"
               >
                 <div className="flex items-start justify-between mb-6">
@@ -288,6 +280,12 @@ export default function DoctorsPage() {
                 </div>
               </div>
             ))}
+
+            {listData.hasMore && !loading && listData.doctors.length > 0 && (
+              <div className="col-span-full h-10">
+                <Waypoint onEnter={loadMore} />
+              </div>
+            )}
 
             {loading && (
               <div className="col-span-full py-10 text-center">

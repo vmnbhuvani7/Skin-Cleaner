@@ -30,7 +30,9 @@ export const doctorResolvers = {
       return {
         doctors,
         totalCount,
-        hasMore: totalCount > skip + doctors.length
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        hasMore: totalCount > (skip + doctors.length)
       };
     },
     getDoctor: async (_, { id }) => {

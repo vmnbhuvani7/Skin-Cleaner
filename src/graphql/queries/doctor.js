@@ -14,6 +14,8 @@ export const GET_DOCTORS = gql`
         isActive
       }
       totalCount
+      totalPages
+      currentPage
       hasMore
     }
   }

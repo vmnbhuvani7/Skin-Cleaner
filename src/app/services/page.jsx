@@ -6,10 +6,11 @@ import { Plus, Edit, Trash2, Search, Scissors, Zap, Droplets, Smile, Heart } fro
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from '@/context/ThemeContext';
+import { Waypoint } from 'react-waypoint';
 
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { UPDATE_SERVICE, DELETE_SERVICE } from '@/graphql/mutations/service';
@@ -41,28 +42,44 @@ export default function ServicesPage() {
     return undefined;
   };
 
-  const { data, loading, refetch, fetchMore } = useQuery(GET_SERVICES, {
-    variables: { 
-      page: 1, 
-      limit: 6, 
-      search: debouncedSearch,
-      isActive: getIsActiveValue(statusFilter)
-    },
+  const [getServices, { data, loading }] = useLazyQuery(GET_SERVICES, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-and-network',
     onCompleted: (res) => {
-      if (res?.getServices && page === 1) {
-        setListData({
-          services: res.getServices.services || [],
-          hasMore: page < (res.getServices.totalPages || 1)
-        });
+      if (res?.getServices) {
+        if (page === 1) {
+          setListData({
+            services: res.getServices.services || [],
+            hasMore: res.getServices.currentPage < res.getServices.totalPages
+          });
+        } else {
+          setListData(prev => ({
+            services: [...prev.services, ...res.getServices.services],
+            hasMore: res.getServices.currentPage < res.getServices.totalPages
+          }));
+        }
       }
     }
   });
 
+  useEffect(() => {
+    getServices({
+      variables: { 
+        page, 
+        limit: 6, 
+        search: debouncedSearch,
+        isActive: getIsActiveValue(statusFilter)
+      },
+    });
+  }, [page, debouncedSearch, statusFilter, getServices]);
+
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setPage(1);
+    setListData({
+      services: [],
+      hasMore: true
+    });
   }, [debouncedSearch, statusFilter]);
 
   const [updateService] = useMutation(UPDATE_SERVICE);
@@ -73,7 +90,14 @@ export default function ServicesPage() {
       await updateService({ 
         variables: { id, isActive: !currentStatus },
       });
-      refetch();
+      getServices({
+        variables: { 
+          page: 1, 
+          limit: 6, 
+          search: debouncedSearch,
+          isActive: getIsActiveValue(statusFilter)
+        },
+      });
       toast.success(`Service status updated successfully`);
     } catch (err) {
       toast.error('Failed to update status');
@@ -87,10 +111,6 @@ export default function ServicesPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  useEffect(() => {
-    refetch();
-  }, [statusFilter]);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
@@ -106,7 +126,14 @@ export default function ServicesPage() {
       await deleteService({ 
         variables: { id: serviceToDelete },
       });
-      refetch();
+      getServices({
+        variables: { 
+          page: 1, 
+          limit: 6, 
+          search: debouncedSearch,
+          isActive: getIsActiveValue(statusFilter)
+        },
+      });
       toast.success('Service deleted successfully');
       setDeleteModalOpen(false);
       setServiceToDelete(null);
@@ -115,43 +142,15 @@ export default function ServicesPage() {
     }
   };
 
-  const loadMore = async () => {
-    if (!listData.hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    const { data: moreData } = await fetchMore({
-      variables: { 
-        page: nextPage, 
-        limit: 6, 
-        search: debouncedSearch,
-        isActive: getIsActiveValue(statusFilter)
-      },
-    });
-
-    if (moreData?.getServices) {
-      setListData(prev => ({
-        services: [...prev.services, ...moreData.getServices.services],
-        hasMore: nextPage < (moreData.getServices.totalPages || 1)
-      }));
-      setPage(nextPage);
+  const loadMore = () => {
+    const current = data?.getServices?.currentPage || 1;
+    const total = data?.getServices?.totalPages || 1;
+    if (current < total && !loading) {
+      setPage(prev => prev + 1);
     }
   };
 
-  // Intersection Observer for infinite scroll
-  const observer = React.useRef();
-  const lastServiceElementRef = React.useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && listData.hasMore) {
-        loadMore();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, listData.hasMore, page]);
-
   const services = listData.services;
-  const totalPages = data?.getServices?.totalPages || 1;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
@@ -246,7 +245,6 @@ export default function ServicesPage() {
               return (
                 <div 
                   key={service.id} 
-                  ref={index === services.length - 1 ? lastServiceElementRef : null}
                   className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm"
                 >
                   <div className="flex items-start justify-between mb-6">
@@ -295,6 +293,12 @@ export default function ServicesPage() {
                 </div>
               );
             })}
+
+            {listData.hasMore && !loading && services.length > 0 && (
+              <div className="col-span-full h-10">
+                <Waypoint onEnter={loadMore} />
+              </div>
+            )}
 
             {loading && (
               <div className="col-span-full py-10 text-center">
