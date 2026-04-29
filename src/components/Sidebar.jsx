@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   LogOut,
   User,
+  Users,
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
@@ -71,6 +72,12 @@ export default function Sidebar() {
       label: 'Doctors', 
       onClick: () => router.push('/doctors'),
       isActive: pathname === '/doctors'
+    },
+    { 
+      icon: Users, 
+      label: 'Patients', 
+      onClick: () => router.push('/patients'),
+      isActive: pathname === '/patients' || pathname.startsWith('/patients/')
     },
     { 
       icon: MessageSquare, 
