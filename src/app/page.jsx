@@ -232,7 +232,7 @@ export default function LandingPage() {
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 font-medium mb-8 leading-relaxed italic">"{t.text}"</p>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800"></div>
+                  <img src={t.image} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
                   <div>
                     <h4 className="font-bold text-gray-900 dark:text-white">{t.name}</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p>

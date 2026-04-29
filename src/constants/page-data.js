@@ -3,19 +3,22 @@ export const testimonials = [
     name: "Sarah Jenkins",
     text: "The laser hair removal results are incredible. Almost painless and visible from the first session!",
     role: "Client since 2023",
-    rating: 5
+    rating: 5,
+    image: "/testimonial_sarah.png"
   },
   {
     name: "Michael Chen",
     text: "Cleared my adult acne after years of struggling. The doctors here are truly expert dermatologists.",
     role: "Skin Care Patient",
-    rating: 5
+    rating: 5,
+    image: "/testimonial_michael.png"
   },
   {
     name: "Emma Wilson",
     text: "Premium atmosphere and excellent service. My skin has never looked more radiant.",
     role: "Regular Member",
-    rating: 5
+    rating: 5,
+    image: "/testimonial_emma.png"
   }
 ];
 
