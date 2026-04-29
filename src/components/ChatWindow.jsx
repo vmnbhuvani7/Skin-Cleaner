@@ -39,11 +39,11 @@ export default function ChatWindow() {
       });
 
       if (!response.ok) throw new Error('Failed to fetch response');
-      
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = '';
-      
+
       // Add an initial empty assistant message to update
       const assistantMessageId = Math.random().toString(36).substring(7);
       addMessage(currentChatId, { role: 'assistant', content: '', id: assistantMessageId });
@@ -52,7 +52,7 @@ export default function ChatWindow() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // Keep the last partial line in buffer
@@ -69,14 +69,14 @@ export default function ChatWindow() {
           }
         }
       }
-      
+
       // Handle remaining buffer
       if (buffer.startsWith('0:')) {
         try {
           const content = JSON.parse(buffer.substring(2));
           assistantContent += content;
           updateMessage(currentChatId, assistantMessageId, assistantContent);
-        } catch (e) {}
+        } catch (e) { }
       }
     } catch (error) {
       addMessage(currentChatId, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' });
@@ -128,53 +128,57 @@ export default function ChatWindow() {
       </div>
 
       {/* Messages */}
-      <div 
+      <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth z-10 custom-scrollbar"
+        className="flex-1 overflow-y-auto scroll-smooth z-10 custom-scrollbar"
       >
-        <AnimatePresence initial={false}>
-          {currentChat?.messages.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-20 text-center"
-            >
-              <Sparkles size={40} className="text-indigo-500 mb-6 opacity-50" />
-              <h4 className="text-lg font-bold text-[var(--foreground)] mb-2">New Conversation</h4>
-              <p className="text-sm text-[var(--text-muted)] max-w-sm leading-relaxed">
-                Type your first message below to start chatting with our advanced AI assistant.
-              </p>
-            </motion.div>
-          )}
-          {currentChat?.messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
-        </AnimatePresence>
-        {isLoading && <ChatLoading />}
+        <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+          <AnimatePresence initial={false}>
+            {currentChat?.messages.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-20 text-center"
+              >
+                <Sparkles size={40} className="text-indigo-500 mb-6 opacity-50" />
+                <h4 className="text-lg font-bold text-[var(--foreground)] mb-2">New Conversation</h4>
+                <p className="text-sm text-[var(--text-muted)] max-w-sm leading-relaxed">
+                  Type your first message below to start chatting with our advanced AI assistant.
+                </p>
+              </motion.div>
+            )}
+            {currentChat?.messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))}
+          </AnimatePresence>
+          {isLoading && <ChatLoading />}
+        </div>
       </div>
 
       {/* Input */}
-      <div className="p-4 md:p-8 shrink-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent z-10">
-        <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto group">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl"></div>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your request..."
-            className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-6 py-4 pr-14 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)] relative z-10"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-[var(--surface)] disabled:text-[var(--text-muted)] text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 z-10"
-          >
-            <Send size={20} />
-          </button>
-        </form>
-        <p className="text-[10px] text-center text-[var(--text-muted)] mt-4 font-bold uppercase tracking-[0.2em]">
-          Skin Cleaner AI • Pure Intelligence
-        </p>
+      <div className="shrink-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent z-10">
+        <div className="max-w-4xl mx-auto p-4 md:p-8 md:pt-0">
+          <form onSubmit={handleSubmit} className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl"></div>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Describe your request..."
+              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-6 py-4 pr-14 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)] relative z-10"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-[var(--surface)] disabled:text-[var(--text-muted)] text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 z-10"
+            >
+              <Send size={20} />
+            </button>
+          </form>
+          <p className="text-[10px] text-center text-[var(--text-muted)] mt-4 font-bold uppercase tracking-[0.2em]">
+            Skin Cleaner AI • Pure Intelligence
+          </p>
+        </div>
       </div>
     </div>
   );
