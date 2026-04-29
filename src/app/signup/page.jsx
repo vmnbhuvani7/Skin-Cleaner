@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, ArrowRight, Sparkles, CheckSquare, Square } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, Zap, CheckSquare, Square, Eye, EyeOff } from 'lucide-react';
 import * as Apollo from '@apollo/client';
-const { useMutation, gql } = Apollo;
+const { useMutation } = Apollo;
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { SIGNUP_MUTATION } from '@/graphql/mutations/auth';
+import AuthLayout from '@/components/auth/AuthLayout';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function SignupPage() {
     acceptTerms: false,
   });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [signup, { loading }] = useMutation(SIGNUP_MUTATION, {
     onCompleted: (data) => {
@@ -53,127 +56,141 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0c10] flex items-center justify-center p-6 py-12 relative overflow-hidden font-sans">
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+    <AuthLayout
+      title="Start Your"
+      subtitle="Skin Journey."
+      description="Join thousands of satisfied patients who trust our AI-driven approach for clinical skincare and aesthetic perfection."
+    >
+      <div className="bg-white dark:bg-[#0f1117] border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl dark:shadow-indigo-500/5 relative overflow-hidden">
+        {/* Mobile Branding */}
+        <div className="lg:hidden flex flex-col items-center mb-10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl mb-4">
+            <Zap size={32} className="text-white fill-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Skin Cleaner</h2>
+        </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-xl z-10"
-      >
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-          {/* Accent Line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
+        <div className="mb-10 text-center lg:text-left">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Create Account</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Experience the next generation of aesthetic care</p>
+        </div>
 
-          <div className="mb-10 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/20 mb-6 group transition-all duration-500 hover:scale-110">
-              <Sparkles className="text-indigo-400 group-hover:text-indigo-300 transition-colors" size={32} />
-            </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create Account</h1>
-            <p className="text-gray-400 text-sm">Join Skin Cleaner AI to experience the future</p>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-8 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-2xl text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider text-center"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Full Name"
+              icon={User}
+              required
+              placeholder="John Doe"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <Input
+              label="Email Address"
+              icon={Mail}
+              type="email"
+              required
+              placeholder="name@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold uppercase tracking-wider text-center">
-              {error}
-            </div>
-          )}
+          <Input
+            label="Mobile Number"
+            icon={Phone}
+            type="tel"
+            required
+            placeholder="+91 00000 00000"
+            value={formData.mobile}
+            onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+          />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Full Name"
-                icon={User}
-                required
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-              <Input
-                label="Email Address"
-                icon={Mail}
-                type="email"
-                required
-                placeholder="name@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-
-            <Input
-              label="Mobile Number"
-              icon={Phone}
-              type="tel"
-              required
-              placeholder="+91 00000 00000"
-              value={formData.mobile}
-              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
               <Input
                 label="Password"
                 icon={Lock}
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-indigo-500 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            <div className="relative">
               <Input
                 label="Confirm Password"
                 icon={Lock}
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-indigo-500 transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
+          </div>
 
-            <div 
-              className="flex items-start gap-4 pt-2 ml-1 cursor-pointer group" 
-              onClick={() => setFormData({ ...formData, acceptTerms: !formData.acceptTerms })}
-            >
-              <div className="mt-0.5 shrink-0 transition-transform group-active:scale-90">
-                {formData.acceptTerms ? (
-                  <CheckSquare size={22} className="text-indigo-500" />
-                ) : (
-                  <Square size={22} className="text-gray-600 group-hover:text-gray-500" />
-                )}
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
-                I agree to the <Link href="#" className="text-indigo-400 font-bold hover:underline">Terms of Service</Link> and <Link href="#" className="text-indigo-400 font-bold hover:underline">Privacy Policy</Link>.
-              </p>
+          <div 
+            className="flex items-start gap-4 pt-2 ml-1 cursor-pointer group" 
+            onClick={() => setFormData({ ...formData, acceptTerms: !formData.acceptTerms })}
+          >
+            <div className="mt-0.5 shrink-0 transition-transform group-active:scale-90">
+              {formData.acceptTerms ? (
+                <CheckSquare size={24} className="text-indigo-500" />
+              ) : (
+                <Square size={24} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400" />
+              )}
             </div>
+            <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              I agree to the <Link href="#" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-4">Terms of Service</Link> and <Link href="#" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-4">Privacy Policy</Link>.
+            </p>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={!formData.acceptTerms}
-              isLoading={loading}
-              className="w-full mt-6"
-              icon={ArrowRight}
-            >
-              Create Account
-            </Button>
-          </form>
+          <Button
+            type="submit"
+            disabled={!formData.acceptTerms}
+            className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:shadow-none transition-all duration-300 mt-4"
+            isLoading={loading}
+            icon={ArrowRight}
+          >
+            Create Account
+          </Button>
+        </form>
 
-          <p className="mt-10 text-center text-sm text-gray-500 font-medium">
+        <div className="mt-12 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Already have an account?{' '}
-            <Link href="/login" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors underline underline-offset-4 decoration-2 decoration-indigo-400/30">
+            <Link href="/login" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-8 transition-all">
               Sign In
             </Link>
           </p>
         </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em]">
-            Skin Cleaner AI • Pure Intelligence
-          </p>
-        </div>
-      </motion.div>
-    </div>
+      </div>
+    </AuthLayout>
   );
 }
