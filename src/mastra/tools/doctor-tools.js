@@ -9,10 +9,10 @@ export const doctorsTool = createTool({
   inputSchema: z.object({
     specialization: z.enum(['Skin', 'Hair', 'Both']).optional().describe('Filter doctors by specialization'),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ specialization }) => {
     await dbConnect();
-    console.log("🚀 ~ query doctorsTool:", context.specialization)
-    const query = context.specialization ? { specialization: context.specialization } : {};
+    console.log("🚀 ~ query doctorsTool specialization:", specialization)
+    const query = specialization ? { specialization } : {};
     const doctors = await Doctor.find({ ...query, isActive: true });
 
     return doctors.map((d) => ({

@@ -9,10 +9,10 @@ export const servicesTool = createTool({
   inputSchema: z.object({
     category: z.string().optional().describe('The category of services to filter by (e.g., skin, hair)'),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ category }) => {
     await dbConnect();
-    const query = context.category ? { desc: { $regex: context.category, $options: 'i' } } : {};
-    console.log("🚀 ~ query servicesTool:", context.category)
+    console.log("🚀 ~ query servicesTool category:", category)
+    const query = category ? { desc: { $regex: category, $options: 'i' } } : {};
     const services = await Service.find({ ...query, isActive: true });
     
     return services.map((s) => ({

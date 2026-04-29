@@ -5,6 +5,8 @@ import { useChat } from '@/context/ChatContext';
 import { Send, Bot, User, Sparkles, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
+import ChatMessage from './chat/ChatMessage';
+import ChatLoading from './chat/ChatLoading';
 
 export default function ChatWindow() {
   const { chats, currentChatId, addMessage, updateMessage } = useChat();
@@ -99,7 +101,7 @@ export default function ChatWindow() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--background)] overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full bg-[var(--background)] overflow-hidden relative">
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full -z-0 pointer-events-none"></div>
@@ -145,53 +147,10 @@ export default function ChatWindow() {
             </motion.div>
           )}
           {currentChat?.messages.map((message) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={twMerge(
-                "flex gap-4",
-                message.role === 'user' ? "flex-row-reverse" : ""
-              )}
-            >
-              <div className={twMerge(
-                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all",
-                message.role === 'user' 
-                  ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20" 
-                  : "bg-[var(--surface)] border-[var(--border)] text-indigo-400"
-              )}>
-                {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
-              </div>
-              <div className={twMerge(
-                "max-w-[85%] md:max-w-[75%] px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm",
-                message.role === 'user' 
-                  ? "bg-indigo-600 text-white rounded-tr-none" 
-                  : "bg-[var(--surface)] text-[var(--foreground)] rounded-tl-none border border-[var(--border)]"
-              )}>
-                {message.content}
-              </div>
-            </motion.div>
+            <ChatMessage key={message.id} message={message} />
           ))}
         </AnimatePresence>
-        {isLoading && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex gap-4"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center shrink-0 text-indigo-400">
-              <Bot size={18} />
-            </div>
-            <div className="bg-[var(--surface)] px-5 py-3.5 rounded-2xl rounded-tl-none border border-[var(--border)]">
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {isLoading && <ChatLoading />}
       </div>
 
       {/* Input */}

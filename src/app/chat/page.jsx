@@ -19,9 +19,9 @@ function ChatContent() {
   }, [id, setCurrentChatId]);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen bg-[var(--background)] overflow-hidden">
       <Sidebar />
-      <main className="flex-1 relative pt-16 lg:pt-0 overflow-hidden">
+      <main className="flex-1 relative pt-16 lg:pt-0 h-full overflow-hidden flex flex-col">
         <ChatWindow />
       </main>
     </div>
