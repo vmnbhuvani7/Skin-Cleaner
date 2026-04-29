@@ -9,10 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/mistral": "^3.0.31",
+    "@ai-sdk/openai": "^3.0.54",
     "@apollo/client": "^3.13.2",
     "@apollo/server": "^5.5.0",
     "@as-integrations/next": "^4.1.0",
     "@hookform/resolvers": "^5.2.2",
+    "@mastra/ai-sdk": "^1.4.1",
+    "@mastra/core": "^1.29.0",
+    "ai": "^6.0.169",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "deep-email-validator": "^0.1.27",
@@ -21,6 +26,7 @@
     "graphql": "^16.13.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.460.0",
+    "mastra": "^1.7.0",
     "mongoose": "^9.5.0",
     "next": "^15.1.0",
     "next-themes": "^0.4.6",

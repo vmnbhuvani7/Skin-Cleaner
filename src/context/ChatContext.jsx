@@ -39,11 +39,12 @@ export function ChatProvider({ children }) {
   };
 
   const addMessage = (chatId, messageData) => {
+    const messageId = messageData.id || uuidv4();
     setChats(prevChats => prevChats.map(chat => {
       if (chat.id === chatId) {
         const newMessage = {
           ...messageData,
-          id: uuidv4(),
+          id: messageId,
           timestamp: Date.now(),
         };
         const updatedMessages = [...chat.messages, newMessage];
@@ -54,6 +55,22 @@ export function ChatProvider({ children }) {
         }
         
         return { ...chat, messages: updatedMessages, title: newTitle };
+      }
+      return chat;
+    }));
+    return messageId;
+  };
+
+  const updateMessage = (chatId, messageId, content) => {
+    setChats(prevChats => prevChats.map(chat => {
+      if (chat.id === chatId) {
+        const updatedMessages = chat.messages.map(msg => {
+          if (msg.id === messageId) {
+            return { ...msg, content };
+          }
+          return msg;
+        });
+        return { ...chat, messages: updatedMessages };
       }
       return chat;
     }));
@@ -68,7 +85,7 @@ export function ChatProvider({ children }) {
   };
 
   return (
-    <ChatContext.Provider value={{ chats, currentChatId, setCurrentChatId, createNewChat, addMessage, deleteChat }}>
+    <ChatContext.Provider value={{ chats, currentChatId, setCurrentChatId, createNewChat, addMessage, updateMessage, deleteChat }}>
       {children}
     </ChatContext.Provider>
   );

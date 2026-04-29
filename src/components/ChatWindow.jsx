@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 
 export default function ChatWindow() {
-  const { chats, currentChatId, addMessage } = useChat();
+  const { chats, currentChatId, addMessage, updateMessage } = useChat();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef(null);
@@ -38,8 +38,44 @@ export default function ChatWindow() {
 
       if (!response.ok) throw new Error('Failed to fetch response');
       
-      const data = await response.text();
-      addMessage(currentChatId, { role: 'assistant', content: data });
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+      
+      // Add an initial empty assistant message to update
+      const assistantMessageId = Math.random().toString(36).substring(7);
+      addMessage(currentChatId, { role: 'assistant', content: '', id: assistantMessageId });
+
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last partial line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('0:')) {
+            try {
+              const content = JSON.parse(line.substring(2));
+              assistantContent += content;
+              updateMessage(currentChatId, assistantMessageId, assistantContent);
+            } catch (e) {
+              console.error('Error parsing line:', line, e);
+            }
+          }
+        }
+      }
+      
+      // Handle remaining buffer
+      if (buffer.startsWith('0:')) {
+        try {
+          const content = JSON.parse(buffer.substring(2));
+          assistantContent += content;
+          updateMessage(currentChatId, assistantMessageId, assistantContent);
+        } catch (e) {}
+      }
     } catch (error) {
       addMessage(currentChatId, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' });
     } finally {
