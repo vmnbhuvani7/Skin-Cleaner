@@ -23,9 +23,13 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Linkedin
+  Linkedin,
+  ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/Select';
 
 import { useQuery } from '@apollo/client';
 import { GET_SERVICES } from '@/graphql/queries/service';
@@ -333,12 +337,17 @@ export default function LandingPage() {
                 <Input label="Email Address" placeholder="john@example.com" />
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Interested Service</label>
-                  <select className="w-full bg-white dark:bg-[#030712] border border-gray-100 dark:border-white/10 rounded-2xl py-3.5 px-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 dark:focus:border-indigo-500/30 transition-all appearance-none cursor-pointer">
-                    {services.map(s => (
-                      <option key={s.id}>{s.title}</option>
-                    ))}
-                    {services.length === 0 && <option>No services available</option>}
-                  </select>
+                  <Select>
+                    <SelectTrigger className="bg-white dark:bg-[#030712] border-gray-100 dark:border-white/10">
+                      <SelectValue placeholder="Select Service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                      ))}
+                      {services.length === 0 && <SelectItem value="none">No services available</SelectItem>}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button className="w-full py-5 text-base mt-4 shadow-xl shadow-indigo-600/20 dark:shadow-indigo-900/20">
                   Book Free Consultation

@@ -159,7 +159,7 @@ export default function DoctorsPage() {
             <div className="flex gap-4">
               <button 
                 onClick={() => setDeleteModalOpen(false)}
-                className="flex-1 py-4 px-6 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5"
+                className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
               >
                 Cancel
               </button>
@@ -233,10 +233,10 @@ export default function DoctorsPage() {
                     <Award size={32} />
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => router.push(`/doctors/edit/${doctor.id}`)} className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-all">
+                    <button onClick={() => router.push(`/doctors/edit/${doctor.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all">
                       <Edit size={16} />
                     </button>
-                    <button onClick={() => handleDeleteClick(doctor.id)} className="p-2 bg-white/5 hover:bg-rose-500/10 rounded-xl text-gray-400 hover:text-rose-400 transition-all">
+                    <button onClick={() => handleDeleteClick(doctor.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-400 transition-all">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -260,7 +260,7 @@ export default function DoctorsPage() {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+                <div className="pt-6 border-t border-[var(--border)] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${doctor.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${doctor.isActive ? 'text-emerald-500' : 'text-gray-500'}`}>

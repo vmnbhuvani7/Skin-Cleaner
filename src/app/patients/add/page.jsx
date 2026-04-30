@@ -6,6 +6,10 @@ import { ArrowLeft, User, Phone, Mail, Calendar, MapPin, ClipboardList, Activity
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
@@ -147,32 +151,32 @@ export default function AddPatientPage() {
                   />
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Gender</label>
-                    <div className="relative">
-                      <select 
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm appearance-none cursor-pointer"
-                        value={formData.gender}
-                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] rotate-90 pointer-events-none" />
-                    </div>
+                    <Select 
+                      value={formData.gender} 
+                      onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Input
+                  <DatePicker
                     label="Birth Date"
-                    icon={Cake}
-                    type="date"
-                    value={formData.birthdate}
-                    error={errors.birthdate}
-                    onChange={(e) => {
-                      setFormData({ ...formData, birthdate: e.target.value });
+                    date={formData.birthdate}
+                    setDate={(date) => {
+                      setFormData({ ...formData, birthdate: date });
                       if (errors.birthdate) setErrors({ ...errors, birthdate: null });
                     }}
+                    error={errors.birthdate}
+                    placeholder="Select birth date"
                   />
                   <Input
                     label="Age"

@@ -6,6 +6,9 @@ import { ArrowLeft, User, Award, DollarSign, Phone, Sparkles, ChevronRight } fro
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/Select';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
@@ -108,18 +111,19 @@ export default function AddDoctorPage() {
                   
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Specialization</label>
-                    <div className="relative">
-                      <select 
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm appearance-none cursor-pointer"
-                        value={formData.specialization}
-                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                      >
-                        <option value="Skin">Skin Specialist</option>
-                        <option value="Hair">Hair Specialist</option>
-                        <option value="Both">Skin & Hair Specialist</option>
-                      </select>
-                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] rotate-90 pointer-events-none" />
-                    </div>
+                    <Select 
+                      value={formData.specialization} 
+                      onValueChange={(value) => setFormData({ ...formData, specialization: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Specialization" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Skin">Skin Specialist</SelectItem>
+                        <SelectItem value="Hair">Hair Specialist</SelectItem>
+                        <SelectItem value="Both">Skin & Hair Specialist</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
