@@ -22,12 +22,16 @@ import {
   TrendingUp,
   FileText,
   Edit,
-  Trash2
+  Trash2,
+  Sparkles,
+  CalendarDays
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import Input from '@/components/ui/Input';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
+import { Waypoint } from 'react-waypoint';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from '@/context/ThemeContext';
@@ -96,16 +100,83 @@ export default function TreatmentsPage() {
     areaTreated: '',
     dosage: '',
     complications: '',
-    actualDate: '',
-    treatmentStartTime: '',
-    treatmentEndTime: ''
+    actualDate: ''
   });
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [treatmentToDelete, setTreatmentToDelete] = useState(null);
 
+  // Follow-up Logic States
+  const [shouldAutoSchedule, setShouldAutoSchedule] = useState(true);
+  const [nextSuggestedDate, setNextSuggestedDate] = useState('');
+  const [existingNextSession, setExistingNextSession] = useState(null);
+  const [actualDate, setActualDate] = useState(new Date().toISOString());
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [listData, setListData] = useState({
+    sessions: [],
+    hasMore: true
+  });
+
   // Queries
-  const { data: sessionsData, loading: sessionsLoading, refetch: refetchSessions } = useQuery(GET_ALL_SESSIONS);
+  const [getSessions, { loading: sessionsLoading }] = useLazyQuery(GET_ALL_SESSIONS, {
+    notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (res) => {
+      if (res?.getAllSessions) {
+        const newSessions = res.getAllSessions.sessions || [];
+        if (page === 1) {
+          setListData({
+            sessions: newSessions,
+            hasMore: res.getAllSessions.hasMore
+          });
+        } else {
+          setListData(prev => ({
+            sessions: [...prev.sessions, ...newSessions],
+            hasMore: res.getAllSessions.hasMore
+          }));
+        }
+      }
+    }
+  });
+
+  const refetchSessions = () => {
+    setPage(1);
+    getSessions({ variables: { page: 1, limit: 10, status: statusFilter, search: searchTerm } });
+  };
+
+  // Debounced search effect
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      getSessions({ 
+        variables: { 
+          page: 1, 
+          limit: 10, 
+          status: statusFilter, 
+          search: searchTerm 
+        } 
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, statusFilter]);
+
+  const loadMore = () => {
+    if (!sessionsLoading && listData.hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getSessions({ 
+        variables: { 
+          page: nextPage, 
+          limit: 10, 
+          status: statusFilter, 
+          search: searchTerm 
+        } 
+      });
+    }
+  };
   const { data: statsData } = useQuery(GET_GLOBAL_STATS);
   const { data: patientsData } = useQuery(GET_PATIENTS, { variables: { limit: 100 } });
   const { data: servicesData } = useQuery(GET_SERVICES, { variables: { limit: 100 } });
@@ -234,13 +305,16 @@ export default function TreatmentsPage() {
     completeSession({
       variables: {
         id: selectedSession.id,
-        actualDate: new Date().toISOString(),
+        actualDate,
         areaTreated,
         dosage,
         complications,
         beforeNotes,
         afterNotes,
-        notes
+        notes,
+        shouldAutoSchedule,
+        nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
+        updateNextSessionId: existingNextSession?.id
       }
     });
   };
@@ -249,6 +323,39 @@ export default function TreatmentsPage() {
     setSelectedSession(session);
     setAreaTreated(session.areaTreated || '');
     setDosage(session.dosage || '');
+    setComplications(session.complications || '');
+    setNotes(session.notes || '');
+    setActualDate(new Date().toISOString());
+
+    // Logic to detect next session
+    if (session.treatmentPlan) {
+      const plan = session.treatmentPlan;
+      const sessions = listData.sessions;
+      const nextNum = session.sessionNumber + 1;
+      
+      const existingNext = sessions.find(s => 
+        s.treatmentPlan?.id === plan.id && 
+        s.sessionNumber === nextNum &&
+        s.status === 'Scheduled'
+      );
+
+      if (existingNext) {
+        setExistingNextSession(existingNext);
+        setShouldAutoSchedule(false);
+        setNextSuggestedDate(existingNext.appointmentDate);
+      } else {
+        setExistingNextSession(null);
+        setShouldAutoSchedule(nextNum <= (plan.totalSessions || 1));
+        
+        const suggested = new Date();
+        suggested.setDate(suggested.getDate() + ((plan.intervalWeeks || 4) * 7));
+        setNextSuggestedDate(suggested.toISOString());
+      }
+    } else {
+      setExistingNextSession(null);
+      setShouldAutoSchedule(false);
+    }
+    
     setIsCompleteModalOpen(true);
   };
 
@@ -263,9 +370,7 @@ export default function TreatmentsPage() {
       areaTreated: session.areaTreated || '',
       dosage: session.dosage || '',
       complications: session.complications || '',
-      actualDate: session.actualDate || session.appointmentDate || '',
-      treatmentStartTime: session.treatmentStartTime || '',
-      treatmentEndTime: session.treatmentEndTime || ''
+      actualDate: session.actualDate || session.appointmentDate || ''
     });
     setIsEditModalOpen(true);
   };
@@ -313,12 +418,6 @@ export default function TreatmentsPage() {
     }
   };
 
-  const filteredSessions = sessionsData?.getAllSessions?.filter(session => {
-    const matchesSearch = session.patient.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         session.patient.mobile.includes(searchTerm);
-    const matchesStatus = statusFilter === 'All' || session.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const stats = statsData?.getGlobalStats || { completionRate: 0, dropoutRate: 0, noShowRate: 0 };
 
@@ -440,9 +539,19 @@ export default function TreatmentsPage() {
           isOpen={isCompleteModalOpen} 
           onClose={() => setIsCompleteModalOpen(false)}
           title="Clinical Treatment Record"
-          className="max-w-3xl"
+          footer={
+            <Button 
+              form="clinical-complete-form"
+              type="submit" 
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-indigo-500/20"
+              variant="primary"
+              loading={completing}
+            >
+              Finalize Treatment & Save Record
+            </Button>
+          }
         >
-          <form onSubmit={handleCompleteSubmit} className="space-y-8">
+          <form id="clinical-complete-form" onSubmit={handleCompleteSubmit} className="space-y-8">
             <div className="bg-indigo-500/5 p-6 rounded-[2rem] border border-indigo-500/10 mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-[var(--foreground)] text-lg">{selectedSession?.patient.name}</h4>
@@ -454,17 +563,25 @@ export default function TreatmentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
-                <input value={areaTreated} onChange={(e) => setAreaTreated(e.target.value)} placeholder="e.g., Full Face, Underarms" className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl h-12 px-5 text-sm outline-none focus:border-indigo-500/50" required />
+                <Input value={areaTreated} onChange={(e) => setAreaTreated(e.target.value)} placeholder="e.g., Full Face, Underarms" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
-                <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm², Pulse 30ms" className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl h-12 px-5 text-sm outline-none focus:border-indigo-500/50" required />
+                <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm², Pulse 30ms" />
+              </div>
+
+              <div className="md:col-span-2">
+                <DateTimePicker 
+                  label="Actual Treatment Date & Time"
+                  date={actualDate}
+                  setDate={setActualDate}
+                />
               </div>
 
               <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Medical Observations & Work Done</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Describe the procedure details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-5 text-sm min-h-[120px] outline-none focus:border-indigo-500/50" />
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Clinical observations and treatment details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-5 text-sm min-h-[120px] outline-none focus:border-indigo-500/50" />
               </div>
 
               <div className="space-y-2">
@@ -472,15 +589,76 @@ export default function TreatmentsPage() {
                 <input value={complications} onChange={(e) => setComplications(e.target.value)} placeholder="Any adverse effects?" className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-12 px-5 text-sm outline-none focus:border-rose-500/50 text-rose-500" />
               </div>
 
-              <div className="space-y-2 text-center md:text-left">
-                 <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-4">Follow-up Logic</p>
-                 <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 inline-block w-full">
-                    <p className="text-xs text-indigo-400 font-bold">Next session will be auto-scheduled for {new Date(Date.now() + 28*24*60*60*1000).toLocaleDateString()}</p>
-                 </div>
+              <div className="md:col-span-2 space-y-2">
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                  Follow-up Logic <Sparkles size={12} />
+                </p>
+                
+                {existingNextSession ? (
+                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                          <CalendarDays size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--foreground)]">Next Session Already Scheduled</p>
+                          <p className="text-xs text-[var(--text-muted)]">Session {existingNextSession.sessionNumber} is currently set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold rounded-lg border border-emerald-500/20 uppercase">
+                        Confirmed
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-indigo-500/10">
+                      <DateTimePicker 
+                        label="Update Scheduled Date"
+                        date={nextSuggestedDate}
+                        setDate={setNextSuggestedDate}
+                      />
+                      <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
+                        <AlertCircle size={10} /> Changing this will update the existing Session {existingNextSession.sessionNumber}.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                          <History size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--foreground)]">Auto-schedule Next Session?</p>
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Based on plan interval settings</p>
+                        </div>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
+                        className={`w-12 h-6 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-7' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    {shouldAutoSchedule && (
+                      <div className="pt-4 border-t border-indigo-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <DateTimePicker 
+                          label="Suggested Next Date"
+                          date={nextSuggestedDate}
+                          setDate={setNextSuggestedDate}
+                        />
+                        <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
+                          <AlertCircle size={10} /> You can modify this date before finalizing.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-
-            <Button type="submit" className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-600/20" isLoading={completing}>Finalize Treatment & Save Record</Button>
           </form>
         </Modal>
 
@@ -499,6 +677,22 @@ export default function TreatmentsPage() {
                   date={editForm.appointmentDate} 
                   setDate={(date) => setEditForm({ ...editForm, appointmentDate: date })} 
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
+                <Select 
+                  value={editForm.serviceId} 
+                  onValueChange={(val) => setEditForm({ ...editForm, serviceId: val })}
+                  disabled={!!editingSession?.treatmentPlan}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select Service" /></SelectTrigger>
+                  <SelectContent>
+                    {servicesData?.getServices?.services?.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1.5">
@@ -529,42 +723,28 @@ export default function TreatmentsPage() {
 
             {editForm.status === 'Completed' && (
               <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-[2rem] p-6 space-y-6">
-                 <div className="flex items-center gap-2 mb-2 text-emerald-500">
-                    <Clock size={16} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Completion Timestamps</span>
-                 </div>
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DateTimePicker 
-                      label="Start Time" 
-                      date={editForm.treatmentStartTime} 
-                      setDate={(d) => setEditForm({ ...editForm, treatmentStartTime: d })} 
-                      showTimeOnly={true} 
-                    />
-                    <DateTimePicker 
-                      label="End Time" 
-                      date={editForm.treatmentEndTime} 
-                      setDate={(d) => setEditForm({ ...editForm, treatmentEndTime: d })} 
-                      showTimeOnly={true} 
-                    />
-                 </div>
+                 <DateTimePicker 
+                   label="Actual Treatment Date & Time" 
+                   date={editForm.actualDate} 
+                   setDate={(d) => setEditForm({ ...editForm, actualDate: d })} 
+                 />
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area Treated</label>
-                  <input value={editForm.areaTreated} onChange={(e) => setEditForm({ ...editForm, areaTreated: e.target.value })} className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl h-12 px-4 text-sm outline-none focus:border-indigo-500/50" />
+                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
+                  <Input value={editForm.areaTreated} onChange={(e) => setEditForm({ ...editForm, areaTreated: e.target.value })} placeholder="e.g. Full Face, Underarms" />
                </div>
                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Dosage / Intensity</label>
-                  <input value={editForm.dosage} onChange={(e) => setEditForm({ ...editForm, dosage: e.target.value })} className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl h-12 px-4 text-sm outline-none focus:border-indigo-500/50" />
+                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
+                  <Input value={editForm.dosage} onChange={(e) => setEditForm({ ...editForm, dosage: e.target.value })} placeholder="e.g. 20J/cm2, Pulse 30ms" />
                </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Notes</label>
-              <textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] outline-none focus:border-indigo-500/50" />
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+              <textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Clinical observations and treatment details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] outline-none focus:border-indigo-500/50" />
             </div>
 
             <Button type="submit" className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-600/20" isLoading={updating}>Save Changes</Button>
@@ -653,98 +833,115 @@ export default function TreatmentsPage() {
 
           {/* Treatment List */}
           <div className="space-y-6">
-            {sessionsLoading ? (
+            {sessionsLoading && listData.sessions.length === 0 ? (
               <div className="py-20 text-center"><div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div>
-            ) : filteredSessions?.length > 0 ? (
-              filteredSessions?.map((session) => (
-                <div 
-                  key={session.id}
-                  className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all relative overflow-hidden group"
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                    <div className="flex items-start gap-6">
-                      <div className="w-16 h-16 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/10 group-hover:scale-105 transition-transform shadow-inner shrink-0">
-                        <Activity size={32} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-bold text-[var(--foreground)] text-xl tracking-tight">{session.patient.name}</h3>
-                          {session.treatmentPlan && (
-                             <span className="text-[10px] bg-indigo-500/10 text-indigo-500 px-3 py-1 rounded-full border border-indigo-500/20 font-bold uppercase tracking-widest shadow-sm">
-                               Series Session {session.sessionNumber}/{session.treatmentPlan.totalSessions}
-                             </span>
-                          )}
-                          {session.isWalkIn && (
-                             <span className="text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-bold uppercase tracking-widest">Walk-in</span>
-                          )}
+            ) : listData.sessions?.length > 0 ? (
+              <>
+                {listData.sessions
+                  .map((session) => (
+                  <div 
+                    key={session.id}
+                    className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all relative overflow-hidden group"
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                      <div className="flex items-start gap-6">
+                        <div className="w-16 h-16 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/10 group-hover:scale-105 transition-transform shadow-inner shrink-0">
+                          <Activity size={32} />
                         </div>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--text-muted)]">
-                          <span className="flex items-center gap-2 font-medium"><Calendar size={14} className="text-indigo-400" /> {new Date(session.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                          <span className="flex items-center gap-2 font-medium"><Clock size={14} className="text-indigo-400" /> {new Date(session.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                          <span className="flex items-center gap-2 font-medium"><FileText size={14} className="text-indigo-400" /> {session.service?.title || 'General Consultation'}</span>
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-bold text-[var(--foreground)] text-xl tracking-tight">{session.patient.name}</h3>
+                            {session.treatmentPlan && (
+                               <span className="text-[10px] bg-indigo-500/10 text-indigo-500 px-3 py-1 rounded-full border border-indigo-500/20 font-bold uppercase tracking-widest shadow-sm">
+                                 Series Session {session.sessionNumber}/{session.treatmentPlan.totalSessions}
+                               </span>
+                            )}
+                            {session.isWalkIn && (
+                               <span className="text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-bold uppercase tracking-widest">Walk-in</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--text-muted)]">
+                            <span className="flex items-center gap-2 font-medium"><Calendar size={14} className="text-indigo-400" /> {new Date(session.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span className="flex items-center gap-2 font-medium"><Clock size={14} className="text-indigo-400" /> {new Date(session.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="flex items-center gap-2 font-medium"><FileText size={14} className="text-indigo-400" /> {session.service?.title || 'General Consultation'}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-8">
-                      <div className="flex flex-col items-end gap-3">
-                        <div className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 w-fit shadow-sm ${getStatusStyle(session.status)}`}>
-                          {getStatusIcon(session.status)}
-                          {session.status}
+                      <div className="flex-1 flex flex-col sm:flex-row items-center justify-end gap-8">
+                        <div className="flex flex-col items-end gap-3">
+                          <div className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 w-fit shadow-sm ${getStatusStyle(session.status)}`}>
+                            {getStatusIcon(session.status)}
+                            {session.status}
+                          </div>
+                          {session.treatmentPlan && (
+                             <div className="w-full min-w-[200px]">
+                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
+                                   <span>Plan Progress</span>
+                                   <span>{session.treatmentPlan.completedSessions}/{session.treatmentPlan.totalSessions}</span>
+                                </div>
+                                <div className="h-2 w-full bg-[var(--surface-hover)] rounded-full overflow-hidden border border-[var(--border)] shadow-inner p-0.5">
+                                   <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.5)]" style={{ width: `${(session.treatmentPlan.completedSessions / session.treatmentPlan.totalSessions) * 100}%` }}></div>
+                                </div>
+                             </div>
+                          )}
                         </div>
-                        {session.treatmentPlan && (
-                           <div className="w-full min-w-[200px]">
-                              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
-                                 <span>Plan Progress</span>
-                                 <span>{session.treatmentPlan.completedSessions}/{session.treatmentPlan.totalSessions}</span>
-                              </div>
-              <div className="h-2 w-full bg-[var(--surface-hover)] rounded-full overflow-hidden border border-[var(--border)] shadow-inner p-0.5">
-                                 <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.5)]" style={{ width: `${(session.treatmentPlan.completedSessions / session.treatmentPlan.totalSessions) * 100}%` }}></div>
-                              </div>
-                           </div>
-                        )}
+
+                        <div className="flex gap-2">
+                          {session.status === 'Scheduled' && (
+                            <button 
+                              onClick={() => openCompleteModal(session)}
+                              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                            >
+                              <CheckCircle2 size={16} /> Complete
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => openEditModal(session)}
+                            className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl hover:bg-indigo-500 hover:text-white transition-all border border-indigo-500/20"
+                            title="Edit Details"
+                          >
+                            <Edit size={20} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteClick(session.id)}
+                            className="p-3 bg-rose-500/10 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20"
+                            title="Delete Session"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                          <button 
+                            onClick={() => router.push(`/patients/${session.patient.id}`)}
+                            className="w-12 h-12 rounded-2xl bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-muted)] hover:text-indigo-400 transition-all border border-[var(--border)] hover:border-indigo-500/20 shadow-sm group/btn shrink-0"
+                          >
+                            <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </button>
+                        </div>
                       </div>
-                       <div className="flex items-center gap-3">
-                         {session.status === 'Scheduled' && (
-                           <Button 
-                             size="sm" 
-                             variant="primary"
-                             onClick={() => openCompleteModal(session)}
-                             className="px-6 h-10 text-[10px] shadow-lg shadow-indigo-600/20 whitespace-nowrap"
-                           >
-                             Complete
-                           </Button>
-                         )}
-                         <button 
-                           onClick={() => openEditModal(session)}
-                           className="w-10 h-10 rounded-xl bg-indigo-500/5 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/10 transition-all border border-indigo-500/10 shadow-sm"
-                           title="Edit Record"
-                         >
-                           <Edit size={18} />
-                         </button>
-                         <button 
-                           onClick={() => handleDeleteClick(session.id)}
-                           className="w-10 h-10 rounded-xl bg-rose-500/5 flex items-center justify-center text-rose-500 hover:bg-rose-500/10 transition-all border border-rose-500/10 shadow-sm"
-                           title="Delete Record"
-                         >
-                           <Trash2 size={18} />
-                         </button>
-                         <button 
-                           onClick={() => router.push(`/patients/${session.patient.id}`)}
-                           className="w-10 h-10 rounded-xl bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-muted)] hover:text-indigo-400 transition-all border border-[var(--border)] hover:border-indigo-500/20 shadow-sm group/btn shrink-0"
-                         >
-                           <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
-                         </button>
-                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+
+                {/* Waypoint for infinite scroll */}
+                {listData.hasMore && (
+                  <div className="py-10 flex justify-center">
+                    <Waypoint onEnter={loadMore}>
+                      <div className="flex items-center gap-3 text-indigo-400 font-bold uppercase tracking-widest text-xs">
+                        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                        Loading more treatments...
+                      </div>
+                    </Waypoint>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="py-20 text-center bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[3rem]">
-                <Stethoscope size={48} className="text-[var(--text-muted)] opacity-20 mx-auto mb-6" />
-                <h3 className="text-[var(--foreground)] font-bold mb-2">No treatment records found</h3>
-                <Button variant="outline" onClick={() => setIsAddModalOpen(true)} icon={Plus}>Start New Treatment</Button>
+              <div className="py-20 text-center bg-[var(--surface)] rounded-[2.5rem] border border-dashed border-[var(--border)]">
+                <div className="w-20 h-20 bg-indigo-500/10 rounded-[2rem] flex items-center justify-center text-indigo-400 mx-auto mb-6">
+                  <Activity size={40} />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">No treatments found</h3>
+                <p className="text-[var(--text-muted)] text-sm mb-8">Try adjusting your search or filters.</p>
+                <Button onClick={() => { setSearchTerm(''); setStatusFilter('All'); }} variant="outline">Clear All Filters</Button>
               </div>
             )}
           </div>

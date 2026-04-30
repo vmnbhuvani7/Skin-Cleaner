@@ -1,42 +1,46 @@
 import { gql } from '@apollo/client';
 
 export const GET_ALL_SESSIONS = gql`
-  query GetAllSessions {
-    getAllSessions {
-      id
-      patient {
+  query GetAllSessions($page: Int, $limit: Int, $status: String, $search: String) {
+    getAllSessions(page: $page, limit: $limit, status: $status, search: $search) {
+      sessions {
         id
-        name
-        mobile
-      }
-      treatmentPlan {
-        id
-        totalSessions
-        completedSessions
+        patient {
+          id
+          name
+          mobile
+        }
+        treatmentPlan {
+          id
+          totalSessions
+          completedSessions
+          status
+        }
+        service {
+          id
+          title
+        }
+        doctor {
+          id
+          name
+        }
+        sessionNumber
+        appointmentDate
+        actualDate
+        treatmentStartTime
+        treatmentEndTime
         status
+        areaTreated
+        dosage
+        complications
+        beforeNotes
+        afterNotes
+        notes
       }
-      service {
-        id
-        title
-      }
-      doctor {
-        id
-        name
-      }
-      sessionNumber
-      appointmentDate
-      actualDate
-      treatmentStartTime
-      treatmentEndTime
-      status
-      areaTreated
-      dosage
-      complications
-      beforeNotes
-      afterNotes
-      notes
-      isWalkIn
-      createdAt
+      totalCount
+      totalPages
+      currentPage
+      hasMore
     }
   }
 `;
@@ -51,6 +55,10 @@ export const GET_PATIENT_SESSIONS = gql`
       status
       areaTreated
       notes
+      service {
+        id
+        title
+      }
       treatmentPlan {
         id
         totalSessions

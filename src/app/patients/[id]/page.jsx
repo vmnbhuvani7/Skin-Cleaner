@@ -5,7 +5,8 @@ import Sidebar from '@/components/Sidebar';
 import { 
   ArrowLeft, User, Phone, Mail, Calendar, MapPin, ClipboardList, 
   Activity, Clock, ShieldCheck, Edit, Trash2, Plus, CheckCircle2, 
-  XCircle, AlertCircle, ChevronRight, MoreVertical, Lock 
+  XCircle, AlertCircle, ChevronRight, MoreVertical, Lock, Sparkles,
+  CalendarDays, History
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
@@ -30,6 +31,7 @@ import {
 import { 
   GET_PATIENT_PLANS, UPDATE_TREATMENT_PLAN, CANCEL_PLAN 
 } from '@/graphql/queries/treatmentPlan';
+import { COMPLETE_SESSION } from '@/graphql/mutations/treatmentSession';
 
 export default function PatientDetailPage() {
   const router = useRouter();
@@ -63,6 +65,22 @@ export default function PatientDetailPage() {
     status: 'In Progress',
     doctorId: ''
   });
+
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [sessionToProcess, setSessionToProcess] = useState(null);
+  
+  // Clinical Record States
+  const [areaTreated, setAreaTreated] = useState('');
+  const [dosage, setDosage] = useState('');
+  const [complications, setComplications] = useState('');
+  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [actualDate, setActualDate] = useState(new Date().toISOString());
+
+  // Follow-up Logic States
+  const [shouldAutoSchedule, setShouldAutoSchedule] = useState(true);
+  const [nextSuggestedDate, setNextSuggestedDate] = useState('');
+  const [existingNextSession, setExistingNextSession] = useState(null);
 
   // Queries
   const { data: patientData, loading: patientLoading } = useQuery(GET_PATIENT, {
@@ -116,6 +134,9 @@ export default function PatientDetailPage() {
   const [updateStatus] = useMutation(UPDATE_SESSION_STATUS, {
     onCompleted: () => {
       toast.success('Session updated');
+      setIsCompleteModalOpen(false);
+      setCancelModalOpen(false);
+      setSessionToProcess(null);
       refetchSessions();
     }
   });
@@ -252,15 +273,91 @@ export default function PatientDetailPage() {
     }));
   };
 
-  const markAsCompleted = (sessionId) => {
-    updateStatus({
-      variables: { id: sessionId, status: 'Completed' }
+  const markAsCompleted = (session) => {
+    setSessionToProcess(session);
+    setAreaTreated(session.areaTreated || '');
+    setDosage(session.dosage || '');
+    setComplications(session.complications || '');
+    setClinicalNotes(session.notes || '');
+    setActualDate(new Date().toISOString());
+
+    // Logic to detect next session or calculate suggested date
+    if (session.treatmentPlan) {
+      const plan = plansData?.getPatientPlans?.find(p => p.id === session.treatmentPlan.id);
+      const sessions = sessionsData?.getPatientSessions || [];
+      
+      // Find if next session number is already scheduled
+      const nextNum = session.sessionNumber + 1;
+      const existingNext = sessions.find(s => 
+        s.treatmentPlan?.id === session.treatmentPlan.id && 
+        s.sessionNumber === nextNum &&
+        s.status === 'Scheduled'
+      );
+
+      if (existingNext) {
+        setExistingNextSession(existingNext);
+        setShouldAutoSchedule(false);
+        setNextSuggestedDate(existingNext.appointmentDate);
+      } else {
+        setExistingNextSession(null);
+        setShouldAutoSchedule(nextNum <= (plan?.totalSessions || 1));
+        
+        // Calculate suggested date (current date + interval)
+        const suggested = new Date();
+        suggested.setDate(suggested.getDate() + ((plan?.intervalWeeks || 4) * 7));
+        setNextSuggestedDate(suggested.toISOString());
+      }
+    } else {
+      setExistingNextSession(null);
+      setShouldAutoSchedule(false);
+    }
+
+    setIsCompleteModalOpen(true);
+  };
+
+  const [completeSession, { loading: completing }] = useMutation(COMPLETE_SESSION, {
+    onCompleted: () => {
+      toast.success('Treatment record saved');
+      setIsCompleteModalOpen(false);
+      setSessionToProcess(null);
+      // Reset clinical states
+      setAreaTreated('');
+      setDosage('');
+      setComplications('');
+      setClinicalNotes('');
+      refetchSessions();
+      refetchPlans();
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const handleCompleteSubmit = (e) => {
+    e.preventDefault();
+    if (!sessionToProcess) return;
+    
+    completeSession({
+      variables: {
+        id: sessionToProcess.id,
+        areaTreated,
+        dosage,
+        complications,
+        notes: clinicalNotes,
+        actualDate,
+        shouldAutoSchedule,
+        nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
+        updateNextSessionId: existingNextSession?.id
+      }
     });
   };
 
   const markAsMissed = (sessionId) => {
+    setSessionToProcess({ id: sessionId });
+    setCancelModalOpen(true);
+  };
+
+  const confirmCancel = () => {
     updateStatus({
-      variables: { id: sessionId, status: 'Missed' }
+      variables: { id: sessionToProcess.id, status: 'Cancelled' }
     });
   };
 
@@ -475,41 +572,26 @@ export default function PatientDetailPage() {
                 </div>
                 
                 <DateTimePicker 
-                  label="Actual Treatment Date"
+                  label="Actual Treatment Date & Time"
                   date={scheduleData.actualDate}
                   setDate={(date) => setScheduleData({ ...scheduleData, actualDate: date })}
                 />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DateTimePicker 
-                    label="Start Time"
-                    date={scheduleData.treatmentStartTime}
-                    setDate={(date) => setScheduleData({ ...scheduleData, treatmentStartTime: date })}
-                    showTimeOnly={true}
-                  />
-                  <DateTimePicker 
-                    label="End Time"
-                    date={scheduleData.treatmentEndTime}
-                    setDate={(date) => setScheduleData({ ...scheduleData, treatmentEndTime: date })}
-                    showTimeOnly={true}
-                  />
-                </div>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area Treated</label>
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
                 <Input 
-                  placeholder="e.g. Full Face, Legs"
+                  placeholder="e.g. Full Face, Underarms"
                   value={scheduleData.areaTreated}
                   onChange={(e) => setScheduleData({ ...scheduleData, areaTreated: e.target.value })}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Dosage / Settings</label>
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
                 <Input 
-                  placeholder="e.g. 15J/cm2, 20ms"
+                  placeholder="e.g. 20J/cm2, Pulse 30ms"
                   value={scheduleData.dosage}
                   onChange={(e) => setScheduleData({ ...scheduleData, dosage: e.target.value })}
                 />
@@ -519,7 +601,7 @@ export default function PatientDetailPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
               <textarea 
-                placeholder="Session instructions or notes..."
+                placeholder="Clinical observations and treatment details..."
                 className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[100px]"
                 value={scheduleData.notes}
                 onChange={(e) => setScheduleData({ ...scheduleData, notes: e.target.value })}
@@ -601,6 +683,189 @@ export default function PatientDetailPage() {
               <Button type="submit" className="flex-1" isLoading={updatingPlan}>Save Plan Changes</Button>
             </div>
           </form>
+        </Modal>
+
+        {/* Clinical Treatment Record Modal */}
+        <Modal 
+          isOpen={isCompleteModalOpen} 
+          onClose={() => setIsCompleteModalOpen(false)}
+          title="Clinical Treatment Record"
+          className="max-w-3xl"
+          footer={
+            <Button 
+              form="clinical-record-form"
+              type="submit" 
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-indigo-500/20"
+              variant="primary"
+              isLoading={completing}
+            >
+              Finalize Treatment & Save Record
+            </Button>
+          }
+        >
+          <form id="clinical-record-form" onSubmit={handleCompleteSubmit} className="space-y-8">
+            <div className="bg-indigo-500/5 p-6 rounded-[2rem] border border-indigo-500/10 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-bold text-[var(--foreground)] text-lg">{patientData?.getPatient?.name}</h4>
+                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20`}>
+                  Session {sessionToProcess?.sessionNumber}
+                </div>
+              </div>
+              <p className="text-sm text-[var(--text-muted)]">
+                {sessionToProcess?.service?.title || 'Treatment'} • {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
+                <Input 
+                  value={areaTreated} 
+                  onChange={(e) => setAreaTreated(e.target.value)} 
+                  placeholder="e.g., Full Face, Underarms" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
+                <Input 
+                  value={dosage} 
+                  onChange={(e) => setDosage(e.target.value)} 
+                  placeholder="e.g., 20J/cm², Pulse 30ms" 
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <DateTimePicker 
+                  label="Actual Treatment Date & Time"
+                  date={actualDate}
+                  setDate={setActualDate}
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+                <textarea 
+                  value={clinicalNotes} 
+                  onChange={(e) => setClinicalNotes(e.target.value)} 
+                  placeholder="Clinical observations and treatment details..." 
+                  className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-5 text-sm min-h-[120px] outline-none focus:border-indigo-500/50 transition-all" 
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold text-rose-400 uppercase tracking-widest ml-1">Complications / Reactions</label>
+                <input 
+                  value={complications} 
+                  onChange={(e) => setComplications(e.target.value)} 
+                  placeholder="Any adverse effects?" 
+                  className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-12 px-5 text-sm outline-none focus:border-rose-500/50 text-rose-500" 
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                  Follow-up Logic <Sparkles size={12} />
+                </p>
+                
+                {existingNextSession ? (
+                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                          <CalendarDays size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--foreground)]">Next Session Already Scheduled</p>
+                          <p className="text-xs text-[var(--text-muted)]">Session {existingNextSession.sessionNumber} is currently set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold rounded-lg border border-emerald-500/20 uppercase">
+                        Confirmed
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-indigo-500/10">
+                      <DateTimePicker 
+                        label="Update Scheduled Date"
+                        date={nextSuggestedDate}
+                        setDate={setNextSuggestedDate}
+                      />
+                      <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
+                        <AlertCircle size={10} /> Changing this will update the existing Session {existingNextSession.sessionNumber}.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                          <History size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--foreground)]">Auto-schedule Next Session?</p>
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Based on plan interval settings</p>
+                        </div>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
+                        className={`w-12 h-6 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-7' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    {shouldAutoSchedule && (
+                      <div className="pt-4 border-t border-indigo-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <DateTimePicker 
+                          label="Suggested Next Date"
+                          date={nextSuggestedDate}
+                          setDate={setNextSuggestedDate}
+                        />
+                        <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
+                          <AlertCircle size={10} /> You can modify this date before finalizing.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Cancel Session Modal */}
+        <Modal 
+          isOpen={cancelModalOpen} 
+          onClose={() => setCancelModalOpen(false)}
+          title="Cancel Treatment Session"
+          className="max-w-md"
+        >
+          <div className="text-center">
+            <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+              <XCircle size={40} />
+            </div>
+            <h4 className="text-[var(--foreground)] text-lg font-bold mb-2">Are you sure?</h4>
+            <p className="text-[var(--text-muted)] text-sm mb-10">
+              This will mark the session as cancelled. You can always reschedule or edit it later.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setCancelModalOpen(false)}
+                className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
+              >
+                Back
+              </button>
+              <button 
+                onClick={confirmCancel}
+                className="flex-1 py-4 px-6 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 transition-all"
+              >
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
         </Modal>
 
         <div className="max-w-6xl mx-auto pb-20">
@@ -708,9 +973,10 @@ export default function PatientDetailPage() {
                           </div>
                           <div className="flex gap-2">
                             <button 
-                              onClick={() => markAsCompleted(next.id)}
-                              className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-2xl hover:bg-indigo-50 transition-all shadow-lg"
+                              onClick={() => markAsCompleted(next)}
+                              className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-2xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
                             >
+                              <CheckCircle2 size={18} />
                               Arrived & Treat
                             </button>
                             <button 
@@ -887,18 +1153,28 @@ export default function PatientDetailPage() {
                                                   </span>
                                                   {isLocked && <Lock size={10} className="text-[var(--text-muted)] ml-1" />}
                                                 </div>
-                                                <p className="text-[10px] text-[var(--text-muted)]">
-                                                  → {session.doctor?.name || 'TBA'} | {session.areaTreated || 'Full body'} | Next: {
+                                                <p className="text-[10px] text-[var(--text-muted)] flex items-center gap-2">
+                                                  <span>→ {session.doctor?.name || 'TBA'}</span>
+                                                  {session.status === 'Completed' && (
+                                                    <>
+                                                      <span className="w-1 px-1 opacity-20">|</span>
+                                                      <span className="text-indigo-400 font-bold">{session.areaTreated || 'Full Body'}</span>
+                                                      <span className="w-1 px-1 opacity-20">|</span>
+                                                      <span className="text-indigo-400 font-bold">{session.dosage || 'Standard'}</span>
+                                                    </>
+                                                  )}
+                                                  <span className="w-1 px-1 opacity-20">|</span>
+                                                  <span>Next: {
                                                     idx < plan.sessions.length - 1 
                                                     ? new Date(plan.sessions[idx+1].appointmentDate).toLocaleDateString()
                                                     : 'Not yet scheduled'
-                                                  }
+                                                  }</span>
                                                 </p>
                                               </div>
                                               
                                               {!isLocked && (session.status === 'Scheduled' || session.status === 'Missed') && (
                                                 <div className="flex gap-2">
-                                                  <button onClick={() => markAsCompleted(session.id)} className="text-[9px] font-bold uppercase text-emerald-500 hover:bg-emerald-500/10 px-2 py-1 rounded transition-all">[Mark Attended]</button>
+                                                  <button onClick={() => markAsCompleted(session)} className="text-[9px] font-bold uppercase text-emerald-500 hover:bg-emerald-500/10 px-2 py-1 rounded transition-all">[Complete]</button>
                                                   <button onClick={() => openEditSessionModal(session)} className="text-[9px] font-bold uppercase text-indigo-400 hover:bg-indigo-500/10 px-2 py-1 rounded transition-all">[Edit Details]</button>
                                                   <button onClick={() => markAsMissed(session.id)} className="text-[9px] font-bold uppercase text-rose-500 hover:bg-rose-500/10 px-2 py-1 rounded transition-all">[Cancel]</button>
                                                 </div>
@@ -970,6 +1246,12 @@ export default function PatientDetailPage() {
                                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-[var(--text-muted)] font-medium uppercase mt-2">
                                     <span className="flex items-center gap-1"><Calendar size={12} /> Date: {new Date(session.appointmentDate).toLocaleString()}</span>
                                     <span className="flex items-center gap-1"><ShieldCheck size={12} /> Doctor: {session.doctor?.name || 'Dr. Sharma'}</span>
+                                    {session.status === 'Completed' && (
+                                      <>
+                                        <span className="flex items-center gap-1 text-indigo-400 font-bold"><Activity size={12} /> Area: {session.areaTreated || 'N/A'}</span>
+                                        <span className="flex items-center gap-1 text-indigo-400 font-bold"><TrendingUp size={12} /> Dosage: {session.dosage || 'N/A'}</span>
+                                      </>
+                                    )}
                                   </div>
                                   {session.notes && (
                                     <p className="mt-3 text-xs text-[var(--text-muted)] italic">Notes: {session.notes}</p>

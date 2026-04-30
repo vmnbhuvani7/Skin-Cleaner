@@ -42,7 +42,10 @@ export const COMPLETE_SESSION = gql`
     $complications: String,
     $beforeNotes: String,
     $afterNotes: String,
-    $notes: String
+    $notes: String,
+    $shouldAutoSchedule: Boolean,
+    $nextSessionDate: String,
+    $updateNextSessionId: ID
   ) {
     completeSession(
       id: $id,
@@ -54,7 +57,10 @@ export const COMPLETE_SESSION = gql`
       complications: $complications,
       beforeNotes: $beforeNotes,
       afterNotes: $afterNotes,
-      notes: $notes
+      notes: $notes,
+      shouldAutoSchedule: $shouldAutoSchedule,
+      nextSessionDate: $nextSessionDate,
+      updateNextSessionId: $updateNextSessionId
     ) {
       id
       status

@@ -22,10 +22,18 @@ export const treatmentSessionTypeDefs = `#graphql
     createdAt: String
   }
 
+  type TreatmentSessionsResponse {
+    sessions: [TreatmentSession]
+    totalCount: Int
+    totalPages: Int
+    currentPage: Int
+    hasMore: Boolean
+  }
+
   extend type Query {
     getPatientSessions(patientId: ID!): [TreatmentSession]
     getUpcomingAppointments: [TreatmentSession]
-    getAllSessions: [TreatmentSession]
+    getAllSessions(page: Int, limit: Int, status: String, search: String): TreatmentSessionsResponse
   }
 
   extend type Mutation {
@@ -53,6 +61,9 @@ export const treatmentSessionTypeDefs = `#graphql
       beforeNotes: String
       afterNotes: String
       notes: String
+      shouldAutoSchedule: Boolean
+      nextSessionDate: String
+      updateNextSessionId: ID
     ): TreatmentSession
 
     updateSessionStatus(

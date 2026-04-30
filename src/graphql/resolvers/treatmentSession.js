@@ -38,51 +38,70 @@ export const treatmentSessionResolvers = {
       const now = new Date();
       
       // Auto-update status to 'Missed'
-      await TreatmentSession.updateMany(
-        { 
-          patient: patientId, 
-          status: 'Scheduled', 
-          appointmentDate: { $lt: now } 
-        },
-        { $set: { status: 'Missed' } }
-      );
-
-      return await TreatmentSession.find({ patient: patientId }).sort({ appointmentDate: -1 });
+      return await TreatmentSession.find({ patient: patientId })
+        .sort({ appointmentDate: -1 })
+        .populate('service')
+        .populate('doctor')
+        .populate('treatmentPlan');
     },
     getUpcomingAppointments: async () => {
       await dbConnect();
       const now = new Date();
-      return await TreatmentSession.find({ 
-        status: 'Scheduled', 
-        appointmentDate: { $gte: now } 
-      }).sort({ appointmentDate: 1 });
-    },
-    getAllSessions: async () => {
-      await dbConnect();
-      const now = new Date();
       
-      // Auto-update all scheduled sessions that have passed
+      // Auto-update passed scheduled sessions to Missed
       await TreatmentSession.updateMany(
-        { 
-          status: 'Scheduled', 
-          appointmentDate: { $lt: now } 
-        },
+        { status: 'Scheduled', appointmentDate: { $lt: now } },
         { $set: { status: 'Missed' } }
       );
 
-      // Abandoned Logic: If 3+ missed sessions in a plan
-      const plans = await TreatmentPlan.find({ status: 'In Progress' });
-      for (const plan of plans) {
-        const missedCount = await TreatmentSession.countDocuments({ 
-          treatmentPlan: plan.id, 
-          status: 'Missed' 
-        });
-        if (missedCount >= 3) {
-          await TreatmentPlan.findByIdAndUpdate(plan.id, { status: 'Abandoned' });
-        }
+      return await TreatmentSession.find({
+        status: 'Scheduled',
+        appointmentDate: { $gte: now }
+      }).sort({ appointmentDate: 1 }).populate('patient').populate('service').populate('doctor');
+    },
+    getAllSessions: async (_, { page = 1, limit = 10, status, search }) => {
+      await dbConnect();
+      const skip = (page - 1) * limit;
+      
+      const query = {};
+      if (status && status !== 'All') {
+        query.status = status;
       }
 
-      return await TreatmentSession.find().sort({ appointmentDate: -1 });
+      if (search) {
+        // Find patients matching name or mobile
+        const patients = await Patient.find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { mobile: { $regex: search, $options: 'i' } }
+          ]
+        }).select('_id');
+        
+        const patientIds = patients.map(p => p._id);
+        query.patient = { $in: patientIds };
+      }
+      
+      const [sessions, totalCount] = await Promise.all([
+        TreatmentSession.find(query)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('patient')
+          .populate('treatmentPlan')
+          .populate('service')
+          .populate('doctor'),
+        TreatmentSession.countDocuments(query)
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        sessions,
+        totalCount,
+        totalPages,
+        currentPage: page,
+        hasMore: page < totalPages
+      };
     },
   },
   Mutation: {
@@ -101,7 +120,7 @@ export const treatmentSessionResolvers = {
         sessionNumber: sessionNumber || 1
       });
     },
-    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes }) => {
+    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes, shouldAutoSchedule, nextSessionDate, updateNextSessionId }) => {
       await dbConnect();
       const session = await TreatmentSession.findById(id);
       if (!session) throw new Error('Session not found');
@@ -120,8 +139,15 @@ export const treatmentSessionResolvers = {
         attended: true
       }, { new: true });
 
-      // If part of a series, handle auto-scheduling
-      if (session.treatmentPlan) {
+      // Handle existing next session update
+      if (updateNextSessionId && nextSessionDate) {
+        await TreatmentSession.findByIdAndUpdate(updateNextSessionId, {
+          appointmentDate: new Date(nextSessionDate)
+        });
+      }
+
+      // If part of a series, handle auto-scheduling (only if not already updated an existing one)
+      if (session.treatmentPlan && !updateNextSessionId && shouldAutoSchedule !== false) {
         const plan = await TreatmentPlan.findById(session.treatmentPlan);
         const newCompletedCount = plan.completedSessions + 1;
         
@@ -130,10 +156,12 @@ export const treatmentSessionResolvers = {
           status: newCompletedCount >= plan.totalSessions ? 'Completed' : 'In Progress'
         });
 
-        // Auto-schedule next session if not finished
+        // Auto-schedule next session if not finished and requested
         if (newCompletedCount < plan.totalSessions) {
-          const nextDate = new Date(actualDate);
-          nextDate.setDate(nextDate.getDate() + (plan.intervalWeeks * 7));
+          const finalNextDate = nextSessionDate ? new Date(nextSessionDate) : new Date(actualDate);
+          if (!nextSessionDate) {
+            finalNextDate.setDate(finalNextDate.getDate() + (plan.intervalWeeks * 7));
+          }
 
           await TreatmentSession.create({
             patient: plan.patient,
@@ -141,11 +169,20 @@ export const treatmentSessionResolvers = {
             service: plan.service,
             doctor: plan.doctor,
             sessionNumber: newCompletedCount + 1,
-            appointmentDate: nextDate,
+            appointmentDate: finalNextDate,
             status: 'Scheduled',
             notes: `Auto-scheduled follow-up for ${plan.service.title || 'treatment'}`
           });
         }
+      } else if (session.treatmentPlan && (shouldAutoSchedule === false || updateNextSessionId)) {
+        // Just update count (if not already completed count update logic above)
+        // Wait, if updateNextSessionId is used, we still need to update the plan count
+        const plan = await TreatmentPlan.findById(session.treatmentPlan);
+        const newCompletedCount = plan.completedSessions + 1;
+        await TreatmentPlan.findByIdAndUpdate(plan.id, {
+          completedSessions: newCompletedCount,
+          status: newCompletedCount >= plan.totalSessions ? 'Completed' : 'In Progress'
+        });
       }
 
       return updatedSession;
