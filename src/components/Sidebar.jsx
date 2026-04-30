@@ -19,7 +19,8 @@ import {
   Moon,
   Monitor,
   Menu,
-  X
+  X,
+  Stethoscope
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
@@ -84,6 +85,12 @@ export default function Sidebar() {
       label: 'Services', 
       onClick: () => router.push('/services'),
       isActive: pathname === '/services'
+    },
+    { 
+      icon: Stethoscope, 
+      label: 'Treatments', 
+      onClick: () => router.push('/treatments'),
+      isActive: pathname === '/treatments'
     },
     { 
       icon: Bot, 
