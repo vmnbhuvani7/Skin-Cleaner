@@ -100,7 +100,10 @@ export default function TreatmentsPage() {
     areaTreated: '',
     dosage: '',
     complications: '',
-    actualDate: ''
+    actualDate: '',
+    baseAmount: '',
+    paidAmount: '',
+    discount: ''
   });
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -119,9 +122,9 @@ export default function TreatmentsPage() {
     hasMore: true
   });
 
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [paidAmount, setPaidAmount] = useState(0);
-  const [discount, setDiscount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [paidAmount, setPaidAmount] = useState('');
+  const [discount, setDiscount] = useState('');
 
   // Queries
   const [getSessions, { loading: sessionsLoading }] = useLazyQuery(GET_ALL_SESSIONS, {
@@ -198,8 +201,8 @@ export default function TreatmentsPage() {
       setAppointmentDate(new Date().toISOString());
       setNotes('');
       setTreatmentType('One-time');
-      setTotalAmount(0);
-      setPaidAmount(0);
+      setTotalAmount('');
+      setPaidAmount('');
       refetchSessions();
       refetchStats();
     },
@@ -219,9 +222,9 @@ export default function TreatmentsPage() {
       setTotalSessions(6);
       setIntervalWeeks(4);
       setTreatmentType('One-time');
-      setTotalAmount(0);
-      setPaidAmount(0);
-      setDiscount(0);
+      setTotalAmount('');
+      setPaidAmount('');
+      setDiscount('');
       refetchSessions();
       refetchStats();
     },
@@ -237,7 +240,7 @@ export default function TreatmentsPage() {
       setDosage('');
       setComplications('');
       setNotes('');
-      setPaidAmount(0);
+      setPaidAmount('');
       setSelectedSession(null);
       refetchSessions();
       refetchStats();
@@ -284,9 +287,9 @@ export default function TreatmentsPage() {
           intervalWeeks: parseInt(intervalWeeks),
           firstAppointmentDate: appointmentDate,
           notes,
-          totalAmount: parseFloat(totalAmount),
-          paidAmount: parseFloat(paidAmount),
-          discount: parseFloat(discount)
+          totalAmount: parseFloat(totalAmount) || 0,
+          paidAmount: parseFloat(paidAmount) || 0,
+          discount: parseFloat(discount) || 0
         }
       });
     } else {
@@ -298,8 +301,8 @@ export default function TreatmentsPage() {
           appointmentDate,
           status: 'Scheduled',
           notes,
-          baseAmount: parseFloat(totalAmount),
-          paidAmount: parseFloat(paidAmount)
+          baseAmount: parseFloat(totalAmount) || 0,
+          paidAmount: parseFloat(paidAmount) || 0
         }
       });
     }
@@ -318,7 +321,7 @@ export default function TreatmentsPage() {
         shouldAutoSchedule,
         nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
         updateNextSessionId: existingNextSession?.id,
-        paidAmount: parseFloat(paidAmount)
+        paidAmount: parseFloat(paidAmount) || 0
       }
     });
   };
@@ -330,7 +333,7 @@ export default function TreatmentsPage() {
     setComplications(session.complications || '');
     setNotes(session.notes || '');
     setActualDate(new Date().toISOString());
-    setPaidAmount(0); // Reset for completion
+    setPaidAmount(''); // Reset for completion
 
     // Logic to detect next session
     if (session.treatmentPlan) {
@@ -376,8 +379,9 @@ export default function TreatmentsPage() {
       dosage: session.dosage || '',
       complications: session.complications || '',
       actualDate: session.actualDate || session.appointmentDate || '',
-      baseAmount: session.baseAmount || 0,
-      paidAmount: session.paidAmount || 0
+      baseAmount: session.baseAmount || '',
+      paidAmount: session.paidAmount || '',
+      discount: session.discount || ''
     });
     setIsEditModalOpen(true);
   };
@@ -398,8 +402,9 @@ export default function TreatmentsPage() {
       variables: {
         id: editingSession.id,
         ...editForm,
-        baseAmount: parseFloat(editForm.baseAmount),
-        paidAmount: parseFloat(editForm.paidAmount)
+        baseAmount: parseFloat(editForm.baseAmount) || 0,
+        paidAmount: parseFloat(editForm.paidAmount) || 0,
+        discount: parseFloat(editForm.discount) || 0
       }
     });
   };
@@ -587,6 +592,7 @@ export default function TreatmentsPage() {
           isOpen={isCompleteModalOpen} 
           onClose={() => setIsCompleteModalOpen(false)}
           title="Clinical Treatment Record"
+          className="max-w-5xl"
           footer={
             <Button 
               form="clinical-complete-form"
@@ -599,117 +605,122 @@ export default function TreatmentsPage() {
             </Button>
           }
         >
-          <form id="clinical-complete-form" onSubmit={handleCompleteSubmit} className="space-y-8">
-            <div className="bg-indigo-500/5 p-6 rounded-[2rem] border border-indigo-500/10 mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-bold text-[var(--foreground)] text-lg">{selectedSession?.patient.name}</h4>
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${getStatusStyle('Scheduled')}`}>Session {selectedSession?.sessionNumber}</div>
-              </div>
-              <p className="text-sm text-[var(--text-muted)]">{selectedSession?.service.title} • {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-            </div>
+          <form id="clinical-complete-form" onSubmit={handleCompleteSubmit}>
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Left Column: Clinical Details */}
+              <div className="flex-1 space-y-6">
+                <div className="bg-indigo-500/5 p-5 rounded-[2rem] border border-indigo-500/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="font-bold text-[var(--foreground)] text-lg leading-tight">{selectedSession?.patient.name}</h4>
+                      <p className="text-xs text-[var(--text-muted)] mt-1">{selectedSession?.service.title}</p>
+                    </div>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${getStatusStyle('Scheduled')}`}>
+                      Session {selectedSession?.sessionNumber}
+                    </div>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
-                <Input value={areaTreated} onChange={(e) => setAreaTreated(e.target.value)} placeholder="e.g., Full Face, Underarms" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
+                    <Input value={areaTreated} onChange={(e) => setAreaTreated(e.target.value)} placeholder="e.g., Full Face" className="h-11" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
+                    <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm²" className="h-11" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+                  <textarea 
+                    value={notes} 
+                    onChange={(e) => setNotes(e.target.value)} 
+                    placeholder="Treatment details..." 
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] max-h-[120px] outline-none focus:border-indigo-500/50" 
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-rose-400 uppercase tracking-widest ml-1">Complications / Reactions</label>
+                  <input 
+                    value={complications} 
+                    onChange={(e) => setComplications(e.target.value)} 
+                    placeholder="Any adverse effects?" 
+                    className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-11 px-4 text-sm outline-none focus:border-rose-500/50 text-rose-500" 
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
-                <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm², Pulse 30ms" />
-              </div>
+              {/* Right Column: Date, Payment & Follow-up */}
+              <div className="w-full lg:w-[380px] space-y-6">
+                <div className="space-y-4">
+                  <DateTimePicker 
+                    label="Actual Treatment Date"
+                    date={actualDate}
+                    setDate={setActualDate}
+                  />
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Amount Paid Today</label>
+                    <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} className="h-11" />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Amount Paid Today</label>
-                <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} />
-              </div>
-
-              <div className="space-y-2">
-                <DateTimePicker 
-                  label="Actual Treatment Date & Time"
-                  date={actualDate}
-                  setDate={setActualDate}
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Clinical observations and treatment details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-5 text-sm min-h-[120px] outline-none focus:border-indigo-500/50" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-rose-400 uppercase tracking-widest ml-1">Complications / Reactions</label>
-                <input value={complications} onChange={(e) => setComplications(e.target.value)} placeholder="Any adverse effects?" className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-12 px-5 text-sm outline-none focus:border-rose-500/50 text-rose-500" />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                  Follow-up Logic <Sparkles size={12} />
-                </p>
-                
-                {existingNextSession ? (
-                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                          <CalendarDays size={20} />
+                <div className="pt-4 border-t border-[var(--border)]">
+                  <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    Follow-up Logic <Sparkles size={12} />
+                  </p>
+                  
+                  {existingNextSession ? (
+                    <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                          <CalendarDays size={16} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-[var(--foreground)]">Next Session Already Scheduled</p>
-                          <p className="text-xs text-[var(--text-muted)]">Session {existingNextSession.sessionNumber} is currently set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
+                          <p className="text-[11px] font-bold text-[var(--foreground)] leading-tight">Next Session Scheduled</p>
+                          <p className="text-[10px] text-[var(--text-muted)]">Set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold rounded-lg border border-emerald-500/20 uppercase">
-                        Confirmed
-                      </div>
-                    </div>
 
-                    <div className="pt-4 border-t border-indigo-500/10">
                       <DateTimePicker 
-                        label="Update Scheduled Date"
+                        label="Update Next Date"
                         date={nextSuggestedDate}
                         setDate={setNextSuggestedDate}
                       />
-                      <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
-                        <AlertCircle size={10} /> Changing this will update the existing Session {existingNextSession.sessionNumber}.
-                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
-                          <History size={20} />
+                  ) : (
+                    <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                            <History size={16} />
+                          </div>
+                          <p className="text-[11px] font-bold text-[var(--foreground)]">Auto-schedule?</p>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-[var(--foreground)]">Auto-schedule Next Session?</p>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Based on plan interval settings</p>
-                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
+                          className={`w-10 h-5 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                        >
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-5.5' : 'left-0.5'}`} />
+                        </button>
                       </div>
-                      <button 
-                        type="button"
-                        onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
-                        className={`w-12 h-6 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-7' : 'left-1'}`} />
-                      </button>
-                    </div>
 
-                    {shouldAutoSchedule && (
-                      <div className="pt-4 border-t border-indigo-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <DateTimePicker 
-                          label="Suggested Next Date"
-                          date={nextSuggestedDate}
-                          setDate={setNextSuggestedDate}
-                        />
-                        <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
-                          <AlertCircle size={10} /> You can modify this date before finalizing.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {shouldAutoSchedule && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                          <DateTimePicker 
+                            label="Suggested Date"
+                            date={nextSuggestedDate}
+                            setDate={setNextSuggestedDate}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </form>
@@ -720,7 +731,7 @@ export default function TreatmentsPage() {
           isOpen={isEditModalOpen} 
           onClose={() => setIsEditModalOpen(false)}
           title="Edit Treatment Session"
-          className="max-w-2xl"
+          className="max-w-4xl"
           footer={
             <Button 
               form="edit-treatment-form"
@@ -732,84 +743,142 @@ export default function TreatmentsPage() {
             </Button>
           }
         >
-          <form id="edit-treatment-form" onSubmit={handleUpdateSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
+          <form id="edit-treatment-form" onSubmit={handleUpdateSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-6">
                 <DateTimePicker 
                   label="Appointment Date & Time" 
                   date={editForm.appointmentDate} 
                   setDate={(date) => setEditForm({ ...editForm, appointmentDate: date })} 
                 />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
+                    <Select 
+                      value={editForm.serviceId} 
+                      onValueChange={(val) => setEditForm({ ...editForm, serviceId: val })}
+                      disabled={!!editingSession?.treatmentPlan}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select Service" /></SelectTrigger>
+                      <SelectContent>
+                        {servicesData?.getServices?.services?.map(s => (
+                          <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Status</label>
+                    <Select value={editForm.status} onValueChange={(val) => setEditForm({ ...editForm, status: val })}>
+                      <SelectTrigger><SelectValue placeholder="Select Status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
+                  <Select value={editForm.doctorId} onValueChange={(val) => setEditForm({ ...editForm, doctorId: val })}>
+                    <SelectTrigger><SelectValue placeholder="Select Doctor" /></SelectTrigger>
+                    <SelectContent>
+                      {doctorsData?.getDoctors?.doctors?.map(d => (
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
-                <Select 
-                  value={editForm.serviceId} 
-                  onValueChange={(val) => setEditForm({ ...editForm, serviceId: val })}
-                  disabled={!!editingSession?.treatmentPlan}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select Service" /></SelectTrigger>
-                  <SelectContent>
-                    {servicesData?.getServices?.services?.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
+                    <Input value={editForm.areaTreated} onChange={(e) => setEditForm({ ...editForm, areaTreated: e.target.value })} placeholder="e.g. Full Face" className="h-11" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
+                    <Input value={editForm.dosage} onChange={(e) => setEditForm({ ...editForm, dosage: e.target.value })} placeholder="e.g. 20J/cm2" className="h-11" />
+                  </div>
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Status</label>
-                <Select value={editForm.status} onValueChange={(val) => setEditForm({ ...editForm, status: val })}>
-                  <SelectTrigger><SelectValue placeholder="Select Status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+                  <textarea 
+                    value={editForm.notes} 
+                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} 
+                    placeholder="Details..." 
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] max-h-[120px] outline-none focus:border-indigo-500/50" 
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
-                <Select value={editForm.doctorId} onValueChange={(val) => setEditForm({ ...editForm, doctorId: val })}>
-                  <SelectTrigger><SelectValue placeholder="Select Doctor" /></SelectTrigger>
-                  <SelectContent>
-                    {doctorsData?.getDoctors?.doctors?.map(d => (
-                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {editForm.status === 'Completed' && (
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <DateTimePicker 
+                      label="Actual Treatment Date" 
+                      date={editForm.actualDate} 
+                      setDate={(d) => setEditForm({ ...editForm, actualDate: d })} 
+                    />
+                  </div>
+                )}
+
+                <div className="p-5 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                      <TrendingUp size={16} />
+                    </div>
+                    <h4 className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest">Financials</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service Amount</label>
+                      <Input 
+                        type="number"
+                        placeholder="0.00"
+                        value={editForm.baseAmount}
+                        onChange={(e) => setEditForm({ ...editForm, baseAmount: e.target.value })}
+                        className="h-10"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-indigo-500 uppercase tracking-widest ml-1">Discount</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={editForm.discount}
+                          onChange={(e) => setEditForm({ ...editForm, discount: e.target.value })}
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-emerald-500 uppercase tracking-widest ml-1">Initial Payment (Advance)</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={editForm.paidAmount}
+                          onChange={(e) => setEditForm({ ...editForm, paidAmount: e.target.value })}
+                          className="h-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-indigo-500/10 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                    <span>Session Balance:</span>
+                    <span className="text-rose-400">₹{Math.max(0, (parseFloat(editForm.baseAmount) || 0) - (parseFloat(editForm.paidAmount) || 0) - (parseFloat(editForm.discount) || 0)).toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {editForm.status === 'Completed' && (
-              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-[2rem] p-6 space-y-6">
-                 <DateTimePicker 
-                   label="Actual Treatment Date & Time" 
-                   date={editForm.actualDate} 
-                   setDate={(d) => setEditForm({ ...editForm, actualDate: d })} 
-                 />
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
-                  <Input value={editForm.areaTreated} onChange={(e) => setEditForm({ ...editForm, areaTreated: e.target.value })} placeholder="e.g. Full Face, Underarms" />
-               </div>
-               <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
-                  <Input value={editForm.dosage} onChange={(e) => setEditForm({ ...editForm, dosage: e.target.value })} placeholder="e.g. 20J/cm2, Pulse 30ms" />
-               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
-              <textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Clinical observations and treatment details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] outline-none focus:border-indigo-500/50" />
-            </div>
-
           </form>
         </Modal>
 

@@ -11,7 +11,10 @@ export const SCHEDULE_SESSION = gql`
     $doctorId: ID, 
     $status: String,
     $notes: String,
-    $sessionNumber: Int
+    $sessionNumber: Int,
+    $baseAmount: Float,
+    $paidAmount: Float,
+    $discount: Float
   ) {
     scheduleSession(
       patientId: $patientId, 
@@ -23,7 +26,10 @@ export const SCHEDULE_SESSION = gql`
       doctorId: $doctorId, 
       status: $status,
       notes: $notes,
-      sessionNumber: $sessionNumber
+      sessionNumber: $sessionNumber,
+      baseAmount: $baseAmount,
+      paidAmount: $paidAmount,
+      discount: $discount
     ) {
       id
       status
@@ -45,7 +51,9 @@ export const COMPLETE_SESSION = gql`
     $notes: String,
     $shouldAutoSchedule: Boolean,
     $nextSessionDate: String,
-    $updateNextSessionId: ID
+    $updateNextSessionId: ID,
+    $paidAmount: Float,
+    $discount: Float
   ) {
     completeSession(
       id: $id,
@@ -60,7 +68,9 @@ export const COMPLETE_SESSION = gql`
       notes: $notes,
       shouldAutoSchedule: $shouldAutoSchedule,
       nextSessionDate: $nextSessionDate,
-      updateNextSessionId: $updateNextSessionId
+      updateNextSessionId: $updateNextSessionId,
+      paidAmount: $paidAmount,
+      discount: $discount
     ) {
       id
       status
@@ -92,6 +102,9 @@ export const UPDATE_SESSION = gql`
     $actualDate: String
     $treatmentStartTime: String
     $treatmentEndTime: String
+    $baseAmount: Float,
+    $paidAmount: Float,
+    $discount: Float
   ) {
     updateSession(
       id: $id
@@ -106,6 +119,9 @@ export const UPDATE_SESSION = gql`
       actualDate: $actualDate
       treatmentStartTime: $treatmentStartTime
       treatmentEndTime: $treatmentEndTime
+      baseAmount: $baseAmount
+      paidAmount: $paidAmount,
+      discount: $discount
     ) {
       id
       status

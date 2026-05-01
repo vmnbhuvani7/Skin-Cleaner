@@ -21,6 +21,7 @@ export const treatmentSessionTypeDefs = `#graphql
     attended: Boolean
     baseAmount: Float
     paidAmount: Float
+    discount: Float
     createdAt: String
   }
 
@@ -52,6 +53,7 @@ export const treatmentSessionTypeDefs = `#graphql
       sessionNumber: Int
       baseAmount: Float
       paidAmount: Float
+      discount: Float
     ): TreatmentSession
 
     completeSession(
@@ -69,6 +71,7 @@ export const treatmentSessionTypeDefs = `#graphql
       nextSessionDate: String
       updateNextSessionId: ID
       paidAmount: Float
+      discount: Float
     ): TreatmentSession
 
     updateSessionStatus(
@@ -93,6 +96,7 @@ export const treatmentSessionTypeDefs = `#graphql
       treatmentEndTime: String
       baseAmount: Float
       paidAmount: Float
+      discount: Float
     ): TreatmentSession
 
     deleteSession(id: ID!): Boolean

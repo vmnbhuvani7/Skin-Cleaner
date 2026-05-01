@@ -33,6 +33,7 @@ export const GET_PATIENT_PLANS = gql`
         attended
         baseAmount
         paidAmount
+        discount
         doctor {
           id
           name

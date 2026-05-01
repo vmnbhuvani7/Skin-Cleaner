@@ -46,6 +46,7 @@ export const SCHEDULE_SESSION = gql`
     $sessionNumber: Int
     $baseAmount: Float
     $paidAmount: Float
+    $discount: Float
   ) {
     scheduleSession(
       patientId: $patientId
@@ -57,12 +58,14 @@ export const SCHEDULE_SESSION = gql`
       sessionNumber: $sessionNumber
       baseAmount: $baseAmount
       paidAmount: $paidAmount
+      discount: $discount
     ) {
       id
       appointmentDate
       status
       baseAmount
       paidAmount
+      discount
     }
   }
 `;
@@ -92,6 +95,7 @@ export const UPDATE_SESSION = gql`
     $treatmentEndTime: String
     $baseAmount: Float
     $paidAmount: Float
+    $discount: Float
   ) {
     updateSession(
       id: $id
@@ -108,6 +112,7 @@ export const UPDATE_SESSION = gql`
       treatmentEndTime: $treatmentEndTime
       baseAmount: $baseAmount
       paidAmount: $paidAmount
+      discount: $discount
     ) {
       id
       appointmentDate
@@ -115,6 +120,7 @@ export const UPDATE_SESSION = gql`
       status
       baseAmount
       paidAmount
+      discount
     }
   }
 `;

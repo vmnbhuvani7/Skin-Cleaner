@@ -60,15 +60,28 @@ export const GET_PATIENT_SESSIONS = gql`
       actualDate
       status
       areaTreated
+      dosage
+      complications
       notes
+      baseAmount
+      paidAmount
+      discount
       service {
         id
         title
+      }
+      doctor {
+        id
+        name
       }
       treatmentPlan {
         id
         totalSessions
         completedSessions
+        totalAmount
+        paidAmount
+        discount
+        paymentStatus
       }
     }
   }

@@ -105,7 +105,7 @@ export const treatmentSessionResolvers = {
     },
   },
   Mutation: {
-    scheduleSession: async (_, { patientId, treatmentPlanId, appointmentDate, actualDate, isWalkIn, serviceId, doctorId, status, notes, sessionNumber, baseAmount, paidAmount }) => {
+    scheduleSession: async (_, { patientId, treatmentPlanId, appointmentDate, actualDate, isWalkIn, serviceId, doctorId, status, notes, sessionNumber, baseAmount, paidAmount, discount }) => {
       await dbConnect();
       
       const session = await TreatmentSession.create({
@@ -120,7 +120,8 @@ export const treatmentSessionResolvers = {
         notes,
         sessionNumber: sessionNumber || 1,
         baseAmount: baseAmount || 0,
-        paidAmount: paidAmount || 0
+        paidAmount: paidAmount || 0,
+        discount: discount || 0
       });
 
       // If one-time session has paidAmount, we consider it part of revenue
@@ -141,7 +142,7 @@ export const treatmentSessionResolvers = {
 
       return session;
     },
-    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes, shouldAutoSchedule, nextSessionDate, updateNextSessionId, paidAmount }) => {
+    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes, shouldAutoSchedule, nextSessionDate, updateNextSessionId, paidAmount, discount }) => {
       await dbConnect();
       const session = await TreatmentSession.findById(id);
       if (!session) throw new Error('Session not found');
@@ -158,7 +159,8 @@ export const treatmentSessionResolvers = {
         afterNotes,
         notes,
         attended: true,
-        paidAmount: paidAmount || 0
+        paidAmount: paidAmount || 0,
+        discount: discount || 0
       }, { new: true });
 
       // Handle existing next session update
@@ -228,7 +230,7 @@ export const treatmentSessionResolvers = {
 
       return updatedSession;
     },
-    updateSession: async (_, { id, appointmentDate, doctorId, serviceId, baseAmount, paidAmount, ...others }) => {
+    updateSession: async (_, { id, appointmentDate, doctorId, serviceId, baseAmount, paidAmount, discount, ...others }) => {
       await dbConnect();
       const updates = { ...others };
       if (appointmentDate) updates.appointmentDate = new Date(appointmentDate);
@@ -236,6 +238,7 @@ export const treatmentSessionResolvers = {
       if (serviceId) updates.service = serviceId;
       if (baseAmount !== undefined) updates.baseAmount = baseAmount;
       if (paidAmount !== undefined) updates.paidAmount = paidAmount;
+      if (discount !== undefined) updates.discount = discount;
       
       if (updates.actualDate) updates.actualDate = new Date(updates.actualDate);
       if (updates.treatmentStartTime) updates.treatmentStartTime = new Date(updates.treatmentStartTime);

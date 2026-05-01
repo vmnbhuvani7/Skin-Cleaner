@@ -6,7 +6,8 @@ import {
   ArrowLeft, User, Phone, Mail, Calendar, MapPin, ClipboardList, 
   Activity, Clock, ShieldCheck, Edit, Trash2, Plus, CheckCircle2, 
   XCircle, AlertCircle, ChevronRight, MoreVertical, Lock, Sparkles,
-  CalendarDays, History
+  CalendarDays, History,
+  TrendingUp
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
@@ -57,8 +58,12 @@ export default function PatientDetailPage() {
     status: '',
     actualDate: '',
     treatmentStartTime: '',
-    treatmentEndTime: ''
+    treatmentEndTime: '',
+    baseAmount: '',
+    paidAmount: '',
+    discount: ''
   });
+  const [activePlanSummary, setActivePlanSummary] = useState(null);
   const [planEditData, setPlanEditData] = useState({
     totalSessions: 1,
     intervalWeeks: 4,
@@ -123,7 +128,9 @@ export default function PatientDetailPage() {
         status: '',
         actualDate: '',
         treatmentStartTime: '',
-        treatmentEndTime: ''
+        treatmentEndTime: '',
+        baseAmount: '',
+        paidAmount: ''
       });
       setSelectedPlanId(null);
       refetchSessions();
@@ -158,7 +165,9 @@ export default function PatientDetailPage() {
         status: '',
         actualDate: '',
         treatmentStartTime: '',
-        treatmentEndTime: ''
+        treatmentEndTime: '',
+        baseAmount: '',
+        paidAmount: ''
       });
       refetchSessions();
       refetchPlans();
@@ -180,10 +189,13 @@ export default function PatientDetailPage() {
     
     scheduleSession({
       variables: {
-        patientId: id,
         ...scheduleData,
+        patientId: id,
         treatmentPlanId: selectedPlanId || scheduleData.treatmentPlanId,
-        sessionNumber: scheduleData.sessionNumber
+        sessionNumber: scheduleData.sessionNumber,
+        baseAmount: parseFloat(scheduleData.baseAmount) || 0,
+        paidAmount: parseFloat(scheduleData.paidAmount) || 0,
+        discount: parseFloat(scheduleData.discount) || 0
       }
     });
   };
@@ -205,9 +217,23 @@ export default function PatientDetailPage() {
         status: scheduleData.status,
         actualDate: scheduleData.actualDate,
         treatmentStartTime: scheduleData.treatmentStartTime,
-        treatmentEndTime: scheduleData.treatmentEndTime
+        treatmentEndTime: scheduleData.treatmentEndTime,
+        baseAmount: parseFloat(scheduleData.baseAmount) || 0,
+        paidAmount: parseFloat(scheduleData.paidAmount) || 0,
+        discount: parseFloat(scheduleData.discount) || 0
       }
     });
+
+    if (editingSession.treatmentPlan && activePlanSummary) {
+      updatePlan({
+        variables: {
+          id: editingSession.treatmentPlan.id,
+          totalAmount: parseFloat(activePlanSummary.total) || 0,
+          paidAmount: parseFloat(activePlanSummary.paid) || 0,
+          discount: parseFloat(activePlanSummary.discount) || 0
+        }
+      });
+    }
   };
 
   const handleUpdatePlan = (e) => {
@@ -222,6 +248,9 @@ export default function PatientDetailPage() {
 
   const openAddSessionModal = (plan) => {
     setSelectedPlanId(plan.id);
+    const planRemaining = (plan.totalAmount || 0) - (plan.discount || 0) - (plan.paidAmount || 0);
+    const suggestedSessionAmount = (plan.totalAmount || 0) / (plan.totalSessions || 1);
+    
     setScheduleData({
       appointmentDate: '',
       notes: '',
@@ -231,7 +260,39 @@ export default function PatientDetailPage() {
       serviceId: plan.service.id,
       doctorId: plan.doctor?.id || '',
       treatmentPlanId: plan.id,
-      sessionNumber: (plan.sessions?.length || 0) + 1
+      sessionNumber: (plan.sessions?.length || 0) + 1,
+      baseAmount: suggestedSessionAmount.toString(),
+      paidAmount: Math.max(0, planRemaining).toString(),
+      discount: ''
+    });
+    
+    setActivePlanSummary({
+      total: plan.totalAmount,
+      discount: plan.discount,
+      paid: plan.paidAmount,
+      remaining: planRemaining
+    });
+    
+    setIsScheduleModalOpen(true);
+  };
+
+  const openNewSessionModal = () => {
+    setSelectedPlanId(null);
+    setScheduleData({
+      appointmentDate: '',
+      serviceId: '',
+      doctorId: '',
+      notes: '',
+      treatmentPlanId: '',
+      areaTreated: '',
+      dosage: '',
+      complications: '',
+      status: 'Scheduled',
+      actualDate: '',
+      treatmentStartTime: '',
+      treatmentEndTime: '',
+      baseAmount: '',
+      paidAmount: ''
     });
     setIsScheduleModalOpen(true);
   };
@@ -249,9 +310,24 @@ export default function PatientDetailPage() {
       treatmentPlanId: session.treatmentPlan?.id || '',
       status: session.status || '',
       actualDate: session.actualDate || session.appointmentDate || '',
-      treatmentStartTime: session.treatmentStartTime || '',
-      treatmentEndTime: session.treatmentEndTime || ''
+      baseAmount: session.baseAmount || '',
+      paidAmount: session.paidAmount || '',
+      discount: session.discount || ''
     });
+
+    if (session.treatmentPlan) {
+      const plan = session.treatmentPlan;
+      const planRemaining = (plan.totalAmount || 0) - (plan.discount || 0) - (plan.paidAmount || 0);
+      setActivePlanSummary({
+        total: plan.totalAmount,
+        discount: plan.discount,
+        paid: plan.paidAmount,
+        remaining: planRemaining
+      });
+    } else {
+      setActivePlanSummary(null);
+    }
+
     setIsEditModalOpen(true);
   };
 
@@ -280,13 +356,23 @@ export default function PatientDetailPage() {
     setComplications(session.complications || '');
     setClinicalNotes(session.notes || '');
     setActualDate(new Date().toISOString());
-    setPaidAmount(0); // Reset for completion
+    setPaidAmount(''); // Reset for completion
 
     // Logic to detect next session or calculate suggested date
     if (session.treatmentPlan) {
       const plan = plansData?.getPatientPlans?.find(p => p.id === session.treatmentPlan.id);
       const sessions = sessionsData?.getPatientSessions || [];
       
+      const planRemaining = (plan?.totalAmount || 0) - (plan?.discount || 0) - (plan?.paidAmount || 0);
+      setPaidAmount(Math.max(0, planRemaining).toString());
+
+      setActivePlanSummary({
+        total: plan?.totalAmount,
+        discount: plan?.discount,
+        paid: plan?.paidAmount,
+        remaining: planRemaining
+      });
+
       // Find if next session number is already scheduled
       const nextNum = session.sessionNumber + 1;
       const existingNext = sessions.find(s => 
@@ -311,19 +397,23 @@ export default function PatientDetailPage() {
     } else {
       setExistingNextSession(null);
       setShouldAutoSchedule(false);
+      setActivePlanSummary(null);
+      setPaidAmount('');
     }
 
     setIsCompleteModalOpen(true);
   };
 
-  const [paidAmount, setPaidAmount] = useState(0);
+  const [paidAmount, setPaidAmount] = useState('');
+  const [sessionDiscount, setSessionDiscount] = useState('');
 
   const [completeSession, { loading: completing }] = useMutation(COMPLETE_SESSION, {
     onCompleted: () => {
       toast.success('Treatment record saved');
       setIsCompleteModalOpen(false);
       setSessionToProcess(null);
-      setPaidAmount(0);
+      setPaidAmount('');
+      setSessionDiscount('');
       refetchSessions();
       refetchPlans();
     },
@@ -343,7 +433,8 @@ export default function PatientDetailPage() {
         shouldAutoSchedule,
         nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
         updateNextSessionId: existingNextSession?.id,
-        paidAmount: parseFloat(paidAmount)
+        paidAmount: parseFloat(paidAmount) || 0,
+        discount: parseFloat(sessionDiscount) || 0
       }
     });
   };
@@ -419,72 +510,160 @@ export default function PatientDetailPage() {
           isOpen={isScheduleModalOpen} 
           onClose={() => setIsScheduleModalOpen(false)}
           title="Schedule Next Session"
-          className="max-w-xl"
+          className="max-w-4xl"
         >
-          <form onSubmit={handleSchedule} className="space-y-6">
-            {scheduleData.sessionNumber && (
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 mb-2">
-                <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-                  Adding Session {scheduleData.sessionNumber} for {selectedPlanId ? 'existing plan' : 'new plan'}
-                </p>
-              </div>
-            )}
-            <DateTimePicker 
-              label="Appointment Date & Time"
-              date={scheduleData.appointmentDate}
-              setDate={(date) => setScheduleData({ ...scheduleData, appointmentDate: date })}
-              placeholder="Select date and time"
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
-                <Select 
-                  value={scheduleData.serviceId} 
-                  onValueChange={(value) => setScheduleData({ ...scheduleData, serviceId: value })}
-                  disabled={!!selectedPlanId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {servicesData?.getServices?.services?.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
-                <Select 
-                  value={scheduleData.doctorId} 
-                  onValueChange={(value) => setScheduleData({ ...scheduleData, doctorId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Doctor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {doctorsData?.getDoctors?.doctors?.map(d => (
-                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          <form onSubmit={handleSchedule}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Side: Appointment Info */}
+              <div className="space-y-6">
+                {scheduleData.sessionNumber && (
+                  <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-4">
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-none">
+                      Scheduling Session {scheduleData.sessionNumber}
+                    </p>
+                    <p className="text-[11px] text-[var(--text-muted)] mt-1">For {selectedPlanId ? 'current treatment plan' : 'standalone treatment'}</p>
+                  </div>
+                )}
+                
+                <DateTimePicker 
+                  label="Appointment Date & Time"
+                  date={scheduleData.appointmentDate}
+                  setDate={(date) => setScheduleData({ ...scheduleData, appointmentDate: date })}
+                  placeholder="Select date and time"
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
+                    <Select 
+                      value={scheduleData.serviceId} 
+                      onValueChange={(value) => setScheduleData({ ...scheduleData, serviceId: value })}
+                      disabled={!!selectedPlanId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {servicesData?.getServices?.services?.map(s => (
+                          <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
+                    <Select 
+                      value={scheduleData.doctorId} 
+                      onValueChange={(value) => setScheduleData({ ...scheduleData, doctorId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Doctor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {doctorsData?.getDoctors?.doctors?.map(d => (
+                          <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Notes</label>
-              <textarea 
-                placeholder="Session instructions or notes..."
-                className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[100px]"
-                value={scheduleData.notes}
-                onChange={(e) => setScheduleData({ ...scheduleData, notes: e.target.value })}
-              />
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Instructions / Notes</label>
+                  <textarea 
+                    placeholder="Enter any specific instructions..."
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[100px]"
+                    value={scheduleData.notes}
+                    onChange={(e) => setScheduleData({ ...scheduleData, notes: e.target.value })}
+                  />
+                </div>
+              </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsScheduleModalOpen(false)}>Cancel</Button>
-              <Button type="submit" className="flex-1" isLoading={scheduling}>Schedule Session</Button>
+              {/* Right Side: Financials & Actions */}
+              <div className="space-y-6 lg:border-l lg:border-[var(--border)] lg:pl-8">
+                {activePlanSummary && (
+                  <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 space-y-3">
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-amber-600/80">
+                      <span>Plan Total:</span>
+                      <span>₹{(activePlanSummary.total || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-emerald-600/80">
+                      <span>Paid So Far:</span>
+                      <span>₹{(activePlanSummary.paid || 0).toLocaleString()}</span>
+                    </div>
+                    {activePlanSummary.discount > 0 && (
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-indigo-600/80">
+                        <span>Plan Discount:</span>
+                        <span>-₹{(activePlanSummary.discount || 0).toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-amber-500/10 flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-amber-700">
+                      <span>Plan Balance:</span>
+                      <span>₹{Math.max(0, activePlanSummary.remaining).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                      <TrendingUp size={16} />
+                    </div>
+                    <h4 className="text-[11px] font-bold text-[var(--foreground)] uppercase tracking-widest">Session Billing</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service Amount</label>
+                      <Input 
+                        type="number"
+                        placeholder="0.00"
+                        value={scheduleData.baseAmount}
+                        onChange={(e) => setScheduleData({ ...scheduleData, baseAmount: e.target.value })}
+                        icon={TrendingUp}
+                        className="h-12"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest ml-1">Discount</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={scheduleData.discount}
+                          onChange={(e) => setScheduleData({ ...scheduleData, discount: e.target.value })}
+                          icon={Sparkles}
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Initial Payment (Advance)</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={scheduleData.paidAmount}
+                          onChange={(e) => setScheduleData({ ...scheduleData, paidAmount: e.target.value })}
+                          icon={TrendingUp}
+                          className="h-12 border-emerald-500/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-indigo-500/10">
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      <span>Session Balance:</span>
+                      <span className="text-rose-400">₹{Math.max(0, (parseFloat(scheduleData.baseAmount) || 0) - (parseFloat(scheduleData.paidAmount) || 0) - (parseFloat(scheduleData.discount) || 0)).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <Button type="button" variant="outline" className="flex-1 h-14 rounded-2xl" onClick={() => setIsScheduleModalOpen(false)}>Cancel</Button>
+                  <Button type="submit" className="flex-2 h-14 rounded-2xl shadow-xl shadow-indigo-600/20" isLoading={scheduling}>Schedule Session</Button>
+                </div>
+              </div>
             </div>
           </form>
         </Modal>
@@ -494,121 +673,222 @@ export default function PatientDetailPage() {
           isOpen={isEditModalOpen} 
           onClose={() => setIsEditModalOpen(false)}
           title="Edit Treatment Session"
-          className="max-w-xl"
+          className="max-w-4xl"
         >
-          <form onSubmit={handleUpdate} className="space-y-6">
-            <DateTimePicker 
-              label="Appointment Date & Time"
-              date={scheduleData.appointmentDate}
-              setDate={(date) => setScheduleData({ ...scheduleData, appointmentDate: date })}
-              placeholder="Select date and time"
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
-                <Select 
-                  value={scheduleData.serviceId} 
-                  onValueChange={(value) => setScheduleData({ ...scheduleData, serviceId: value })}
-                  disabled={!!editingSession?.treatmentPlan}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {servicesData?.getServices?.services?.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Status</label>
-                <Select 
-                  value={scheduleData.status} 
-                  onValueChange={(value) => setScheduleData({ ...scheduleData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
-                <Select 
-                  value={scheduleData.doctorId} 
-                  onValueChange={(value) => setScheduleData({ ...scheduleData, doctorId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Doctor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {doctorsData?.getDoctors?.doctors?.map(d => (
-                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {scheduleData.status === 'Completed' && (
-              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-6 space-y-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                    <Clock size={14} />
-                  </div>
-                  <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Treatment Details</h4>
-                </div>
-                
+          <form onSubmit={handleUpdate}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Side: Session Details */}
+              <div className="space-y-6">
                 <DateTimePicker 
-                  label="Actual Treatment Date & Time"
-                  date={scheduleData.actualDate}
-                  setDate={(date) => setScheduleData({ ...scheduleData, actualDate: date })}
+                  label="Appointment Date & Time"
+                  date={scheduleData.appointmentDate}
+                  setDate={(date) => setScheduleData({ ...scheduleData, appointmentDate: date })}
+                  placeholder="Select date and time"
                 />
-              </div>
-            )}
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service</label>
+                    <Select 
+                      value={scheduleData.serviceId} 
+                      onValueChange={(value) => setScheduleData({ ...scheduleData, serviceId: value })}
+                      disabled={!!editingSession?.treatmentPlan}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {servicesData?.getServices?.services?.map(s => (
+                          <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Status</label>
+                    <Select 
+                      value={scheduleData.status} 
+                      onValueChange={(value) => setScheduleData({ ...scheduleData, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
-                <Input 
-                  placeholder="e.g. Full Face, Underarms"
-                  value={scheduleData.areaTreated}
-                  onChange={(e) => setScheduleData({ ...scheduleData, areaTreated: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
-                <Input 
-                  placeholder="e.g. 20J/cm2, Pulse 30ms"
-                  value={scheduleData.dosage}
-                  onChange={(e) => setScheduleData({ ...scheduleData, dosage: e.target.value })}
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Doctor</label>
+                    <Select 
+                      value={scheduleData.doctorId} 
+                      onValueChange={(value) => setScheduleData({ ...scheduleData, doctorId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Doctor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {doctorsData?.getDoctors?.doctors?.map(d => (
+                          <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
-              <textarea 
-                placeholder="Clinical observations and treatment details..."
-                className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[100px]"
-                value={scheduleData.notes}
-                onChange={(e) => setScheduleData({ ...scheduleData, notes: e.target.value })}
-              />
-            </div>
+                {scheduleData.status === 'Completed' && (
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <DateTimePicker 
+                      label="Actual Treatment Date"
+                      date={scheduleData.actualDate}
+                      setDate={(date) => setScheduleData({ ...scheduleData, actualDate: date })}
+                    />
+                  </div>
+                )}
+              </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-              <Button type="submit" className="flex-1" isLoading={updatingSession}>Save Changes</Button>
+              {/* Right Side: Clinical & Financial */}
+              <div className="space-y-6 lg:border-l lg:border-[var(--border)] lg:pl-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area Treated</label>
+                    <Input 
+                      placeholder="e.g. Face"
+                      value={scheduleData.areaTreated}
+                      onChange={(e) => setScheduleData({ ...scheduleData, areaTreated: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity</label>
+                    <Input 
+                      placeholder="e.g. 20J"
+                      value={scheduleData.dosage}
+                      onChange={(e) => setScheduleData({ ...scheduleData, dosage: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Notes</label>
+                  <textarea 
+                    placeholder="Details..."
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[80px]"
+                    value={scheduleData.notes}
+                    onChange={(e) => setScheduleData({ ...scheduleData, notes: e.target.value })}
+                  />
+                </div>
+
+                {editingSession?.treatmentPlan && (
+                  <div className="bg-amber-500/5 border border-amber-500/10 rounded-[2rem] p-6 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+                        <Sparkles size={16} />
+                      </div>
+                      <h4 className="text-[11px] font-bold text-amber-700 uppercase tracking-widest">Plan Financials</h4>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-amber-600/80 uppercase tracking-widest ml-1">Total Plan Amount</label>
+                        <Input 
+                          type="number"
+                          value={activePlanSummary?.total || 0}
+                          onChange={(e) => setActivePlanSummary({ ...activePlanSummary, total: parseFloat(e.target.value) || 0 })}
+                          className="h-10 border-amber-500/20"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest ml-1">Plan Discount</label>
+                          <Input 
+                            type="number"
+                            value={activePlanSummary?.discount || 0}
+                            onChange={(e) => setActivePlanSummary({ ...activePlanSummary, discount: parseFloat(e.target.value) || 0 })}
+                            className="h-10"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Cumulative Paid</label>
+                          <Input 
+                            type="number"
+                            value={activePlanSummary?.paid || 0}
+                            onChange={(e) => setActivePlanSummary({ ...activePlanSummary, paid: parseFloat(e.target.value) || 0 })}
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-amber-500/10 flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-amber-700">
+                      <span>Total Remaining:</span>
+                      <span>₹{Math.max(0, (activePlanSummary?.total || 0) - (activePlanSummary?.paid || 0) - (activePlanSummary?.discount || 0)).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-5 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                      <TrendingUp size={16} />
+                    </div>
+                    <h4 className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest">Session Billing</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service Amount</label>
+                      <Input 
+                        type="number"
+                        placeholder="0.00"
+                        value={scheduleData.baseAmount}
+                        onChange={(e) => setScheduleData({ ...scheduleData, baseAmount: e.target.value })}
+                        className="h-10"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest ml-1">Discount</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={scheduleData.discount}
+                          onChange={(e) => setScheduleData({ ...scheduleData, discount: e.target.value })}
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Initial Payment (Advance)</label>
+                        <Input 
+                          type="number"
+                          placeholder="0.00"
+                          value={scheduleData.paidAmount}
+                          onChange={(e) => setScheduleData({ ...scheduleData, paidAmount: e.target.value })}
+                          className="h-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-indigo-500/10 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                    <span>Session Balance:</span>
+                    <span className="text-rose-400">₹{Math.max(0, (parseFloat(scheduleData.baseAmount) || 0) - (parseFloat(scheduleData.paidAmount) || 0) - (parseFloat(scheduleData.discount) || 0)).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <Button type="button" variant="outline" className="flex-1 h-14 rounded-2xl" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+                  <Button type="submit" className="flex-2 h-14 rounded-2xl shadow-xl shadow-indigo-600/20" isLoading={updatingSession}>Save Changes</Button>
+                </div>
+              </div>
             </div>
           </form>
         </Modal>
@@ -688,7 +968,7 @@ export default function PatientDetailPage() {
           isOpen={isCompleteModalOpen} 
           onClose={() => setIsCompleteModalOpen(false)}
           title="Clinical Treatment Record"
-          className="max-w-3xl"
+          className="max-w-5xl"
           footer={
             <Button 
               form="clinical-record-form"
@@ -701,134 +981,150 @@ export default function PatientDetailPage() {
             </Button>
           }
         >
-          <form id="clinical-record-form" onSubmit={handleCompleteSubmit} className="space-y-8">
-            <div className="bg-indigo-500/5 p-6 rounded-[2rem] border border-indigo-500/10 mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-bold text-[var(--foreground)] text-lg">{patientData?.getPatient?.name}</h4>
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20`}>
-                  Session {sessionToProcess?.sessionNumber}
+          <form id="clinical-record-form" onSubmit={handleCompleteSubmit}>
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Left Column: Clinical Details */}
+              <div className="flex-1 space-y-6">
+                <div className="bg-indigo-500/5 p-5 rounded-[2rem] border border-indigo-500/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="font-bold text-[var(--foreground)] text-lg leading-tight">{patientData?.getPatient?.name}</h4>
+                      <p className="text-xs text-[var(--text-muted)] mt-1">{sessionToProcess?.service?.title || 'Treatment'}</p>
+                    </div>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20`}>
+                      Session {sessionToProcess?.sessionNumber}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
+                    <Input value={areaTreated} onChange={(e) => setAreaTreated(e.target.value)} placeholder="e.g., Full Face" className="h-11" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
+                    <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm²" className="h-11" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
+                  <textarea 
+                    value={clinicalNotes} 
+                    onChange={(e) => setClinicalNotes(e.target.value)} 
+                    placeholder="Treatment details..." 
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] max-h-[120px] outline-none focus:border-indigo-500/50 transition-all" 
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-rose-400 uppercase tracking-widest ml-1">Complications / Reactions</label>
+                  <input 
+                    value={complications} 
+                    onChange={(e) => setComplications(e.target.value)} 
+                    placeholder="Any adverse effects?" 
+                    className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-11 px-4 text-sm outline-none focus:border-rose-500/50 text-rose-500" 
+                  />
                 </div>
               </div>
-              <p className="text-sm text-[var(--text-muted)]">
-                {sessionToProcess?.service?.title || 'Treatment'} • {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Area(s) Treated</label>
-                <Input 
-                  value={areaTreated} 
-                  onChange={(e) => setAreaTreated(e.target.value)} 
-                  placeholder="e.g., Full Face, Underarms" 
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Intensity / Dosage</label>
-                <Input 
-                  value={dosage} 
-                  onChange={(e) => setDosage(e.target.value)} 
-                  placeholder="e.g., 20J/cm², Pulse 30ms" 
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <DateTimePicker 
-                  label="Actual Treatment Date & Time"
-                  date={actualDate}
-                  setDate={setActualDate}
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Clinical Notes</label>
-                <textarea 
-                  value={clinicalNotes} 
-                  onChange={(e) => setClinicalNotes(e.target.value)} 
-                  placeholder="Clinical observations and treatment details..." 
-                  className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-5 text-sm min-h-[120px] outline-none focus:border-indigo-500/50 transition-all" 
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-rose-400 uppercase tracking-widest ml-1">Complications / Reactions</label>
-                <input 
-                  value={complications} 
-                  onChange={(e) => setComplications(e.target.value)} 
-                  placeholder="Any adverse effects?" 
-                  className="w-full bg-rose-500/5 border border-rose-500/10 rounded-2xl h-12 px-5 text-sm outline-none focus:border-rose-500/50 text-rose-500" 
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                  Follow-up Logic <Sparkles size={12} />
-                </p>
-                
-                {existingNextSession ? (
-                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                          <CalendarDays size={20} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-[var(--foreground)]">Next Session Already Scheduled</p>
-                          <p className="text-xs text-[var(--text-muted)]">Session {existingNextSession.sessionNumber} is currently set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
-                        </div>
+              {/* Right Column: Date, Payment & Follow-up */}
+              <div className="w-full lg:w-[380px] space-y-6">
+                <div className="space-y-4">
+                  <DateTimePicker 
+                    label="Actual Treatment Date"
+                    date={actualDate}
+                    setDate={setActualDate}
+                  />
+                  
+                  {activePlanSummary && (
+                    <div className="p-5 bg-amber-500/5 rounded-2xl border border-amber-500/10 space-y-3">
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-amber-600/80">
+                        <span>Plan Total:</span>
+                        <span>₹{(activePlanSummary.total || 0).toLocaleString()}</span>
                       </div>
-                      <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold rounded-lg border border-emerald-500/20 uppercase">
-                        Confirmed
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-emerald-600/80">
+                        <span>Paid So Far:</span>
+                        <span>₹{(activePlanSummary.paid || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="pt-2 border-t border-amber-500/10 flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-amber-700">
+                        <span>Plan Balance:</span>
+                        <span>₹{Math.max(0, activePlanSummary.remaining).toLocaleString()}</span>
                       </div>
                     </div>
+                  )}
 
-                    <div className="pt-4 border-t border-indigo-500/10">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Amount Paid Today</label>
+                      <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} className="h-11 border-emerald-500/30" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest ml-1">Discount</label>
+                      <Input type="number" value={sessionDiscount} onChange={(e) => setSessionDiscount(e.target.value)} placeholder="0.00" icon={Sparkles} className="h-11" />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center px-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                    <span>Session Amount:</span>
+                    <span className="text-[var(--foreground)]">₹{(sessionToProcess?.baseAmount || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-[var(--border)]">
+                  <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    Follow-up Logic <Sparkles size={12} />
+                  </p>
+                  
+                  {existingNextSession ? (
+                    <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                          <CalendarDays size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-[var(--foreground)] leading-tight">Next Session Scheduled</p>
+                          <p className="text-[10px] text-[var(--text-muted)]">Set for {new Date(existingNextSession.appointmentDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
                       <DateTimePicker 
-                        label="Update Scheduled Date"
+                        label="Update Next Date"
                         date={nextSuggestedDate}
                         setDate={setNextSuggestedDate}
                       />
-                      <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
-                        <AlertCircle size={10} /> Changing this will update the existing Session {existingNextSession.sessionNumber}.
-                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
-                          <History size={20} />
+                  ) : (
+                    <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${shouldAutoSchedule ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                            <History size={16} />
+                          </div>
+                          <p className="text-[11px] font-bold text-[var(--foreground)]">Auto-schedule?</p>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-[var(--foreground)]">Auto-schedule Next Session?</p>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Based on plan interval settings</p>
-                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
+                          className={`w-10 h-5 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                        >
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-5.5' : 'left-0.5'}`} />
+                        </button>
                       </div>
-                      <button 
-                        type="button"
-                        onClick={() => setShouldAutoSchedule(!shouldAutoSchedule)}
-                        className={`w-12 h-6 rounded-full transition-all relative ${shouldAutoSchedule ? 'bg-emerald-500' : 'bg-gray-400'}`}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${shouldAutoSchedule ? 'left-7' : 'left-1'}`} />
-                      </button>
-                    </div>
 
-                    {shouldAutoSchedule && (
-                      <div className="pt-4 border-t border-indigo-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <DateTimePicker 
-                          label="Suggested Next Date"
-                          date={nextSuggestedDate}
-                          setDate={setNextSuggestedDate}
-                        />
-                        <p className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
-                          <AlertCircle size={10} /> You can modify this date before finalizing.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {shouldAutoSchedule && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                          <DateTimePicker 
+                            label="Suggested Date"
+                            date={nextSuggestedDate}
+                            setDate={setNextSuggestedDate}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </form>
@@ -1280,7 +1576,7 @@ export default function PatientDetailPage() {
                 ) : (
                   <div className="py-20 text-center bg-[var(--surface-hover)] rounded-[2.5rem] border border-dashed border-[var(--border)]">
                     <p className="text-[var(--text-muted)] text-sm mb-6">No treatment history available for this patient.</p>
-                    <Button variant="outline" icon={Plus} onClick={() => setIsScheduleModalOpen(true)}>Start Treatment Plan</Button>
+                    <Button variant="outline" icon={Plus} onClick={openNewSessionModal}>Schedule First Session</Button>
                   </div>
                 )}
               </div>

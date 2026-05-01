@@ -8,7 +8,10 @@ export const START_TREATMENT_PLAN = gql`
     $totalSessions: Int,
     $intervalWeeks: Int,
     $firstAppointmentDate: String!,
-    $notes: String
+    $notes: String,
+    $totalAmount: Float,
+    $paidAmount: Float,
+    $discount: Float
   ) {
     startTreatmentPlan(
       patientId: $patientId,
@@ -17,7 +20,10 @@ export const START_TREATMENT_PLAN = gql`
       totalSessions: $totalSessions,
       intervalWeeks: $intervalWeeks,
       firstAppointmentDate: $firstAppointmentDate,
-      notes: $notes
+      notes: $notes,
+      totalAmount: $totalAmount,
+      paidAmount: $paidAmount,
+      discount: $discount
     ) {
       id
       status
