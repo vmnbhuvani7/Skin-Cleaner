@@ -5,7 +5,7 @@ import Media from '@/models/Media';
 export async function GET(req, { params }) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
 
     const media = await Media.findById(id);
 
