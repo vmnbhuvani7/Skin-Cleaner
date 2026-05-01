@@ -9,7 +9,6 @@ export const GET_SERVICES = gql`
         title
         desc
         icon
-        image
         isActive
         createdAt
       }
@@ -27,7 +26,6 @@ export const GET_SERVICE = gql`
       title
       desc
       icon
-      image
       isActive
     }
   }
