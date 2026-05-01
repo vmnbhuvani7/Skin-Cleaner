@@ -87,12 +87,6 @@ export default function Sidebar() {
       isActive: pathname === '/services'
     },
     { 
-      icon: Stethoscope, 
-      label: 'Treatments', 
-      onClick: () => router.push('/treatments'),
-      isActive: pathname === '/treatments'
-    },
-    { 
       icon: Bot, 
       label: 'AI Helper', 
       hasSubmenu: true, 
