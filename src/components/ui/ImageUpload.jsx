@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, X, UploadCloud, User } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { toast } from 'react-toastify';
 
 const ImageUpload = ({ value, onChange, label, className }) => {
   const [preview, setPreview] = useState(value || '');
@@ -41,9 +42,10 @@ const ImageUpload = ({ value, onChange, label, className }) => {
 
         const data = await response.json();
         onChange(data.url);
+        toast.success('Image uploaded successfully!');
       } catch (error) {
         console.error('Upload error:', error);
-        alert('Failed to upload image. Please try again.');
+        toast.error('Failed to upload image. Please try again.');
         setPreview(value || ''); // Revert preview on failure
       } finally {
         setUploading(false);
