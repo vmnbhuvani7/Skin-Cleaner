@@ -15,6 +15,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { CREATE_DOCTOR } from '@/graphql/mutations/doctor';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 export default function AddDoctorPage() {
   const router = useRouter();
@@ -23,7 +24,8 @@ export default function AddDoctorPage() {
     specialization: 'Skin',
     experience: '',
     consultationFee: '',
-    mobile: ''
+    mobile: '',
+    image: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -83,98 +85,112 @@ export default function AddDoctorPage() {
             Back to List
           </button>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[3rem] p-6 md:p-14 shadow-2xl relative overflow-hidden">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/5 blur-[100px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10">
-              <div className="mb-12">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6">
-                  <Sparkles size={32} />
+              <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+                  <Sparkles size={24} />
                 </div>
-                <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">Add New Specialist</h1>
-                <p className="text-[var(--text-muted)] text-sm">Onboard a new medical professional to your clinical team.</p>
+                <div>
+                  <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Add New Specialist</h1>
+                  <p className="text-[var(--text-muted)] text-xs">Onboard a new medical professional to your clinical team.</p>
+                </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8" noValidate>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Input
-                    label="Doctor Name"
-                    icon={User}
-                    placeholder="Dr. Sarah Johnson"
-                    value={formData.name}
-                    error={errors.name}
-                    onChange={(e) => {
-                      setFormData({ ...formData, name: e.target.value });
-                      if (errors.name) setErrors({ ...errors, name: null });
-                    }}
-                  />
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                  <div className="md:col-span-3 flex justify-center md:justify-start">
+                    <ImageUpload 
+                      label="Photo"
+                      value={formData.image}
+                      onChange={(val) => setFormData({ ...formData, image: val })}
+                      className="w-full max-w-[140px]"
+                    />
+                  </div>
                   
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Specialization</label>
-                    <Select 
-                      value={formData.specialization} 
-                      onValueChange={(value) => setFormData({ ...formData, specialization: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Specialization" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Skin">Skin Specialist</SelectItem>
-                        <SelectItem value="Hair">Hair Specialist</SelectItem>
-                        <SelectItem value="Both">Skin & Hair Specialist</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                      label="Doctor Name"
+                      icon={User}
+                      placeholder="Dr. Sarah Johnson"
+                      value={formData.name}
+                      error={errors.name}
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: null });
+                      }}
+                    />
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Specialization</label>
+                      <Select 
+                        value={formData.specialization} 
+                        onValueChange={(value) => setFormData({ ...formData, specialization: value })}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Select Specialization" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Skin">Skin Specialist</SelectItem>
+                          <SelectItem value="Hair">Hair Specialist</SelectItem>
+                          <SelectItem value="Both">Skin & Hair Specialist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Input
+                      label="Experience (Years)"
+                      icon={Award}
+                      type="number"
+                      placeholder="e.g. 10"
+                      value={formData.experience}
+                      error={errors.experience}
+                      onChange={(e) => {
+                        setFormData({ ...formData, experience: e.target.value });
+                        if (errors.experience) setErrors({ ...errors, experience: null });
+                      }}
+                    />
+
+                    <Input
+                      label="Consultation Fee (₹)"
+                      icon={DollarSign}
+                      type="number"
+                      placeholder="e.g. 500"
+                      value={formData.consultationFee}
+                      error={errors.consultationFee}
+                      onChange={(e) => {
+                        setFormData({ ...formData, consultationFee: e.target.value });
+                        if (errors.consultationFee) setErrors({ ...errors, consultationFee: null });
+                      }}
+                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
-                    label="Years of Experience"
-                    icon={Award}
-                    type="number"
-                    placeholder="e.g. 10"
-                    value={formData.experience}
-                    error={errors.experience}
+                    label="Contact Number"
+                    icon={Phone}
+                    placeholder="+91 98765 43210"
+                    value={formData.mobile}
+                    error={errors.mobile}
                     onChange={(e) => {
-                      setFormData({ ...formData, experience: e.target.value });
-                      if (errors.experience) setErrors({ ...errors, experience: null });
+                      setFormData({ ...formData, mobile: e.target.value });
+                      if (errors.mobile) setErrors({ ...errors, mobile: null });
                     }}
                   />
-                  <Input
-                    label="Consultation Fee (₹)"
-                    icon={DollarSign}
-                    type="number"
-                    placeholder="e.g. 500"
-                    value={formData.consultationFee}
-                    error={errors.consultationFee}
-                    onChange={(e) => {
-                      setFormData({ ...formData, consultationFee: e.target.value });
-                      if (errors.consultationFee) setErrors({ ...errors, consultationFee: null });
-                    }}
-                  />
-                </div>
 
-                <Input
-                  label="Contact Number"
-                  icon={Phone}
-                  placeholder="+91 98765 43210"
-                  value={formData.mobile}
-                  error={errors.mobile}
-                  onChange={(e) => {
-                    setFormData({ ...formData, mobile: e.target.value });
-                    if (errors.mobile) setErrors({ ...errors, mobile: null });
-                  }}
-                />
-
-                <div className="pt-6">
-                  <Button
-                    type="submit"
-                    className="w-full py-5"
-                    isLoading={loading}
-                    icon={Sparkles}
-                  >
-                    Register Doctor
-                  </Button>
+                  <div className="flex items-end">
+                    <Button
+                      type="submit"
+                      className="w-full h-12"
+                      isLoading={loading}
+                      icon={Sparkles}
+                    >
+                      Register Doctor
+                    </Button>
+                  </div>
                 </div>
               </form>
             </div>

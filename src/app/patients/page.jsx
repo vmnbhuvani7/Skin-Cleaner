@@ -240,8 +240,12 @@ export default function PatientsPage() {
                 className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                    <User size={32} />
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 overflow-hidden">
+                    {patient.image ? (
+                      <img src={patient.image} alt={patient.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={32} />
+                    )}
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 

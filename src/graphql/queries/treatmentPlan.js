@@ -16,6 +16,10 @@ export const GET_PATIENT_PLANS = gql`
       completedSessions
       intervalWeeks
       status
+      totalAmount
+      paidAmount
+      discount
+      paymentStatus
       createdAt
       sessions {
         id
@@ -27,6 +31,8 @@ export const GET_PATIENT_PLANS = gql`
         areaTreated
         dosage
         attended
+        baseAmount
+        paidAmount
         doctor {
           id
           name
@@ -47,12 +53,16 @@ export const GET_GLOBAL_STATS = gql`
   }
 `;
 export const UPDATE_TREATMENT_PLAN = gql`
-  mutation UpdateTreatmentPlan($id: ID!, $totalSessions: Int, $intervalWeeks: Int, $status: String, $doctorId: ID) {
-    updateTreatmentPlan(id: $id, totalSessions: $totalSessions, intervalWeeks: $intervalWeeks, status: $status, doctorId: $doctorId) {
+  mutation UpdateTreatmentPlan($id: ID!, $totalSessions: Int, $intervalWeeks: Int, $status: String, $doctorId: ID, $totalAmount: Float, $paidAmount: Float, $discount: Float) {
+    updateTreatmentPlan(id: $id, totalSessions: $totalSessions, intervalWeeks: $intervalWeeks, status: $status, doctorId: $doctorId, totalAmount: $totalAmount, paidAmount: $paidAmount, discount: $discount) {
       id
       totalSessions
       intervalWeeks
       status
+      totalAmount
+      paidAmount
+      discount
+      paymentStatus
     }
   }
 `;

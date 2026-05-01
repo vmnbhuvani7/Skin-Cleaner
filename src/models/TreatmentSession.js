@@ -67,6 +67,14 @@ const TreatmentSessionSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  baseAmount: {
+    type: Number,
+    default: 0,
+  },
+  paidAmount: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

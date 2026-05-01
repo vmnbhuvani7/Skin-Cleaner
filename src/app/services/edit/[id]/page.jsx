@@ -29,15 +29,14 @@ export default function EditServicePage() {
     title: '',
     desc: '',
     icon: 'Zap',
-    image: '',
   });
 
   const { data, loading: queryLoading } = useQuery(GET_SERVICE, {
     variables: { id },
     onCompleted: (data) => {
       if (data?.getService) {
-        const { title, desc, icon, image } = data.getService;
-        setFormData({ title, desc, icon: icon || 'Zap', image: image || '' });
+        const { title, desc, icon } = data.getService;
+        setFormData({ title, desc, icon: icon || 'Zap' });
       }
     }
   });
@@ -76,78 +75,80 @@ export default function EditServicePage() {
             <span className="font-bold">Back to Services</span>
           </button>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 md:p-12 shadow-xl">
-            <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">Edit Service</h1>
-            <p className="text-[var(--text-muted)] mb-10">Update treatment details for {formData.title}.</p>
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[var(--foreground)] ml-1">Service Title</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="e.g. Laser Hair Removal"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-[var(--background)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[var(--foreground)] ml-1">Description</label>
-                <textarea 
-                  required
-                  rows="4"
-                  placeholder="Describe the service in detail..."
-                  value={formData.desc}
-                  onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-                  className="w-full bg-[var(--background)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all resize-none"
-                ></textarea>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-sm font-bold text-[var(--foreground)] ml-1">Select Icon</label>
-                <div className="grid grid-cols-5 gap-4">
-                  {icons.map(({ name, Icon }) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, icon: name })}
-                      className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all ${
-                        formData.icon === name 
-                          ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' 
-                          : 'bg-[var(--background)] border-[var(--border)] text-[var(--text-muted)] hover:border-indigo-500/50'
-                      }`}
-                    >
-                      <Icon size={24} />
-                      <span className="text-[10px] mt-2 font-bold uppercase">{name}</span>
-                    </button>
-                  ))}
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+            
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                  <Save size={20} />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Edit Service</h1>
+                  <p className="text-[var(--text-muted)] text-xs font-medium">Update treatment details for {formData.title}.</p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[var(--foreground)] ml-1">Image URL (Optional)</label>
-                <input 
-                  type="text" 
-                  placeholder="https://example.com/image.png"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full bg-[var(--background)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all"
-                />
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Service Title</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Laser Hair Removal"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm"
+                    />
+                  </div>
+                </div>
 
-              <div className="pt-6">
-                <Button 
-                  type="submit" 
-                  className="w-full py-5 text-lg" 
-                  loading={mutationLoading}
-                  icon={Save}
-                >
-                  Update Service
-                </Button>
-              </div>
-            </form>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Description</label>
+                  <textarea 
+                    required
+                    rows="3"
+                    placeholder="Describe the service in detail..."
+                    value={formData.desc}
+                    onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all resize-none text-sm min-h-[60px]"
+                  ></textarea>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Select Icon</label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {icons.map(({ name, Icon }) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, icon: name })}
+                        className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${
+                          formData.icon === name 
+                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' 
+                            : 'bg-[var(--background)] border-[var(--border)] text-[var(--text-muted)] hover:border-indigo-500/50'
+                        }`}
+                      >
+                        <Icon size={18} />
+                        <span className="text-[8px] mt-1 font-bold uppercase">{name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button 
+                    type="submit" 
+                    className="w-full py-3.5" 
+                    loading={mutationLoading}
+                    icon={Save}
+                  >
+                    Update Service
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </main>

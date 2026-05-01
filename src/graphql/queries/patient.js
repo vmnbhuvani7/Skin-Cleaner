@@ -12,6 +12,7 @@ export const GET_PATIENTS = gql`
         age
         gender
         isActive
+        image
       }
       totalCount
       totalPages
@@ -35,6 +36,7 @@ export const GET_PATIENT = gql`
       medicalHistory
       ongoingTreatments
       isActive
+      image
       createdAt
     }
   }

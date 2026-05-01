@@ -17,6 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { CREATE_PATIENT } from '@/graphql/mutations/patient';
 import { calculateAge } from '@/utils/dateUtils';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 export default function AddPatientPage() {
   const router = useRouter();
@@ -28,7 +29,8 @@ export default function AddPatientPage() {
     gender: 'Male',
     address: '',
     medicalHistory: '',
-    ongoingTreatments: ''
+    ongoingTreatments: '',
+    image: ''
   });
 
   const [age, setAge] = useState('');
@@ -98,130 +100,143 @@ export default function AddPatientPage() {
             Back to List
           </button>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[3rem] p-6 md:p-14 shadow-2xl relative overflow-hidden">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/5 blur-[100px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10">
-              <div className="mb-12">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6">
-                  <User size={32} />
+              <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+                  <User size={24} />
                 </div>
-                <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">Register New Patient</h1>
-                <p className="text-[var(--text-muted)] text-sm">Create a new patient record with basic and medical details.</p>
+                <div>
+                  <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Register New Patient</h1>
+                  <p className="text-[var(--text-muted)] text-xs">Create a new patient record with basic and medical details.</p>
+                </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8" noValidate>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Input
-                    label="Patient Name"
-                    icon={User}
-                    placeholder="John Doe"
-                    value={formData.name}
-                    error={errors.name}
-                    onChange={(e) => {
-                      setFormData({ ...formData, name: e.target.value });
-                      if (errors.name) setErrors({ ...errors, name: null });
-                    }}
-                  />
-                  <Input
-                    label="Email Address"
-                    icon={Mail}
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    error={errors.email}
-                    onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      if (errors.email) setErrors({ ...errors, email: null });
-                    }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Input
-                    label="Contact Number"
-                    icon={Phone}
-                    placeholder="98765 43210"
-                    value={formData.mobile}
-                    error={errors.mobile}
-                    onChange={(e) => {
-                      setFormData({ ...formData, mobile: e.target.value });
-                      if (errors.mobile) setErrors({ ...errors, mobile: null });
-                    }}
-                  />
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Gender</label>
-                    <Select 
-                      value={formData.gender} 
-                      onValueChange={(value) => setFormData({ ...formData, gender: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                  <div className="md:col-span-2 flex justify-center md:justify-start">
+                    <ImageUpload 
+                      label="Photo"
+                      value={formData.image}
+                      onChange={(val) => setFormData({ ...formData, image: val })}
+                      className="w-full max-w-[120px]"
+                    />
                   </div>
-                </div>
+                  
+                  <div className="md:col-span-10 grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <Input
+                      label="Patient Name"
+                      icon={User}
+                      placeholder="John Doe"
+                      value={formData.name}
+                      error={errors.name}
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: null });
+                      }}
+                    />
+                    <Input
+                      label="Email Address"
+                      icon={Mail}
+                      type="email"
+                      placeholder="john@example.com"
+                      value={formData.email}
+                      error={errors.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (errors.email) setErrors({ ...errors, email: null });
+                      }}
+                    />
+                    <Input
+                      label="Contact Number"
+                      icon={Phone}
+                      placeholder="98765 43210"
+                      value={formData.mobile}
+                      error={errors.mobile}
+                      onChange={(e) => {
+                        setFormData({ ...formData, mobile: e.target.value });
+                        if (errors.mobile) setErrors({ ...errors, mobile: null });
+                      }}
+                    />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <DatePicker
-                    label="Birth Date"
-                    date={formData.birthdate}
-                    setDate={(date) => {
-                      setFormData({ ...formData, birthdate: date });
-                      if (errors.birthdate) setErrors({ ...errors, birthdate: null });
-                    }}
-                    error={errors.birthdate}
-                    placeholder="Select birth date"
-                  />
-                  <Input
-                    label="Age"
-                    icon={Calendar}
-                    type="text"
-                    placeholder="Auto-calculated"
-                    value={age !== '' ? `${age} Years` : ''}
-                    disabled
-                    className="bg-[var(--surface-hover)]/50 opacity-70 cursor-not-allowed"
-                  />
-                </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Gender</label>
+                      <Select 
+                        value={formData.gender} 
+                        onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select Gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Home Address</label>
-                  <div className="relative">
-                    <MapPin size={18} className="absolute left-4 top-4 text-gray-500" />
-                    <textarea 
-                      placeholder="Enter full address..."
-                      className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[100px]"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    <DatePicker
+                      label="Birth Date"
+                      date={formData.birthdate}
+                      setDate={(date) => {
+                        setFormData({ ...formData, birthdate: date });
+                        if (errors.birthdate) setErrors({ ...errors, birthdate: null });
+                      }}
+                      error={errors.birthdate}
+                      placeholder="Select date"
+                      className="h-11"
+                    />
+
+                    <Input
+                      label="Age"
+                      icon={Calendar}
+                      type="text"
+                      placeholder="Auto"
+                      value={age !== '' ? `${age} Years` : ''}
+                      disabled
+                      className="bg-[var(--surface-hover)]/50 opacity-70 cursor-not-allowed h-11"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Medical History</label>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                  <div className="md:col-span-12 space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Home Address</label>
                     <div className="relative">
-                      <ClipboardList size={18} className="absolute left-4 top-4 text-gray-500" />
+                      <MapPin size={16} className="absolute left-4 top-3 text-gray-500" />
                       <textarea 
-                        placeholder="Previous conditions, allergies..."
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[120px]"
+                        placeholder="Enter full address..."
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-xs min-h-[50px] max-h-[80px]"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Medical History</label>
+                    <div className="relative">
+                      <ClipboardList size={16} className="absolute left-4 top-3 text-gray-500" />
+                      <textarea 
+                        placeholder="Conditions, allergies..."
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
                         value={formData.medicalHistory}
                         onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Ongoing Treatments</label>
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Ongoing Treatments</label>
                     <div className="relative">
-                      <Activity size={18} className="absolute left-4 top-4 text-gray-500" />
+                      <Activity size={16} className="absolute left-4 top-3 text-gray-500" />
                       <textarea 
-                        placeholder="Current medications, therapy..."
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm min-h-[120px]"
+                        placeholder="Current medications..."
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
                         value={formData.ongoingTreatments}
                         onChange={(e) => setFormData({ ...formData, ongoingTreatments: e.target.value })}
                       />
@@ -229,14 +244,14 @@ export default function AddPatientPage() {
                   </div>
                 </div>
 
-                <div className="pt-6">
+                <div className="pt-2">
                   <Button
                     type="submit"
-                    className="w-full py-5"
+                    className="w-full py-4"
                     isLoading={loading}
                     icon={Sparkles}
                   >
-                    Register Patient
+                    Register Patient Record
                   </Button>
                 </div>
               </form>

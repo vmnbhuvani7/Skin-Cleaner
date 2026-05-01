@@ -229,8 +229,12 @@ export default function DoctorsPage() {
                 className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm"
               >
                 <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                    <Award size={32} />
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 overflow-hidden">
+                    {doctor.image ? (
+                      <img src={doctor.image} alt={doctor.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Award size={32} />
+                    )}
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => router.push(`/doctors/edit/${doctor.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all">

@@ -12,6 +12,7 @@ export const GET_DOCTORS = gql`
         consultationFee
         mobile
         isActive
+        image
       }
       totalCount
       totalPages
@@ -31,6 +32,7 @@ export const GET_DOCTOR = gql`
       consultationFee
       mobile
       isActive
+      image
     }
   }
 `;

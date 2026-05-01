@@ -119,6 +119,10 @@ export default function TreatmentsPage() {
     hasMore: true
   });
 
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [paidAmount, setPaidAmount] = useState(0);
+  const [discount, setDiscount] = useState(0);
+
   // Queries
   const [getSessions, { loading: sessionsLoading }] = useLazyQuery(GET_ALL_SESSIONS, {
     notifyOnNetworkStatusChange: true,
@@ -177,7 +181,7 @@ export default function TreatmentsPage() {
       });
     }
   };
-  const { data: statsData } = useQuery(GET_GLOBAL_STATS);
+  const { data: statsData, refetch: refetchStats } = useQuery(GET_GLOBAL_STATS);
   const { data: patientsData } = useQuery(GET_PATIENTS, { variables: { limit: 100 } });
   const { data: servicesData } = useQuery(GET_SERVICES, { variables: { limit: 100 } });
   const { data: doctorsData } = useQuery(GET_DOCTORS, { variables: { limit: 100 } });
@@ -194,7 +198,10 @@ export default function TreatmentsPage() {
       setAppointmentDate(new Date().toISOString());
       setNotes('');
       setTreatmentType('One-time');
+      setTotalAmount(0);
+      setPaidAmount(0);
       refetchSessions();
+      refetchStats();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -212,7 +219,11 @@ export default function TreatmentsPage() {
       setTotalSessions(6);
       setIntervalWeeks(4);
       setTreatmentType('One-time');
+      setTotalAmount(0);
+      setPaidAmount(0);
+      setDiscount(0);
       refetchSessions();
+      refetchStats();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -225,11 +236,11 @@ export default function TreatmentsPage() {
       setAreaTreated('');
       setDosage('');
       setComplications('');
-      setBeforeNotes('');
-      setAfterNotes('');
       setNotes('');
+      setPaidAmount(0);
       setSelectedSession(null);
       refetchSessions();
+      refetchStats();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -239,20 +250,8 @@ export default function TreatmentsPage() {
       toast.success('Treatment updated');
       setIsEditModalOpen(false);
       setEditingSession(null);
-      setEditForm({
-        appointmentDate: '',
-        serviceId: '',
-        doctorId: '',
-        status: '',
-        notes: '',
-        areaTreated: '',
-        dosage: '',
-        complications: '',
-        actualDate: '',
-        treatmentStartTime: '',
-        treatmentEndTime: ''
-      });
       refetchSessions();
+      refetchStats();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -263,6 +262,7 @@ export default function TreatmentsPage() {
       setDeleteModalOpen(false);
       setTreatmentToDelete(null);
       refetchSessions();
+      refetchStats();
     },
     onError: (err) => {
       toast.error(err.message);
@@ -283,7 +283,10 @@ export default function TreatmentsPage() {
           totalSessions: parseInt(totalSessions),
           intervalWeeks: parseInt(intervalWeeks),
           firstAppointmentDate: appointmentDate,
-          notes
+          notes,
+          totalAmount: parseFloat(totalAmount),
+          paidAmount: parseFloat(paidAmount),
+          discount: parseFloat(discount)
         }
       });
     } else {
@@ -294,7 +297,9 @@ export default function TreatmentsPage() {
           doctorId: selectedDoctor || null,
           appointmentDate,
           status: 'Scheduled',
-          notes
+          notes,
+          baseAmount: parseFloat(totalAmount),
+          paidAmount: parseFloat(paidAmount)
         }
       });
     }
@@ -309,12 +314,11 @@ export default function TreatmentsPage() {
         areaTreated,
         dosage,
         complications,
-        beforeNotes,
-        afterNotes,
         notes,
         shouldAutoSchedule,
         nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
-        updateNextSessionId: existingNextSession?.id
+        updateNextSessionId: existingNextSession?.id,
+        paidAmount: parseFloat(paidAmount)
       }
     });
   };
@@ -326,6 +330,7 @@ export default function TreatmentsPage() {
     setComplications(session.complications || '');
     setNotes(session.notes || '');
     setActualDate(new Date().toISOString());
+    setPaidAmount(0); // Reset for completion
 
     // Logic to detect next session
     if (session.treatmentPlan) {
@@ -370,7 +375,9 @@ export default function TreatmentsPage() {
       areaTreated: session.areaTreated || '',
       dosage: session.dosage || '',
       complications: session.complications || '',
-      actualDate: session.actualDate || session.appointmentDate || ''
+      actualDate: session.actualDate || session.appointmentDate || '',
+      baseAmount: session.baseAmount || 0,
+      paidAmount: session.paidAmount || 0
     });
     setIsEditModalOpen(true);
   };
@@ -390,7 +397,9 @@ export default function TreatmentsPage() {
     updateSession({
       variables: {
         id: editingSession.id,
-        ...editForm
+        ...editForm,
+        baseAmount: parseFloat(editForm.baseAmount),
+        paidAmount: parseFloat(editForm.paidAmount)
       }
     });
   };
@@ -419,7 +428,7 @@ export default function TreatmentsPage() {
   };
 
 
-  const stats = statsData?.getGlobalStats || { completionRate: 0, dropoutRate: 0, noShowRate: 0 };
+  const stats = statsData?.getGlobalStats || { completionRate: 0, dropoutRate: 0, noShowRate: 0, totalRevenue: 0 };
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
@@ -433,7 +442,7 @@ export default function TreatmentsPage() {
             { label: 'Completion Rate', value: `${stats?.completionRate?.toFixed(1)}%`, icon: CheckCircle2, color: 'text-emerald-500' },
             { label: 'Dropout Rate', value: `${stats?.dropoutRate?.toFixed(1)}%`, icon: AlertCircle, color: 'text-orange-500' },
             { label: 'No-Show Rate', value: `${stats?.noShowRate?.toFixed(1)}%`, icon: XCircle, color: 'text-rose-500' },
-            { label: 'Est. Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-indigo-500' },
+            { label: 'Total Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-indigo-500' },
           ].map((stat, i) => (
             <div key={i} className="bg-[var(--surface)] border border-[var(--border)] p-5 rounded-[2rem] shadow-sm">
               <div className="flex items-center gap-3 mb-2">
@@ -453,8 +462,18 @@ export default function TreatmentsPage() {
           onClose={() => setIsAddModalOpen(false)}
           title="Initiate New Treatment"
           className="max-w-2xl"
+          footer={
+            <Button 
+              form="initiate-treatment-form"
+              type="submit" 
+              className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-600/20"
+              isLoading={scheduling || startingPlan}
+            >
+              {treatmentType === 'Series' ? 'Initialize Treatment Series' : 'Schedule Visit'}
+            </Button>
+          }
         >
-          <form onSubmit={handleAddSubmit} className="space-y-6">
+          <form id="initiate-treatment-form" onSubmit={handleAddSubmit} className="space-y-6">
             <div className="bg-[var(--surface-hover)] p-1 rounded-2xl flex border border-[var(--border)]">
               <button 
                 type="button" 
@@ -475,7 +494,21 @@ export default function TreatmentsPage() {
                   <SelectTrigger><SelectValue placeholder="Select Patient" /></SelectTrigger>
                   <SelectContent>
                     {patientsData?.getPatients?.patients?.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.mobile})</SelectItem>
+                      <SelectItem key={p.id} value={p.id}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500 overflow-hidden">
+                            {p.image ? (
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <User size={14} />
+                            )}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{p.name}</span>
+                            <span className="text-[10px] text-[var(--text-muted)]">{p.mobile}</span>
+                          </div>
+                        </div>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -522,15 +555,30 @@ export default function TreatmentsPage() {
                 <DateTimePicker label="Appointment Date" date={appointmentDate} setDate={setAppointmentDate} />
               </div>
 
+              {/* Financial Inputs */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">{treatmentType === 'Series' ? 'Plan Total Amount' : 'Service Amount'}</label>
+                <Input type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Initial Payment (Advance)</label>
+                <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} />
+              </div>
+
+              {treatmentType === 'Series' && (
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Discount Given</label>
+                  <Input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0.00" icon={Sparkles} />
+                </div>
+              )}
+
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">Initial Notes</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] outline-none" />
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-14 rounded-2xl" isLoading={scheduling || startingPlan}>
-              {treatmentType === 'Series' ? 'Initialize Treatment Series' : 'Schedule Visit'}
-            </Button>
           </form>
         </Modal>
 
@@ -571,7 +619,12 @@ export default function TreatmentsPage() {
                 <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="e.g., 20J/cm², Pulse 30ms" />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Amount Paid Today</label>
+                <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0.00" icon={TrendingUp} />
+              </div>
+
+              <div className="space-y-2">
                 <DateTimePicker 
                   label="Actual Treatment Date & Time"
                   date={actualDate}
@@ -668,8 +721,18 @@ export default function TreatmentsPage() {
           onClose={() => setIsEditModalOpen(false)}
           title="Edit Treatment Session"
           className="max-w-2xl"
+          footer={
+            <Button 
+              form="edit-treatment-form"
+              type="submit" 
+              className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-600/20" 
+              isLoading={updating}
+            >
+              Save Changes
+            </Button>
+          }
         >
-          <form onSubmit={handleUpdateSubmit} className="space-y-6">
+          <form id="edit-treatment-form" onSubmit={handleUpdateSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <DateTimePicker 
@@ -747,7 +810,6 @@ export default function TreatmentsPage() {
               <textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Clinical observations and treatment details..." className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl p-4 text-sm min-h-[100px] outline-none focus:border-indigo-500/50" />
             </div>
 
-            <Button type="submit" className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-600/20" isLoading={updating}>Save Changes</Button>
           </form>
         </Modal>
 
@@ -874,6 +936,22 @@ export default function TreatmentsPage() {
                             {getStatusIcon(session.status)}
                             {session.status}
                           </div>
+                          
+                          {/* Financial Status */}
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Paid:</span>
+                              <span className="text-xs font-bold text-emerald-500">₹{session.paidAmount || 0}</span>
+                              <span className="text-[10px] text-[var(--text-muted)]">/ ₹{session.baseAmount || 0}</span>
+                            </div>
+                            {session.treatmentPlan && (
+                              <div className="flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full ${session.treatmentPlan.paymentStatus === 'Fully Paid' ? 'bg-emerald-500' : session.treatmentPlan.paymentStatus === 'Partially Paid' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                <span className="text-[8px] font-bold uppercase tracking-tighter text-[var(--text-muted)]">Plan: {session.treatmentPlan.paymentStatus}</span>
+                              </div>
+                            )}
+                          </div>
+
                           {session.treatmentPlan && (
                              <div className="w-full min-w-[200px]">
                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">

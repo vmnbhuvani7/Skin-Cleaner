@@ -24,7 +24,13 @@ export const GET_PATIENT_SESSIONS = gql`
         totalSessions
         completedSessions
         status
+        totalAmount
+        paidAmount
+        discount
+        paymentStatus
       }
+      baseAmount
+      paidAmount
     }
   }
 `;
@@ -38,6 +44,8 @@ export const SCHEDULE_SESSION = gql`
     $doctorId: ID
     $notes: String
     $sessionNumber: Int
+    $baseAmount: Float
+    $paidAmount: Float
   ) {
     scheduleSession(
       patientId: $patientId
@@ -47,10 +55,14 @@ export const SCHEDULE_SESSION = gql`
       doctorId: $doctorId
       notes: $notes
       sessionNumber: $sessionNumber
+      baseAmount: $baseAmount
+      paidAmount: $paidAmount
     ) {
       id
       appointmentDate
       status
+      baseAmount
+      paidAmount
     }
   }
 `;
@@ -78,6 +90,8 @@ export const UPDATE_SESSION = gql`
     $actualDate: String
     $treatmentStartTime: String
     $treatmentEndTime: String
+    $baseAmount: Float
+    $paidAmount: Float
   ) {
     updateSession(
       id: $id
@@ -92,11 +106,15 @@ export const UPDATE_SESSION = gql`
       actualDate: $actualDate
       treatmentStartTime: $treatmentStartTime
       treatmentEndTime: $treatmentEndTime
+      baseAmount: $baseAmount
+      paidAmount: $paidAmount
     ) {
       id
       appointmentDate
       notes
       status
+      baseAmount
+      paidAmount
     }
   }
 `;

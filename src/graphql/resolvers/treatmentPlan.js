@@ -47,28 +47,55 @@ export const treatmentPlanResolvers = {
       const totalSessions = allSessions.length || 1;
       const missedSessions = allSessions.filter(s => s.status === 'Missed').length;
 
+      // Revenue = One-time sessions + Plan payments
+      const oneTimeRevenue = allSessions
+        .filter(s => !s.treatmentPlan)
+        .reduce((sum, s) => sum + (s.paidAmount || 0), 0);
+      
+      const planRevenue = allPlans.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
+
       return {
         completionRate: (completedPlans / totalPlans) * 100,
         dropoutRate: (abandonedPlans / totalPlans) * 100,
         noShowRate: (missedSessions / totalSessions) * 100,
-        totalRevenue: totalSessions * 1500, // Placeholder revenue calculation
+        totalRevenue: oneTimeRevenue + planRevenue,
       };
     }
   },
   Mutation: {
-    startTreatmentPlan: async (_, { patientId, serviceId, doctorId, totalSessions, intervalWeeks, firstAppointmentDate, notes }) => {
+    startTreatmentPlan: async (_, { 
+      patientId, 
+      serviceId, 
+      doctorId, 
+      totalSessions, 
+      intervalWeeks, 
+      firstAppointmentDate, 
+      notes,
+      totalAmount,
+      paidAmount,
+      discount
+    }) => {
       await dbConnect();
       
+      const paymentStatus = (paidAmount || 0) >= (totalAmount || 0) ? 'Fully Paid' : (paidAmount > 0 ? 'Partially Paid' : 'Pending');
+
       const plan = await TreatmentPlan.create({
         patient: patientId,
         service: serviceId,
         doctor: doctorId,
         totalSessions: totalSessions || 1,
         intervalWeeks: intervalWeeks || 4,
-        status: 'In Progress'
+        status: 'In Progress',
+        totalAmount: totalAmount || 0,
+        paidAmount: paidAmount || 0,
+        discount: discount || 0,
+        paymentStatus
       });
 
       // Create the first session
+      // If upfront payment was made, we might want to record it on the first session too?
+      // Actually, if it's upfront, it's on the plan. 
+      // But let's track the session's base amount.
       await TreatmentSession.create({
         patient: patientId,
         treatmentPlan: plan.id,
@@ -77,7 +104,8 @@ export const treatmentPlanResolvers = {
         sessionNumber: 1,
         appointmentDate: new Date(firstAppointmentDate),
         status: 'Scheduled',
-        notes
+        notes,
+        baseAmount: (totalAmount || 0) / (totalSessions || 1)
       });
 
       return plan;
@@ -86,12 +114,21 @@ export const treatmentPlanResolvers = {
       await dbConnect();
       return await TreatmentPlan.findByIdAndUpdate(id, { 
         status: 'Cancelled',
-        // In a real app, you might save the reason in a notes field
       }, { new: true });
     },
     updateTreatmentPlan: async (_, { id, doctorId, ...updates }) => {
       await dbConnect();
       if (doctorId) updates.doctor = doctorId;
+      
+      const plan = await TreatmentPlan.findById(id);
+      if (!plan) return null;
+
+      // Recalculate payment status if amounts are updated
+      const newTotal = updates.totalAmount !== undefined ? updates.totalAmount : plan.totalAmount;
+      const newPaid = updates.paidAmount !== undefined ? updates.paidAmount : plan.paidAmount;
+      
+      updates.paymentStatus = (newPaid || 0) >= (newTotal || 0) ? 'Fully Paid' : (newPaid > 0 ? 'Partially Paid' : 'Pending');
+
       return await TreatmentPlan.findByIdAndUpdate(id, updates, { new: true });
     }
   }

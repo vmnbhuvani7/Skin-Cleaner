@@ -13,9 +13,6 @@ const ServiceSchema = new mongoose.Schema({
     type: String,
     default: 'Zap',
   },
-  image: {
-    type: String,
-  },
   isActive: {
     type: Boolean,
     default: true,

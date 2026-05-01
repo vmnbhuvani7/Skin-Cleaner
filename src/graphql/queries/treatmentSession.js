@@ -15,6 +15,10 @@ export const GET_ALL_SESSIONS = gql`
           totalSessions
           completedSessions
           status
+          totalAmount
+          paidAmount
+          discount
+          paymentStatus
         }
         service {
           id
@@ -36,6 +40,8 @@ export const GET_ALL_SESSIONS = gql`
         beforeNotes
         afterNotes
         notes
+        baseAmount
+        paidAmount
       }
       totalCount
       totalPages

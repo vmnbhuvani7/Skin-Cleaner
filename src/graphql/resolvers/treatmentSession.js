@@ -105,9 +105,10 @@ export const treatmentSessionResolvers = {
     },
   },
   Mutation: {
-    scheduleSession: async (_, { patientId, treatmentPlanId, appointmentDate, actualDate, isWalkIn, serviceId, doctorId, status, notes, sessionNumber }) => {
+    scheduleSession: async (_, { patientId, treatmentPlanId, appointmentDate, actualDate, isWalkIn, serviceId, doctorId, status, notes, sessionNumber, baseAmount, paidAmount }) => {
       await dbConnect();
-      return await TreatmentSession.create({
+      
+      const session = await TreatmentSession.create({
         patient: patientId,
         treatmentPlan: treatmentPlanId,
         appointmentDate: new Date(appointmentDate),
@@ -117,10 +118,30 @@ export const treatmentSessionResolvers = {
         service: serviceId,
         doctor: doctorId,
         notes,
-        sessionNumber: sessionNumber || 1
+        sessionNumber: sessionNumber || 1,
+        baseAmount: baseAmount || 0,
+        paidAmount: paidAmount || 0
       });
+
+      // If one-time session has paidAmount, we consider it part of revenue
+      // (Global stats already sums this up)
+
+      // If it's part of a plan and has paidAmount, update plan
+      if (treatmentPlanId && paidAmount > 0) {
+        const plan = await TreatmentPlan.findById(treatmentPlanId);
+        if (plan) {
+          const newPaid = plan.paidAmount + paidAmount;
+          const paymentStatus = newPaid >= plan.totalAmount ? 'Fully Paid' : (newPaid > 0 ? 'Partially Paid' : 'Pending');
+          await TreatmentPlan.findByIdAndUpdate(treatmentPlanId, { 
+            paidAmount: newPaid,
+            paymentStatus
+          });
+        }
+      }
+
+      return session;
     },
-    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes, shouldAutoSchedule, nextSessionDate, updateNextSessionId }) => {
+    completeSession: async (_, { id, actualDate, treatmentStartTime, treatmentEndTime, areaTreated, dosage, complications, beforeNotes, afterNotes, notes, shouldAutoSchedule, nextSessionDate, updateNextSessionId, paidAmount }) => {
       await dbConnect();
       const session = await TreatmentSession.findById(id);
       if (!session) throw new Error('Session not found');
@@ -136,7 +157,8 @@ export const treatmentSessionResolvers = {
         beforeNotes,
         afterNotes,
         notes,
-        attended: true
+        attended: true,
+        paidAmount: paidAmount || 0
       }, { new: true });
 
       // Handle existing next session update
@@ -146,18 +168,24 @@ export const treatmentSessionResolvers = {
         });
       }
 
-      // If part of a series, handle auto-scheduling (only if not already updated an existing one)
-      if (session.treatmentPlan && !updateNextSessionId && shouldAutoSchedule !== false) {
+      // If part of a series, handle auto-scheduling and plan progress
+      if (session.treatmentPlan) {
         const plan = await TreatmentPlan.findById(session.treatmentPlan);
         const newCompletedCount = plan.completedSessions + 1;
         
+        // Update plan progress AND cumulative payment
+        const newPlanPaid = plan.paidAmount + (paidAmount || 0);
+        const paymentStatus = newPlanPaid >= plan.totalAmount ? 'Fully Paid' : (newPlanPaid > 0 ? 'Partially Paid' : 'Pending');
+
         await TreatmentPlan.findByIdAndUpdate(plan.id, {
           completedSessions: newCompletedCount,
-          status: newCompletedCount >= plan.totalSessions ? 'Completed' : 'In Progress'
+          status: newCompletedCount >= plan.totalSessions ? 'Completed' : 'In Progress',
+          paidAmount: newPlanPaid,
+          paymentStatus
         });
 
         // Auto-schedule next session if not finished and requested
-        if (newCompletedCount < plan.totalSessions) {
+        if (!updateNextSessionId && shouldAutoSchedule !== false && newCompletedCount < plan.totalSessions) {
           const finalNextDate = nextSessionDate ? new Date(nextSessionDate) : new Date(actualDate);
           if (!nextSessionDate) {
             finalNextDate.setDate(finalNextDate.getDate() + (plan.intervalWeeks * 7));
@@ -171,18 +199,10 @@ export const treatmentSessionResolvers = {
             sessionNumber: newCompletedCount + 1,
             appointmentDate: finalNextDate,
             status: 'Scheduled',
-            notes: `Auto-scheduled follow-up for ${plan.service.title || 'treatment'}`
+            notes: `Auto-scheduled follow-up for ${plan.service.title || 'treatment'}`,
+            baseAmount: plan.totalAmount / plan.totalSessions
           });
         }
-      } else if (session.treatmentPlan && (shouldAutoSchedule === false || updateNextSessionId)) {
-        // Just update count (if not already completed count update logic above)
-        // Wait, if updateNextSessionId is used, we still need to update the plan count
-        const plan = await TreatmentPlan.findById(session.treatmentPlan);
-        const newCompletedCount = plan.completedSessions + 1;
-        await TreatmentPlan.findByIdAndUpdate(plan.id, {
-          completedSessions: newCompletedCount,
-          status: newCompletedCount >= plan.totalSessions ? 'Completed' : 'In Progress'
-        });
       }
 
       return updatedSession;
@@ -208,18 +228,36 @@ export const treatmentSessionResolvers = {
 
       return updatedSession;
     },
-    updateSession: async (_, { id, appointmentDate, doctorId, serviceId, ...others }) => {
+    updateSession: async (_, { id, appointmentDate, doctorId, serviceId, baseAmount, paidAmount, ...others }) => {
       await dbConnect();
       const updates = { ...others };
       if (appointmentDate) updates.appointmentDate = new Date(appointmentDate);
       if (doctorId) updates.doctor = doctorId;
       if (serviceId) updates.service = serviceId;
+      if (baseAmount !== undefined) updates.baseAmount = baseAmount;
+      if (paidAmount !== undefined) updates.paidAmount = paidAmount;
       
       if (updates.actualDate) updates.actualDate = new Date(updates.actualDate);
       if (updates.treatmentStartTime) updates.treatmentStartTime = new Date(updates.treatmentStartTime);
       if (updates.treatmentEndTime) updates.treatmentEndTime = new Date(updates.treatmentEndTime);
 
       const session = await TreatmentSession.findById(id);
+      
+      // If paidAmount is updated and it belongs to a plan, we need to adjust the plan's cumulative total
+      if (session.treatmentPlan && paidAmount !== undefined && paidAmount !== session.paidAmount) {
+        const plan = await TreatmentPlan.findById(session.treatmentPlan);
+        if (plan) {
+          const diff = paidAmount - session.paidAmount;
+          const newPlanPaid = plan.paidAmount + diff;
+          const paymentStatus = newPlanPaid >= plan.totalAmount ? 'Fully Paid' : (newPlanPaid > 0 ? 'Partially Paid' : 'Pending');
+          
+          await TreatmentPlan.findByIdAndUpdate(plan.id, {
+            paidAmount: newPlanPaid,
+            paymentStatus
+          });
+        }
+      }
+
       const updatedSession = await TreatmentSession.findByIdAndUpdate(id, updates, { new: true });
 
       // If status changed to Completed, we might need to update the plan progress

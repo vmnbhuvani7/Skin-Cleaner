@@ -266,11 +266,6 @@ export default function ServicesPage() {
                     {service.desc}
                   </p>
                   
-                  {service.image && (
-                    <div className="mt-4 rounded-2xl overflow-hidden h-32 w-full relative">
-                       <img src={service.image} alt={service.title} className="object-cover w-full h-full" />
-                    </div>
-                  )}
 
                   <div className="mt-6 pt-6 border-t border-[var(--border)] flex items-center justify-between">
                     <div className="flex items-center gap-2">

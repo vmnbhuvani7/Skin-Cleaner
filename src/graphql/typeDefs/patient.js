@@ -11,6 +11,7 @@ export const patientTypeDefs = `#graphql
     medicalHistory: String
     ongoingTreatments: String
     isActive: Boolean!
+    image: String
     createdAt: String
   }
 
@@ -37,6 +38,7 @@ export const patientTypeDefs = `#graphql
       address: String
       medicalHistory: String
       ongoingTreatments: String
+      image: String
     ): Patient
 
     updatePatient(
@@ -49,6 +51,7 @@ export const patientTypeDefs = `#graphql
       address: String
       medicalHistory: String
       ongoingTreatments: String
+      image: String
       isActive: Boolean
     ): Patient
 

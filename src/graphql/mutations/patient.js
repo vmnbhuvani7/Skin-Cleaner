@@ -10,6 +10,7 @@ export const CREATE_PATIENT = gql`
     $address: String
     $medicalHistory: String
     $ongoingTreatments: String
+    $image: String
   ) {
     createPatient(
       name: $name
@@ -20,6 +21,7 @@ export const CREATE_PATIENT = gql`
       address: $address
       medicalHistory: $medicalHistory
       ongoingTreatments: $ongoingTreatments
+      image: $image
     ) {
       id
       name
@@ -38,6 +40,7 @@ export const UPDATE_PATIENT = gql`
     $address: String
     $medicalHistory: String
     $ongoingTreatments: String
+    $image: String
     $isActive: Boolean
   ) {
     updatePatient(
@@ -50,6 +53,7 @@ export const UPDATE_PATIENT = gql`
       address: $address
       medicalHistory: $medicalHistory
       ongoingTreatments: $ongoingTreatments
+      image: $image
       isActive: $isActive
     ) {
       id

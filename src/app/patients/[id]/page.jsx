@@ -280,6 +280,7 @@ export default function PatientDetailPage() {
     setComplications(session.complications || '');
     setClinicalNotes(session.notes || '');
     setActualDate(new Date().toISOString());
+    setPaidAmount(0); // Reset for completion
 
     // Logic to detect next session or calculate suggested date
     if (session.treatmentPlan) {
@@ -315,16 +316,14 @@ export default function PatientDetailPage() {
     setIsCompleteModalOpen(true);
   };
 
+  const [paidAmount, setPaidAmount] = useState(0);
+
   const [completeSession, { loading: completing }] = useMutation(COMPLETE_SESSION, {
     onCompleted: () => {
       toast.success('Treatment record saved');
       setIsCompleteModalOpen(false);
       setSessionToProcess(null);
-      // Reset clinical states
-      setAreaTreated('');
-      setDosage('');
-      setComplications('');
-      setClinicalNotes('');
+      setPaidAmount(0);
       refetchSessions();
       refetchPlans();
     },
@@ -333,19 +332,18 @@ export default function PatientDetailPage() {
 
   const handleCompleteSubmit = (e) => {
     e.preventDefault();
-    if (!sessionToProcess) return;
-    
     completeSession({
       variables: {
         id: sessionToProcess.id,
+        actualDate,
         areaTreated,
         dosage,
         complications,
         notes: clinicalNotes,
-        actualDate,
         shouldAutoSchedule,
         nextSessionDate: (shouldAutoSchedule || existingNextSession) ? nextSuggestedDate : null,
-        updateNextSessionId: existingNextSession?.id
+        updateNextSessionId: existingNextSession?.id,
+        paidAmount: parseFloat(paidAmount)
       }
     });
   };
@@ -897,8 +895,12 @@ export default function PatientDetailPage() {
               <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 relative overflow-hidden shadow-xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 blur-[40px] rounded-full pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="w-24 h-24 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6 border border-indigo-500/20 shadow-inner">
-                    <User size={40} />
+                  <div className="w-24 h-24 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6 border border-indigo-500/20 shadow-inner overflow-hidden">
+                    {patient.image ? (
+                      <img src={patient.image} alt={patient.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={40} />
+                    )}
                   </div>
                   <h1 className="text-2xl font-bold text-[var(--foreground)] mb-1">{patient.name}</h1>
                   <p className="text-indigo-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-4">{patient.gender} • {patient.age} Years</p>
@@ -1239,9 +1241,16 @@ export default function PatientDetailPage() {
                                     <h4 className="text-lg font-bold text-[var(--foreground)]">
                                       {session.service?.title || 'Consultation & Assessment'}
                                     </h4>
-                                    <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest border ${getStatusClass(session.status)}`}>
-                                      {session.status.toUpperCase()} ●
-                                    </span>
+                                    <div className="flex flex-col items-end gap-1 text-right ml-auto">
+                                      <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--foreground)]">
+                                        <span className="text-[10px] text-[var(--text-muted)]">Paid:</span>
+                                        <span className="text-emerald-500">₹{session.paidAmount || 0}</span>
+                                        <span className="text-[10px] text-[var(--text-muted)]">/ ₹{session.baseAmount || 0}</span>
+                                      </div>
+                                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${getStatusClass(session.status)}`}>
+                                        {session.status.toUpperCase()} ●
+                                      </span>
+                                    </div>
                                   </div>
                                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-[var(--text-muted)] font-medium uppercase mt-2">
                                     <span className="flex items-center gap-1"><Calendar size={12} /> Date: {new Date(session.appointmentDate).toLocaleString()}</span>

@@ -33,6 +33,23 @@ const TreatmentPlanSchema = new mongoose.Schema({
     enum: ['In Progress', 'Completed', 'Abandoned', 'Cancelled'],
     default: 'In Progress',
   },
+  totalAmount: {
+    type: Number,
+    default: 0,
+  },
+  paidAmount: {
+    type: Number,
+    default: 0,
+  },
+  discount: {
+    type: Number,
+    default: 0,
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['Pending', 'Partially Paid', 'Fully Paid'],
+    default: 'Pending',
+  },
   createdAt: {
     type: Date,
     default: Date.now,

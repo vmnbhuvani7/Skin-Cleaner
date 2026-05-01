@@ -8,6 +8,10 @@ export const treatmentPlanTypeDefs = `#graphql
     completedSessions: Int!
     intervalWeeks: Int!
     status: String!
+    totalAmount: Float
+    paidAmount: Float
+    discount: Float
+    paymentStatus: String
     createdAt: String
     sessions: [TreatmentSession]
   }
@@ -34,6 +38,9 @@ export const treatmentPlanTypeDefs = `#graphql
       intervalWeeks: Int
       firstAppointmentDate: String!
       notes: String
+      totalAmount: Float
+      paidAmount: Float
+      discount: Float
     ): TreatmentPlan
 
     cancelPlan(id: ID!, reason: String): TreatmentPlan
@@ -44,6 +51,9 @@ export const treatmentPlanTypeDefs = `#graphql
       intervalWeeks: Int
       status: String
       doctorId: ID
+      totalAmount: Float
+      paidAmount: Float
+      discount: Float
     ): TreatmentPlan
   }
 `;

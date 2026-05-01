@@ -7,6 +7,7 @@ export const doctorTypeDefs = `#graphql
     consultationFee: Int!
     mobile: String!
     isActive: Boolean!
+    image: String
     createdAt: String
   }
 
@@ -30,6 +31,7 @@ export const doctorTypeDefs = `#graphql
       experience: Int!
       consultationFee: Int!
       mobile: String!
+      image: String
     ): Doctor
 
     updateDoctor(
@@ -39,6 +41,7 @@ export const doctorTypeDefs = `#graphql
       experience: Int
       consultationFee: Int
       mobile: String
+      image: String
       isActive: Boolean
     ): Doctor
 
