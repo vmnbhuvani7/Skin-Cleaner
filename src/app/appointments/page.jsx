@@ -18,6 +18,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 import { GET_APPOINTMENTS, GET_APPOINTMENT_STATS } from '@/graphql/queries/appointment';
 import { APPROVE_APPOINTMENT, REJECT_APPOINTMENT, DELETE_APPOINTMENT } from '@/graphql/mutations/appointment';
+import { ITEMS_PER_PAGE } from '@/constants/settings';
 
 export default function AppointmentsPage() {
   const router = useRouter();
@@ -26,7 +27,6 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const getTodayDateRange = () => {
     if (statusFilter !== 'today') return {};
@@ -124,8 +124,8 @@ export default function AppointmentsPage() {
     a.service.title.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = filteredAppointments.slice(indexOfFirstItem, indexOfLastItem);
 
   const stats = statsData?.getAppointmentStats || {
@@ -303,7 +303,7 @@ export default function AppointmentsPage() {
             </div>
           )}
 
-          <Pagination totalItems={filteredAppointments.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+          <Pagination totalItems={filteredAppointments.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
         </div>
       </main>
     </div>

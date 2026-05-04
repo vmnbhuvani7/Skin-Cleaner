@@ -18,6 +18,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 import { GET_PATIENTS } from '@/graphql/queries/patient';
 import { UPDATE_PATIENT, DELETE_PATIENT } from '@/graphql/mutations/patient';
+import { ITEMS_PER_PAGE } from '@/constants/settings';
 
 export default function PatientsPage() {
   const router = useRouter();
@@ -26,7 +27,6 @@ export default function PatientsPage() {
   const [statusFilter, setStatusFilter] = useState('both');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const { data, loading, refetch } = useQuery(GET_PATIENTS, {
     variables: { 
@@ -80,8 +80,8 @@ export default function PatientsPage() {
     p.email.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = filteredPatients.slice(indexOfFirstItem, indexOfLastItem);
 
   const columns = [
@@ -284,7 +284,7 @@ export default function PatientsPage() {
             </div>
           )}
 
-          <Pagination totalItems={filteredPatients.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+          <Pagination totalItems={filteredPatients.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
 
           {filteredPatients.length === 0 && !loading && (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">

@@ -17,6 +17,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { UPDATE_SERVICE, DELETE_SERVICE } from '@/graphql/mutations/service';
+import { ITEMS_PER_PAGE } from '@/constants/settings';
 
 const iconMap = {
   Zap,
@@ -33,13 +34,12 @@ export default function ServicesPage() {
   const [statusFilter, setStatusFilter] = useState('both');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const { data, loading, refetch } = useQuery(GET_SERVICES, {
     variables: { 
-      page: 1, 
-      limit: 100,
-      search: '',
+      page: currentPage, 
+      limit: ITEMS_PER_PAGE,
+      search: searchTerm,
       isActive: statusFilter === 'both' ? undefined : statusFilter === 'active'
     },
     fetchPolicy: 'cache-and-network'
@@ -79,15 +79,8 @@ export default function ServicesPage() {
     }
   };
 
-  const filteredServices = data?.getServices?.services?.filter(s =>
-    s.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.desc.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
-  // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredServices.slice(indexOfFirstItem, indexOfLastItem);
+  const services = data?.getServices?.services || [];
+  const totalItems = data?.getServices?.totalCount || 0;
 
   const columns = [
     {
@@ -204,7 +197,7 @@ export default function ServicesPage() {
                 {['both', 'active', 'inactive'].map((f) => (
                   <button 
                     key={f}
-                    onClick={() => setStatusFilter(f)}
+                    onClick={() => { setStatusFilter(f); setCurrentPage(1); }}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
                   >
                     {f}
@@ -220,14 +213,14 @@ export default function ServicesPage() {
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden shadow-sm">
               <DataTable 
                 columns={columns} 
-                data={currentItems} 
+                data={services} 
                 onRowClick={(row) => router.push(`/services/edit/${row.id}`)}
                 isLoading={loading}
               />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {currentItems.map((service) => {
+              {services.map((service) => {
                 const IconComponent = iconMap[service.icon] || Zap;
                 return (
                   <div key={service.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm flex flex-col h-full">
@@ -268,13 +261,13 @@ export default function ServicesPage() {
 
           {/* Pagination */}
           <Pagination 
-            totalItems={filteredServices.length}
-            itemsPerPage={itemsPerPage}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
           />
 
-          {filteredServices.length === 0 && !loading && (
+          {services.length === 0 && !loading && (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
               <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
                 <Scissors size={40} />

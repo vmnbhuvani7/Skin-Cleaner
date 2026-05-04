@@ -22,6 +22,7 @@ const formatAmount = (amount) => {
 
 import { GET_TREATMENTS } from '@/graphql/queries/treatment';
 import { DELETE_TREATMENT } from '@/graphql/mutations/treatment';
+import { ITEMS_PER_PAGE } from '@/constants/settings';
 
 import { Suspense } from 'react';
 
@@ -34,7 +35,6 @@ function TreatmentsContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const { loading, error, data, refetch } = useQuery(GET_TREATMENTS);
 
@@ -84,8 +84,8 @@ function TreatmentsContent() {
   ) || [];
 
   // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = filteredTreatments.slice(indexOfFirstItem, indexOfLastItem);
 
   const { theme } = useTheme();
@@ -278,7 +278,7 @@ function TreatmentsContent() {
           {/* Pagination */}
           <Pagination 
             totalItems={filteredTreatments.length}
-            itemsPerPage={itemsPerPage}
+            itemsPerPage={ITEMS_PER_PAGE}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
           />

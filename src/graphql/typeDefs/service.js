@@ -4,6 +4,7 @@ export const serviceTypeDefs = `#graphql
     title: String!
     desc: String!
     icon: String
+    image: String
     isActive: Boolean
     createdAt: String
   }
@@ -25,6 +26,7 @@ export const serviceTypeDefs = `#graphql
       title: String!
       desc: String!
       icon: String
+      image: String
     ): Service
 
     updateService(
@@ -32,6 +34,7 @@ export const serviceTypeDefs = `#graphql
       title: String
       desc: String
       icon: String
+      image: String
       isActive: Boolean
     ): Service
 

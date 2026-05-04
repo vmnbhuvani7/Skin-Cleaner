@@ -18,6 +18,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { UPDATE_DOCTOR, DELETE_DOCTOR } from '@/graphql/mutations/doctor';
+import { ITEMS_PER_PAGE } from '@/constants/settings';
 
 export default function DoctorsPage() {
   const router = useRouter();
@@ -26,7 +27,6 @@ export default function DoctorsPage() {
   const [statusFilter, setStatusFilter] = useState('both');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const { data, loading, refetch } = useQuery(GET_DOCTORS, {
     variables: { 
@@ -77,8 +77,8 @@ export default function DoctorsPage() {
     d.specialization.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = filteredDoctors.slice(indexOfFirstItem, indexOfLastItem);
 
   const columns = [
@@ -250,7 +250,7 @@ export default function DoctorsPage() {
             </div>
           )}
 
-          <Pagination totalItems={filteredDoctors.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+          <Pagination totalItems={filteredDoctors.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
         </div>
       </main>
     </div>
