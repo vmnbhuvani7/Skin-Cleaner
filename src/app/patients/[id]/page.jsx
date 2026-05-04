@@ -75,6 +75,12 @@ export default function PatientDetailPage() {
               >
                 Edit Profile
               </Button>
+              <Button 
+                onClick={() => router.push(`/appointments/add?patient=${id}`)}
+                icon={Plus}
+              >
+                Book Appointment
+              </Button>
             </div>
           </div>
 

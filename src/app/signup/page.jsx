@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { SIGNUP_MUTATION } from '@/graphql/mutations/auth';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { DEFAULT_LOGIN_REDIRECT } from '@/constants/routes';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function SignupPage() {
   const [signup, { loading }] = useMutation(SIGNUP_MUTATION, {
     onCompleted: (data) => {
       localStorage.setItem('token', data.signup.token);
-      router.push('/chat');
+      router.push(DEFAULT_LOGIN_REDIRECT);
     },
     onError: (err) => {
       setError(err.message || 'Signup failed. Please try again.');

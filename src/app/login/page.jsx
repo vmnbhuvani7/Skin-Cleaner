@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { LOGIN_MUTATION } from '@/graphql/mutations/auth';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { DEFAULT_LOGIN_REDIRECT } from '@/constants/routes';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function LoginPage() {
   const [login, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       localStorage.setItem('token', data.login.token);
-      router.push('/chat');
+      router.push(DEFAULT_LOGIN_REDIRECT);
     },
     onError: (err) => {
       setError(err.message || 'Login failed. Please check your credentials.');

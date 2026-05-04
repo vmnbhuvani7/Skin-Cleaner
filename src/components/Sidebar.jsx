@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   Users,
+  Calendar,
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
@@ -87,12 +88,18 @@ export default function Sidebar() {
       isActive: pathname === '/services'
     },
     { 
-      icon: Bot, 
-      label: 'AI Helper', 
-      hasSubmenu: true, 
-      onClick: () => setView('chat'),
-      isActive: view === 'chat'
+      icon: Calendar, 
+      label: 'Appointments', 
+      onClick: () => router.push('/appointments'),
+      isActive: pathname === '/appointments' || pathname.startsWith('/appointments/')
     },
+    // { 
+    //   icon: Bot, 
+    //   label: 'AI Helper', 
+    //   hasSubmenu: true, 
+    //   onClick: () => setView('chat'),
+    //   isActive: view === 'chat'
+    // },
   ];
 
   const ThemeIcon = {
