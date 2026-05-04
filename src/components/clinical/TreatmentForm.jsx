@@ -28,7 +28,7 @@ const schema = z.object({
   serviceId: z.string().min(1, 'Service is required'),
   doctorId: z.string().min(1, 'Doctor is required'),
   type: z.enum(['ONE_TIME', 'MULTI_SESSION']),
-  totalAmount: z.number().min(0, 'Total amount must be positive'),
+  totalAmount: z.number().min(1, 'Service amount is required'),
   discount: z.number().min(0, 'Discount must be positive').default(0),
   finalAmount: z.number().min(0),
   totalSessions: z.number().min(1, 'At least 1 session is required').default(1),
@@ -65,6 +65,8 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
       cashPayment: treatment.sessions?.[0]?.cashPayment || 0,
     } : {
       patientId: initialPatientId || '',
+      serviceId: '',
+      doctorId: '',
       type: 'ONE_TIME',
       totalAmount: 0,
       discount: 0,
@@ -163,48 +165,57 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
         </div>
         <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-            <Controller
-              name="patientId"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
-                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
-                    <SelectValue placeholder="Select Patient" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {patientsData?.getPatients?.patients?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Controller
-              name="serviceId"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
-                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
-                    <SelectValue placeholder="Select Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {servicesData?.getServices?.services?.map(s => <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Controller
-              name="doctorId"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
-                    <SelectValue placeholder="Select Doctor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {doctorsData?.getDoctors?.doctors?.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+            <div className="space-y-1">
+              <Controller
+                name="patientId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.patientId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                      <SelectValue placeholder="Select Patient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {patientsData?.getPatients?.patients?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.patientId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.patientId.message}</p>}
+            </div>
+            <div className="space-y-1">
+              <Controller
+                name="serviceId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.serviceId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                      <SelectValue placeholder="Select Service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {servicesData?.getServices?.services?.map(s => <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.serviceId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.serviceId.message}</p>}
+            </div>
+            <div className="space-y-1">
+              <Controller
+                name="doctorId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.doctorId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                      <SelectValue placeholder="Select Doctor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {doctorsData?.getDoctors?.doctors?.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.doctorId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.doctorId.message}</p>}
+            </div>
           </div>
         </div>
 
@@ -216,6 +227,7 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
               type="number"
               {...register('totalAmount', { valueAsNumber: true })}
               icon={IndianRupee}
+              error={errors.totalAmount?.message}
               className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
             />
           </div>

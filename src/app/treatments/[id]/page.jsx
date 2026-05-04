@@ -46,7 +46,6 @@ export default function TreatmentDetailsPage() {
   const [updateSession] = useMutation(UPDATE_SESSION, {
     onCompleted: () => {
       toast.success('Session updated');
-      refetch();
       setIsSessionModalOpen(false);
     },
     onError: (err) => toast.error(err.message)
@@ -55,7 +54,6 @@ export default function TreatmentDetailsPage() {
   const [addSession, { loading: addingSession }] = useMutation(ADD_SESSION, {
     onCompleted: () => {
       toast.success('Extra session added');
-      refetch();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -63,7 +61,13 @@ export default function TreatmentDetailsPage() {
   const [deleteSession] = useMutation(DELETE_SESSION, {
     onCompleted: () => {
       toast.success('Session removed');
-      refetch();
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const [updateTreatment] = useMutation(UPDATE_TREATMENT, {
+    onCompleted: () => {
+      // Manual refetch will be handled in callers
     },
     onError: (err) => toast.error(err.message)
   });
@@ -85,7 +89,7 @@ export default function TreatmentDetailsPage() {
     setIsSessionModalOpen(true);
   };
 
-  const handleAddExtraSession = () => {
+  const handleAddExtraSession = async () => {
     const nextSessionNumber = sessions.length > 0 ? Math.max(...sessions.map(s => s.sessionNumber)) + 1 : 1;
     const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
     const estimatedDate = new Date();
@@ -94,16 +98,32 @@ export default function TreatmentDetailsPage() {
         estimatedDate.setDate(estimatedDate.getDate() + (treatment.intervalDays || 7));
     }
     
-    addSession({
-      variables: {
-        input: {
-          treatmentId: id,
-          sessionNumber: nextSessionNumber,
-          date: estimatedDate.toISOString(),
-          status: 'ESTIMATED'
+    try {
+      await addSession({
+        variables: {
+          input: {
+            treatmentId: id,
+            sessionNumber: nextSessionNumber,
+            date: estimatedDate.toISOString(),
+            status: 'ESTIMATED'
+          }
         }
-      }
-    });
+      });
+
+      // Increment total sessions in treatment plan
+      await updateTreatment({
+        variables: {
+          id: id,
+          input: {
+            totalSessions: treatment.totalSessions + 1
+          }
+        }
+      });
+
+      refetch();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
 
@@ -113,11 +133,27 @@ export default function TreatmentDetailsPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDeleteSession = () => {
+  const confirmDeleteSession = async () => {
     if (deleteSessionId) {
-      deleteSession({ variables: { id: deleteSessionId } });
-      setIsDeleteModalOpen(false);
-      setDeleteSessionId(null);
+      try {
+        await deleteSession({ variables: { id: deleteSessionId } });
+        
+        // Decrement total sessions in treatment plan
+        await updateTreatment({
+          variables: {
+            id: id,
+            input: {
+              totalSessions: Math.max(1, treatment.totalSessions - 1)
+            }
+          }
+        });
+
+        refetch();
+        setIsDeleteModalOpen(false);
+        setDeleteSessionId(null);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -260,7 +296,7 @@ export default function TreatmentDetailsPage() {
                     status: 'COMPLETED'
                   }
                 }
-              });
+              }).then(() => refetch());
             }}
           />
         )}
@@ -272,7 +308,7 @@ export default function TreatmentDetailsPage() {
         title="Edit Treatment Plan"
         size="4xl"
       >
-        <div className="pt-4 max-h-[80vh] overflow-y-auto hide-scrollbar">
+        <div className="max-h-[80vh] overflow-y-auto hide-scrollbar">
           <TreatmentForm 
             treatment={treatment} 
             onClose={() => setIsEditModalOpen(false)}
@@ -366,9 +402,7 @@ function SessionCard({ session, onComplete, onDelete, isNext }) {
             ) : (
               <Button 
                 onClick={onComplete}
-                className={`rounded-xl px-6 h-10 font-bold transition-all ${
-                  isNext ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--text-muted)] hover:text-indigo-500'
-                }`}
+                className={`rounded-xl px-6 h-10 font-bold transition-all bg-indigo-600 hover:bg-indigo-700 text-white shadow-md`}
               >
                 Mark as Completed
               </Button>
