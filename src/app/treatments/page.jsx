@@ -21,7 +21,7 @@ import { Suspense } from 'react';
 function TreatmentsContent() {
   const searchParams = useSearchParams();
   const patientId = searchParams.get('patient');
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +67,7 @@ function TreatmentsContent() {
     setIsModalOpen(true);
   };
 
-  const filteredTreatments = data?.getTreatments?.filter(t => 
+  const filteredTreatments = data?.getTreatments?.filter(t =>
     t.patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.service.title.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
@@ -81,13 +81,62 @@ function TreatmentsContent() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10">
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Confirm Deletion"
+          size="max-w-md"
+        >
+          <div className="text-center pt-2">
+            <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+              <Trash2 size={40} />
+            </div>
+            <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you absolutely sure?</h4>
+            <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">
+              This action cannot be undone. This will permanently remove the treatment and all its sessions.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 py-4 px-6 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 transition-all uppercase tracking-widest text-xs"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+        {/* Edit treatment form */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={editingTreatment ? 'Edit Treatment' : 'New Treatment'}
+          size="4xl"
+        >
+          <TreatmentForm
+            treatment={editingTreatment}
+            initialPatientId={patientId}
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={() => {
+              setIsModalOpen(false);
+              refetch();
+            }}
+          />
+        </Modal>
+
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Treatments</h1>
               <p className="text-[var(--text-muted)] text-sm">Manage patient treatments and multi-session plans</p>
             </div>
-            <Button 
+            <Button
               onClick={handleAdd}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl flex items-center gap-2 shadow-lg transition-all active:scale-95"
             >
@@ -145,8 +194,8 @@ function TreatmentsContent() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Search by patient or service..." 
+              <Input
+                placeholder="Search by patient or service..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 rounded-2xl border border-[var(--border)] focus:ring-indigo-500 focus:border-indigo-500 bg-[var(--surface-hover)] text-[var(--foreground)]"
@@ -160,9 +209,9 @@ function TreatmentsContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTreatments.map((treatment) => (
-              <TreatmentCard 
-                key={treatment.id} 
-                treatment={treatment} 
+              <TreatmentCard
+                key={treatment.id}
+                treatment={treatment}
                 onEdit={handleEdit}
                 onDelete={handleDeleteClick}
               />
@@ -176,55 +225,6 @@ function TreatmentsContent() {
               </div>
             )}
           </div>
-
-          {/* Delete Confirmation Modal */}
-          <Modal 
-            isOpen={isDeleteModalOpen} 
-            onClose={() => setIsDeleteModalOpen(false)}
-            title="Confirm Deletion"
-            size="sm"
-          >
-            <div className="text-center pt-2">
-              <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
-                <Trash2 size={40} />
-              </div>
-              <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you absolutely sure?</h4>
-              <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">
-                This action cannot be undone. This will permanently remove the treatment and all its sessions.
-              </p>
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={confirmDelete}
-                  className="flex-1 py-4 px-6 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 transition-all uppercase tracking-widest text-xs"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </Modal>
-
-          <Modal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            title={editingTreatment ? 'Edit Treatment' : 'New Treatment'}
-            size="4xl"
-          >
-            <TreatmentForm 
-              treatment={editingTreatment} 
-              initialPatientId={patientId}
-              onClose={() => setIsModalOpen(false)}
-              onSuccess={() => {
-                setIsModalOpen(false);
-                refetch();
-              }}
-            />
-          </Modal>
         </div>
       </main>
     </div>

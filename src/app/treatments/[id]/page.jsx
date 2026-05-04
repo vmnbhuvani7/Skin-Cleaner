@@ -288,7 +288,7 @@ export default function TreatmentDetailsPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Deletion"
-        size="sm"
+        size="max-w-md"
       >
         <div className="text-center pt-2">
           <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
