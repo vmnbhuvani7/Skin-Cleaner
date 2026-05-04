@@ -19,7 +19,10 @@ import { GET_PATIENTS } from '@/graphql/queries/patient';
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 
-export default function AddAppointmentPage() {
+import { Suspense } from 'react';
+import Loader from '@/components/ui/Loader';
+
+function AddAppointmentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const patientIdParam = searchParams.get('patient');
@@ -221,5 +224,13 @@ export default function AddAppointmentPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AddAppointmentPage() {
+  return (
+    <Suspense fallback={<Loader fullScreen />}>
+      <AddAppointmentContent />
+    </Suspense>
   );
 }

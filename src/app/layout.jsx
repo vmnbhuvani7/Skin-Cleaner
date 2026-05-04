@@ -20,6 +20,8 @@ import GraphQLProvider from "@/lib/apollo-client";
 import AuthGuard from "@/components/AuthGuard";
 import { ChatProvider } from "@/context/ChatContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function RootLayout({ children }) {
   return (
@@ -47,6 +49,7 @@ export default function RootLayout({ children }) {
             <ChatProvider>
               <AuthGuard>
                 {children}
+                <ToastContainer position="top-right" autoClose={3000} />
               </AuthGuard>
             </ChatProvider>
           </ThemeProvider>

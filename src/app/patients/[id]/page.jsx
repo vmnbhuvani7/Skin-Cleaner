@@ -4,16 +4,14 @@ import React from 'react';
 import Sidebar from '@/components/Sidebar';
 import { 
   ArrowLeft, User, Phone, Mail, MapPin, ClipboardList, 
-  Edit, Plus
+  Edit, Plus, Activity
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery } from '@apollo/client';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
 import { GET_PATIENT } from '@/graphql/queries/patient';
+import PatientTreatments from '@/components/clinical/PatientTreatments';
 
 export default function PatientDetailPage() {
   const router = useRouter();
@@ -55,7 +53,6 @@ export default function PatientDetailPage() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10">
-        <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
         
         <div className="max-w-4xl mx-auto pb-20">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -74,6 +71,13 @@ export default function PatientDetailPage() {
                 icon={Edit}
               >
                 Edit Profile
+              </Button>
+              <Button 
+                onClick={() => router.push(`/treatments?patient=${id}`)}
+                icon={Activity}
+                variant="secondary"
+              >
+                New Treatment
               </Button>
               <Button 
                 onClick={() => router.push(`/appointments/add?patient=${id}`)}
@@ -137,6 +141,10 @@ export default function PatientDetailPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8">
+            <PatientTreatments patientId={id} />
           </div>
         </div>
       </main>
