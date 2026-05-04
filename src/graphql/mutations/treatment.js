@@ -28,6 +28,24 @@ export const UPDATE_SESSION = gql`
       id
       status
       paidAmount
+      date
     }
+  }
+`;
+
+export const ADD_SESSION = gql`
+  mutation AddSession($input: CreateSessionInput!) {
+    addSession(input: $input) {
+      id
+      sessionNumber
+      date
+      status
+    }
+  }
+`;
+
+export const DELETE_SESSION = gql`
+  mutation DeleteSession($id: ID!) {
+    deleteSession(id: $id)
   }
 `;

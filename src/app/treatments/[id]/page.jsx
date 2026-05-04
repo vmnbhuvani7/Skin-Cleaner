@@ -14,18 +14,30 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Sidebar from '@/components/Sidebar';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/Select';
 import { useTheme } from '@/context/ThemeContext';
 import { toast } from 'react-toastify';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 
 import { GET_TREATMENT_DETAILS } from '@/graphql/queries/treatment';
-import { UPDATE_SESSION } from '@/graphql/mutations/treatment';
+import { UPDATE_SESSION, ADD_SESSION, DELETE_SESSION, UPDATE_TREATMENT } from '@/graphql/mutations/treatment';
+import TreatmentForm from '@/components/clinical/TreatmentForm';
 
 export default function TreatmentDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deleteSessionId, setDeleteSessionId] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const { loading, error, data, refetch } = useQuery(GET_TREATMENT_DETAILS, {
     variables: { id }
@@ -36,6 +48,22 @@ export default function TreatmentDetailsPage() {
       toast.success('Session updated');
       refetch();
       setIsSessionModalOpen(false);
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const [addSession, { loading: addingSession }] = useMutation(ADD_SESSION, {
+    onCompleted: () => {
+      toast.success('Extra session added');
+      refetch();
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const [deleteSession] = useMutation(DELETE_SESSION, {
+    onCompleted: () => {
+      toast.success('Session removed');
+      refetch();
     },
     onError: (err) => toast.error(err.message)
   });
@@ -57,6 +85,42 @@ export default function TreatmentDetailsPage() {
     setIsSessionModalOpen(true);
   };
 
+  const handleAddExtraSession = () => {
+    const nextSessionNumber = sessions.length > 0 ? Math.max(...sessions.map(s => s.sessionNumber)) + 1 : 1;
+    const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
+    const estimatedDate = new Date();
+    if (lastSession && lastSession.date) {
+        estimatedDate.setTime(new Date(lastSession.date).getTime());
+        estimatedDate.setDate(estimatedDate.getDate() + (treatment.intervalDays || 7));
+    }
+    
+    addSession({
+      variables: {
+        input: {
+          treatmentId: id,
+          sessionNumber: nextSessionNumber,
+          date: estimatedDate.toISOString(),
+          status: 'ESTIMATED'
+        }
+      }
+    });
+  };
+
+
+
+  const handleDeleteSessionClick = (sessionId) => {
+    setDeleteSessionId(sessionId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteSession = () => {
+    if (deleteSessionId) {
+      deleteSession({ variables: { id: deleteSessionId } });
+      setIsDeleteModalOpen(false);
+      setDeleteSessionId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
       <Sidebar />
@@ -72,7 +136,7 @@ export default function TreatmentDetailsPage() {
               <span>Back to Treatments</span>
             </button>
             <div className="flex gap-3">
-              <Button variant="secondary" icon={Edit3} className="rounded-2xl h-12">
+              <Button onClick={() => setIsEditModalOpen(true)} variant="secondary" icon={Edit3} className="rounded-2xl h-12">
                 Edit Plan
               </Button>
             </div>
@@ -151,8 +215,13 @@ export default function TreatmentDetailsPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-black text-[var(--foreground)] tracking-tight">Timeline</h2>
               {treatment.type === 'MULTI_SESSION' && (
-                 <Button variant="outline" className="rounded-2xl border-[var(--border)] h-12 gap-2 bg-[var(--surface)] text-[var(--foreground)] font-bold">
-                   <Plus size={20} /> Add Extra Session
+                 <Button 
+                   onClick={handleAddExtraSession} 
+                   disabled={addingSession}
+                   variant="outline" 
+                   className="rounded-2xl border-[var(--border)] h-12 gap-2 bg-[var(--surface)] text-[var(--foreground)] font-bold"
+                 >
+                   <Plus size={20} /> {addingSession ? 'Adding...' : 'Add Extra Session'}
                  </Button>
               )}
             </div>
@@ -163,6 +232,7 @@ export default function TreatmentDetailsPage() {
                   key={session.id} 
                   session={session} 
                   onComplete={() => handleCompleteSession(session)}
+                  onDelete={() => handleDeleteSessionClick(session.id)}
                   isNext={session.status !== 'COMPLETED' && (index === 0 || sessions[index-1].status === 'COMPLETED')}
                 />
               ))}
@@ -195,44 +265,93 @@ export default function TreatmentDetailsPage() {
           />
         )}
       </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Treatment Plan"
+        size="4xl"
+      >
+        <div className="pt-4 max-h-[80vh] overflow-y-auto hide-scrollbar">
+          <TreatmentForm 
+            treatment={treatment} 
+            onClose={() => setIsEditModalOpen(false)}
+            onSuccess={() => {
+              setIsEditModalOpen(false);
+              refetch();
+            }}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Confirm Deletion"
+        size="sm"
+      >
+        <div className="text-center pt-2">
+          <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+            <Trash2 size={40} />
+          </div>
+          <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you absolutely sure?</h4>
+          <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">
+            This action cannot be undone. This will permanently remove the session record.
+          </p>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={confirmDeleteSession}
+              className="flex-1 py-4 px-6 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 transition-all uppercase tracking-widest text-xs"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
 
-function SessionCard({ session, onComplete, isNext }) {
+function SessionCard({ session, onComplete, onDelete, isNext }) {
   const isCompleted = session.status === 'COMPLETED';
   const isEstimated = session.status === 'ESTIMATED';
   
   return (
     <div className={`relative flex gap-6 items-start group`}>
       <div className={`z-10 w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 ${
-        isCompleted ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100' : 
-        isNext ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100 scale-110' :
-        'bg-white border-gray-200 text-gray-400'
+        isCompleted ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+        isNext ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-500/20 scale-110' :
+        'bg-[var(--surface)] border-[var(--border)] text-[var(--text-muted)]'
       }`}>
         {isCompleted ? <CheckCircle2 size={24} /> : <span className="font-black text-lg">{session.sessionNumber}</span>}
       </div>
 
-      <div className={`flex-1 bg-white rounded-2xl p-5 border transition-all duration-300 ${
-        isNext ? 'border-indigo-200 shadow-md ring-1 ring-indigo-50' : 'border-gray-100 shadow-sm'
+      <div className={`flex-1 bg-[var(--surface)] rounded-2xl p-5 border transition-all duration-300 ${
+        isNext ? 'border-indigo-500/30 shadow-md ring-1 ring-indigo-500/10' : 'border-[var(--border)] shadow-sm'
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h4 className="text-lg font-black text-gray-900">Session {session.sessionNumber}</h4>
+              <h4 className="text-lg font-black text-[var(--foreground)]">Session {session.sessionNumber}</h4>
               {isEstimated && (
-                <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                   Estimated
                 </span>
               )}
               {isNext && (
-                <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                   Next Action
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500 flex items-center gap-1.5 font-medium">
-              <Clock size={14} className="text-gray-400" />
+            <p className="text-sm text-[var(--text-muted)] flex items-center gap-1.5 font-medium">
+              <Clock size={14} className="opacity-50" />
               {new Date(session.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
               {isCompleted && ` at ${new Date(session.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </p>
@@ -241,28 +360,56 @@ function SessionCard({ session, onComplete, isNext }) {
           <div className="flex items-center gap-4">
             {isCompleted ? (
               <div className="text-right">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Paid</p>
-                <p className="text-lg font-black text-emerald-600">₹{session.paidAmount}</p>
+                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Paid</p>
+                <p className="text-lg font-black text-emerald-500">₹{session.paidAmount}</p>
               </div>
             ) : (
               <Button 
                 onClick={onComplete}
                 className={`rounded-xl px-6 h-10 font-bold transition-all ${
-                  isNext ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                  isNext ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--text-muted)] hover:text-indigo-500'
                 }`}
               >
                 Mark as Completed
               </Button>
             )}
-            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
-              <MoreHorizontal size={20} />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const menu = e.currentTarget.nextElementSibling;
+                  menu.classList.toggle('hidden');
+                }}
+                className="p-2 hover:bg-[var(--surface-hover)] rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors"
+              >
+                <MoreHorizontal size={20} />
+              </button>
+              <div className="hidden absolute right-0 mt-2 w-48 bg-[var(--surface)] rounded-xl shadow-xl border border-[var(--border)] z-50">
+                <div className="p-1">
+                  <button 
+                    onClick={() => {
+                      onComplete();
+                      // Assuming a way to close the menu
+                    }} 
+                    className="w-full text-left px-4 py-2 text-sm font-semibold text-[var(--foreground)] hover:bg-indigo-500/10 hover:text-indigo-400 rounded-lg flex items-center gap-2"
+                  >
+                    <Edit3 size={16} /> {isCompleted ? 'Edit Payment' : 'Update Session'}
+                  </button>
+                  <button 
+                    onClick={onDelete} 
+                    className="w-full text-left px-4 py-2 text-sm font-semibold text-rose-500 hover:bg-rose-500/10 rounded-lg flex items-center gap-2"
+                  >
+                    <Trash2 size={16} /> Delete Session
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {isCompleted && session.notes && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-             <p className="text-xs text-gray-600 italic">"{session.notes}"</p>
+          <div className="mt-4 p-3 bg-[var(--surface-hover)] rounded-xl border border-[var(--border)]">
+             <p className="text-xs text-[var(--text-muted)] italic">"{session.notes}"</p>
           </div>
         )}
       </div>
@@ -287,19 +434,25 @@ function SessionCompletionForm({ session, treatment, onSubmit }) {
 
   return (
     <div className="space-y-6 pt-2">
-      <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex items-center justify-between gap-4">
+      <div className="bg-[var(--surface-hover)] p-5 rounded-2xl border border-[var(--border)] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-            <Info className="text-indigo-600" size={20} />
+            <Info className="text-indigo-500" size={20} />
             <div>
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Overall Status</p>
-                <p className="text-sm font-bold text-indigo-900 leading-tight">
+                <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-0.5">Overall Status</p>
+                <p className="text-sm font-bold text-[var(--foreground)] leading-tight">
                 Session {session.sessionNumber} Completion
                 </p>
             </div>
         </div>
-        <div className="text-right">
-            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Remaining Balance</p>
-            <p className="text-lg font-black text-indigo-900">₹{remainingAtStart}</p>
+        <div className="flex gap-6 md:gap-10">
+            <div className="text-right">
+                <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-0.5">Already Paid</p>
+                <p className="text-lg font-black text-emerald-500">₹{currentPaid}</p>
+            </div>
+            <div className="text-right">
+                <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-0.5">Remaining</p>
+                <p className="text-lg font-black text-[var(--foreground)]">₹{remainingAtStart}</p>
+            </div>
         </div>
       </div>
 
@@ -313,41 +466,41 @@ function SessionCompletionForm({ session, treatment, onSubmit }) {
         />
 
         <div>
-          <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Consulting Doctor</label>
-          <select 
-            value={doctorId}
-            onChange={(e) => setDoctorId(e.target.value)}
-            className="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-bold text-sm"
-          >
-            <option value="">Select Doctor</option>
-            {doctorsData?.getDoctors?.doctors?.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
+          <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2 ml-1">Consulting Doctor</label>
+          <Select value={doctorId} onValueChange={setDoctorId}>
+            <SelectTrigger className="w-full h-12 rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-bold text-sm text-[var(--foreground)]">
+              <SelectValue placeholder="Select Doctor" />
+            </SelectTrigger>
+            <SelectContent>
+              {doctorsData?.getDoctors?.doctors?.map(d => (
+                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Online</label>
+            <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest ml-1">Online</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold text-xs">₹</span>
               <Input 
                 type="number" 
                 value={online} 
                 onChange={(e) => setOnline(parseFloat(e.target.value) || 0)}
-                className="pl-8 h-12 rounded-2xl bg-white border-gray-200 font-bold"
+                className="pl-8 h-12 rounded-2xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-[var(--foreground)]"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cash</label>
+            <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest ml-1">Cash</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold text-xs">₹</span>
               <Input 
                 type="number" 
                 value={cash} 
                 onChange={(e) => setCash(parseFloat(e.target.value) || 0)}
-                className="pl-8 h-12 rounded-2xl bg-white border-gray-200 font-bold"
+                className="pl-8 h-12 rounded-2xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-[var(--foreground)]"
               />
             </div>
           </div>
@@ -359,16 +512,16 @@ function SessionCompletionForm({ session, treatment, onSubmit }) {
                 type="number" 
                 value={discount} 
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                className="pl-8 h-12 rounded-2xl bg-white border-rose-100 text-rose-600 font-bold placeholder:text-rose-200"
+                className="pl-8 h-12 rounded-2xl bg-rose-500/10 border-rose-500/20 text-rose-500 font-bold placeholder:text-rose-500/50"
               />
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Notes</label>
+          <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest ml-1">Notes</label>
           <textarea 
-            className="w-full p-4 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-24 text-sm font-medium bg-white"
+            className="w-full p-4 rounded-2xl border border-[var(--border)] focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-24 text-sm font-medium bg-[var(--surface-hover)] text-[var(--foreground)]"
             placeholder="Add any observations or treatment remarks..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -376,8 +529,8 @@ function SessionCompletionForm({ session, treatment, onSubmit }) {
         </div>
       </div>
 
-      <div className="p-6 bg-gray-900 rounded-[2.5rem] text-white flex flex-col gap-4 shadow-2xl relative overflow-hidden">
-        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full"></div>
+      <div className="p-6 bg-[var(--foreground)] rounded-[2.5rem] text-[var(--background)] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
+        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/20 blur-2xl rounded-full"></div>
         
         <div className="flex justify-between items-center relative z-10">
           <div>

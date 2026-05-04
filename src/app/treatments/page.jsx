@@ -41,9 +41,19 @@ function TreatmentsContent() {
     onError: (err) => toast.error(err.message),
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this treatment?')) {
-      deleteTreatment({ variables: { id } });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [treatmentToDelete, setTreatmentToDelete] = useState(null);
+
+  const handleDeleteClick = (id) => {
+    setTreatmentToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (treatmentToDelete) {
+      deleteTreatment({ variables: { id: treatmentToDelete } });
+      setIsDeleteModalOpen(false);
+      setTreatmentToDelete(null);
     }
   };
 
@@ -86,6 +96,52 @@ function TreatmentsContent() {
             </Button>
           </div>
 
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 cursor-pointer hover:border-indigo-500/20 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                  <Activity size={24} />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-[var(--foreground)]">{data?.getTreatments?.length || 0}</p>
+              <p className="text-[var(--text-muted)] text-sm">Total Treatments</p>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 cursor-pointer hover:border-blue-500/20 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <Clock size={24} />
+                </div>
+                <span className="bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-blue-500/20">
+                  In Progress
+                </span>
+              </div>
+              <p className="text-3xl font-bold text-[var(--foreground)]">{data?.getTreatments?.filter(t => t.status === 'IN_PROGRESS').length || 0}</p>
+              <p className="text-[var(--text-muted)] text-sm">Active Treatments</p>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 cursor-pointer hover:border-emerald-500/20 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                  <CheckCircle size={24} />
+                </div>
+                <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/20">
+                  Completed
+                </span>
+              </div>
+              <p className="text-3xl font-bold text-[var(--foreground)]">{data?.getTreatments?.filter(t => t.status === 'COMPLETED').length || 0}</p>
+              <p className="text-[var(--text-muted)] text-sm">Completed Plans</p>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 cursor-pointer hover:border-purple-500/20 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                  <MoreVertical size={24} />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-[var(--foreground)]">{data?.getTreatments?.filter(t => t.type === 'MULTI_SESSION').length || 0}</p>
+              <p className="text-[var(--text-muted)] text-sm">Multi-Session Plans</p>
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -93,7 +149,7 @@ function TreatmentsContent() {
                 placeholder="Search by patient or service..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 rounded-2xl border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-[var(--surface)] text-[var(--foreground)]"
+                className="pl-10 h-12 rounded-2xl border border-[var(--border)] focus:ring-indigo-500 focus:border-indigo-500 bg-[var(--surface-hover)] text-[var(--foreground)]"
               />
             </div>
             <Button variant="outline" className="flex items-center gap-2 h-12 px-6 rounded-2xl border-[var(--border)] bg-[var(--surface)]">
@@ -108,7 +164,7 @@ function TreatmentsContent() {
                 key={treatment.id} 
                 treatment={treatment} 
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
               />
             ))}
             {filteredTreatments.length === 0 && (
@@ -121,11 +177,43 @@ function TreatmentsContent() {
             )}
           </div>
 
+          {/* Delete Confirmation Modal */}
+          <Modal 
+            isOpen={isDeleteModalOpen} 
+            onClose={() => setIsDeleteModalOpen(false)}
+            title="Confirm Deletion"
+            size="sm"
+          >
+            <div className="text-center pt-2">
+              <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+                <Trash2 size={40} />
+              </div>
+              <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you absolutely sure?</h4>
+              <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">
+                This action cannot be undone. This will permanently remove the treatment and all its sessions.
+              </p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 py-4 px-6 bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--foreground)] font-bold rounded-2xl transition-all border border-[var(--border)]"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 py-4 px-6 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 transition-all uppercase tracking-widest text-xs"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </Modal>
+
           <Modal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             title={editingTreatment ? 'Edit Treatment' : 'New Treatment'}
-            size="2xl"
+            size="4xl"
           >
             <TreatmentForm 
               treatment={editingTreatment} 

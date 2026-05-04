@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useWatch, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery, useMutation } from '@apollo/client';
@@ -12,7 +12,14 @@ import { GET_SERVICES } from '@/graphql/queries/service';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { toast } from 'react-toastify';
 import Loader from '@/components/ui/Loader';
-import { Activity } from 'lucide-react';
+import { Activity, IndianRupee } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/Select';
 
 import { CREATE_TREATMENT, UPDATE_TREATMENT } from '@/graphql/mutations/treatment';
 
@@ -90,17 +97,23 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
 
   const onSubmit = async (values) => {
     try {
+      const inputData = {
+        ...values,
+        totalSessions: values.type === 'ONE_TIME' ? 1 : values.totalSessions,
+        intervalDays: values.type === 'ONE_TIME' ? 0 : values.intervalDays,
+      };
+
       if (treatment) {
         await updateTreatment({
           variables: {
             id: treatment.id,
             input: {
-              doctorId: values.doctorId,
-              totalAmount: values.totalAmount,
-              discount: values.discount,
-              finalAmount: values.finalAmount,
-              totalSessions: values.totalSessions,
-              intervalDays: values.intervalDays,
+              doctorId: inputData.doctorId,
+              totalAmount: inputData.totalAmount,
+              discount: inputData.discount,
+              finalAmount: inputData.finalAmount,
+              totalSessions: inputData.totalSessions,
+              intervalDays: inputData.intervalDays,
             }
           }
         });
@@ -108,7 +121,7 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
       } else {
         await createTreatment({
           variables: {
-            input: values
+            input: inputData
           }
         });
         toast.success('Treatment created successfully');
@@ -122,172 +135,192 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
   if (patientsLoading || servicesLoading || doctorsLoading) return <Loader />;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Basic Info */}
-        <div className="space-y-5">
-          <div>
-            <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Patient</label>
-            <select 
-              {...register('patientId')}
-              disabled={!!treatment}
-              className={`w-full h-12 px-4 rounded-2xl border ${errors.patientId ? 'border-rose-500' : 'border-[var(--border)]'} bg-[var(--surface-hover)] text-[var(--foreground)] focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-bold text-sm`}
-            >
-              <option value="">Select Patient</option>
-              {patientsData?.getPatients?.patients?.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            {errors.patientId && <p className="text-rose-500 text-xs mt-1 font-bold">{errors.patientId.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex flex-col h-full">
+      <div className="flex-1 space-y-6">
+        {/* Top Header Row: Type & Basic Info */}
+        <div className="flex items-center justify-between px-2">
+          <div className="space-y-1">
+            <h4 className="text-xs font-black text-[var(--foreground)] uppercase tracking-widest">Plan Configuration</h4>
+            <p className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Define patient and session structure</p>
           </div>
 
-          <div>
-            <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Service</label>
-            <select 
-              {...register('serviceId')}
-              disabled={!!treatment}
-              className={`w-full h-12 px-4 rounded-2xl border ${errors.serviceId ? 'border-rose-500' : 'border-[var(--border)]'} bg-[var(--surface-hover)] text-[var(--foreground)] focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-bold text-sm`}
+          <div className="bg-[var(--surface)] p-1 rounded-xl border border-[var(--border)] flex shadow-inner">
+            <button
+              type="button"
+              onClick={() => setValue('type', 'ONE_TIME')}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'ONE_TIME' ? 'bg-indigo-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
-              <option value="">Select Service</option>
-              {servicesData?.getServices?.services?.map(s => (
-                <option key={s.id} value={s.id}>{s.title}</option>
-              ))}
-            </select>
-            {errors.serviceId && <p className="text-rose-500 text-xs mt-1 font-bold">{errors.serviceId.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Doctor</label>
-            <select 
-              {...register('doctorId')}
-              className={`w-full h-12 px-4 rounded-2xl border ${errors.doctorId ? 'border-rose-500' : 'border-[var(--border)]'} bg-[var(--surface-hover)] text-[var(--foreground)] focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-bold text-sm`}
+              One-Time
+            </button>
+            <button
+              type="button"
+              onClick={() => setValue('type', 'MULTI_SESSION')}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'MULTI_SESSION' ? 'bg-indigo-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
-              <option value="">Select Doctor</option>
-              {doctorsData?.getDoctors?.doctors?.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-            {errors.doctorId && <p className="text-rose-500 text-xs mt-1 font-bold">{errors.doctorId.message}</p>}
+              Multi-Session
+            </button>
           </div>
-
-          <div>
-            <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Treatment Type</label>
-            <div className="flex gap-4">
-              <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all ${watchType === 'ONE_TIME' ? 'border-indigo-500 bg-indigo-500/10 text-white font-black' : 'border-[var(--border)] bg-[var(--surface-hover)] text-[var(--text-muted)] hover:border-indigo-500/30'}`}>
-                <input type="radio" value="ONE_TIME" {...register('type')} className="hidden" />
-                <span>One-Time</span>
-              </label>
-              <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all ${watchType === 'MULTI_SESSION' ? 'border-indigo-500 bg-indigo-500/10 text-white font-black' : 'border-[var(--border)] bg-[var(--surface-hover)] text-[var(--text-muted)] hover:border-indigo-500/30'}`}>
-                <input type="radio" value="MULTI_SESSION" {...register('type')} className="hidden" />
-                <span>Multi-Session</span>
-              </label>
-            </div>
+        </div>
+        <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+            <Controller
+              name="patientId"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
+                    <SelectValue placeholder="Select Patient" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {patientsData?.getPatients?.patients?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <Controller
+              name="serviceId"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
+                    <SelectValue placeholder="Select Service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {servicesData?.getServices?.services?.map(s => <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <Controller
+              name="doctorId"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs">
+                    <SelectValue placeholder="Select Doctor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {doctorsData?.getDoctors?.doctors?.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
         </div>
 
-        {/* Financial Info */}
-        <div className="space-y-6 bg-[var(--surface-hover)]/30 p-8 rounded-[2.5rem] border border-[var(--border)] shadow-inner">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Service Amount</label>
-              <Input 
-                type="number" 
-                {...register('totalAmount', { valueAsNumber: true })}
-                className="h-12 rounded-2xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Discount</label>
-              <Input 
-                type="number" 
-                {...register('discount', { valueAsNumber: true })}
-                className="h-12 rounded-2xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
-              />
-            </div>
+        {/* Financials & Sessions Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-[var(--surface-hover)]/30 rounded-2xl border border-[var(--border)]">
+          <div>
+            <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Service Amount</label>
+            <Input
+              type="number"
+              {...register('totalAmount', { valueAsNumber: true })}
+              icon={IndianRupee}
+              className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
+            />
           </div>
-
-          <div className="p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
-            <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                <Activity size={100} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Total Payable Amount</p>
-            <p className="text-4xl font-black">₹{watch('finalAmount')}</p>
+          <div>
+            <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Discount</label>
+            <Input
+              type="number"
+              {...register('discount', { valueAsNumber: true })}
+              icon={IndianRupee}
+              className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
+            />
           </div>
-
           {watchType === 'MULTI_SESSION' && (
-            <div className="grid grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <>
               <div>
-                <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Total Sessions</label>
-                <Input 
-                  type="number" 
+                <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Total Sessions</label>
+                <Input
+                  type="number"
                   {...register('totalSessions', { valueAsNumber: true })}
-                  className="h-12 rounded-2xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
+                  className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold text-center text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Interval (Days)</label>
-                <Input 
-                  type="number" 
+                <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Interval (Days)</label>
+                <Input
+                  type="number"
                   {...register('intervalDays', { valueAsNumber: true })}
-                  className="h-12 rounded-2xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
+                  className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold text-center text-sm"
                 />
               </div>
-            </div>
+            </>
           )}
+        </div>
 
-          <div className="pt-6 border-t border-[var(--border)] space-y-4">
-            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                Initial Payment Details
-            </p>
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5">Online</label>
-                <Input 
-                  type="number" 
-                  {...register('onlinePayment', { valueAsNumber: true })}
-                  className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5">Cash</label>
-                <Input 
-                  type="number" 
-                  {...register('cashPayment', { valueAsNumber: true })}
-                  className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] font-bold"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1.5">Session Disc.</label>
-                <Input 
-                  type="number" 
-                  {...register('sessionDiscount', { valueAsNumber: true })}
-                  className="h-11 rounded-xl bg-[var(--surface)] border-rose-500/20 text-rose-500 font-bold placeholder:text-rose-200"
-                />
-              </div>
+        {/* Full Width Initial Payment Details */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Initial Payment Details</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-[var(--surface-hover)]/50 p-4 rounded-2xl border border-[var(--border)]">
+              <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2 ml-1">Online Payment</label>
+              <Input
+                type="number"
+                {...register('onlinePayment', { valueAsNumber: true })}
+                icon={IndianRupee}
+                className="h-12 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10"
+              />
             </div>
-            <div className="flex flex-col gap-2 pt-2">
-                <div className="flex justify-between items-center text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                <span>Total Paid Today:</span>
-                <span className="text-emerald-500 text-lg font-black">₹{watch('paidAmount')}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                <span>Balance Remaining:</span>
-                <span className="text-rose-500 text-lg font-black">₹{Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0))}</span>
-                </div>
+            <div className="bg-[var(--surface-hover)]/50 p-4 rounded-2xl border border-[var(--border)]">
+              <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2 ml-1">Cash Payment</label>
+              <Input
+                type="number"
+                {...register('cashPayment', { valueAsNumber: true })}
+                icon={IndianRupee}
+                className="h-12 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10"
+              />
+            </div>
+            <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/10">
+              <label className="block text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2 ml-1">Session Discount</label>
+              <Input
+                type="number"
+                {...register('sessionDiscount', { valueAsNumber: true })}
+                icon={IndianRupee}
+                className="h-12 rounded-xl bg-[var(--surface)] border-rose-500/20 text-rose-500 font-bold pl-10 placeholder:text-rose-200"
+              />
+            </div>
+          </div>
+        </div>
+        {/* Highlight Summary Bar */}
+        <div className="p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-600/20 flex items-center justify-between overflow-hidden relative group">
+          <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <Activity size={100} />
+          </div>
+
+          <div className="flex items-center gap-8 md:gap-16 relative z-10">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Total Payable</span>
+              <span className="text-2xl md:text-3xl font-black">₹{watch('finalAmount')}</span>
+            </div>
+            <div className="w-px h-12 bg-white/20"></div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Paid Today</span>
+              <span className="text-2xl md:text-3xl font-black text-emerald-300">₹{watch('paidAmount')}</span>
+            </div>
+            <div className="w-px h-12 bg-white/20"></div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Remaining</span>
+              <span className="text-2xl md:text-3xl font-black text-rose-300">₹{Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0))}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 pt-8">
-        <Button variant="ghost" onClick={onClose} type="button" className="px-8 h-12 rounded-2xl font-bold">Cancel</Button>
-        <Button 
-          type="submit" 
+
+      {/* Sticky Action Footer */}
+      <div className="sticky bottom-0 bg-[var(--surface)] pt-6 border-t border-[var(--border)] flex justify-end gap-3 z-10 pb-2 mt-4">
+        <Button variant="ghost" onClick={onClose} type="button" className="px-6 h-11 rounded-xl font-bold text-xs uppercase tracking-wider">Cancel</Button>
+        <Button
+          type="submit"
           disabled={creating || updating}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-12 h-12 rounded-2xl font-black shadow-xl shadow-indigo-600/20 tracking-wide uppercase text-xs"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 h-11 rounded-xl font-black shadow-xl shadow-indigo-600/20 tracking-widest uppercase text-[10px] min-w-fit"
         >
-          {creating || updating ? 'Processing...' : (treatment ? 'Update Treatment' : 'Confirm Treatment')}
+          {creating || updating ? 'Processing...' : (treatment ? 'Update Plan' : 'Create Treatment')}
         </Button>
       </div>
     </form>
