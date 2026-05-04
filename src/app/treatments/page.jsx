@@ -13,6 +13,10 @@ import TreatmentForm from '@/components/clinical/TreatmentForm';
 import { toast } from 'react-toastify';
 import { useTheme } from '@/context/ThemeContext';
 
+const formatAmount = (amount) => {
+  return new Intl.NumberFormat('en-IN').format(amount || 0);
+};
+
 import { GET_TREATMENTS } from '@/graphql/queries/treatment';
 import { DELETE_TREATMENT } from '@/graphql/mutations/treatment';
 
@@ -241,8 +245,8 @@ export default function TreatmentsPage() {
 
 function TreatmentCard({ treatment, onEdit, onDelete }) {
   const completedSessions = treatment.sessions?.filter(s => s.status === 'COMPLETED').length || 0;
-  const progress = treatment.type === 'MULTI_SESSION' 
-    ? (completedSessions / treatment.totalSessions) * 100 
+  const progress = treatment.type === 'MULTI_SESSION'
+    ? (completedSessions / treatment.totalSessions) * 100
     : (treatment.status === 'COMPLETED' ? 100 : 0);
 
   const statusColors = {
@@ -252,29 +256,33 @@ function TreatmentCard({ treatment, onEdit, onDelete }) {
   };
 
   return (
-    <div className="bg-[var(--surface)] rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl transition-all group overflow-hidden">
-      <div className="p-8 space-y-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
+    <div className="bg-[var(--surface)] rounded-[2.5rem] border border-[var(--border)] shadow-sm hover:shadow-xl transition-all group overflow-hidden flex flex-col h-full">
+      <div className="p-8 space-y-6 flex-1">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
             <span className={`text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border ${statusColors[treatment.status]}`}>
               {treatment.status.replace('_', ' ')}
             </span>
-            <h3 className="text-2xl font-bold text-[var(--foreground)] mt-2 group-hover:text-indigo-400 transition-colors">{treatment.service.title}</h3>
+            <div className="flex gap-2">
+              <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+                <Edit2 size={18} />
+              </button>
+              <button onClick={() => onDelete(treatment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
+                <Trash2 size={18} />
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
-              <Edit2 size={18} />
-            </button>
-            <button onClick={() => onDelete(treatment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
-              <Trash2 size={18} />
-            </button>
-          </div>
+          <h3 className="text-2xl font-bold text-[var(--foreground)] group-hover:text-indigo-400 transition-colors line-clamp-1">{treatment.service.title}</h3>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center gap-4 text-sm text-[var(--text-muted)] bg-[var(--background)] p-4 rounded-2xl border border-[var(--border)]">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner">
-              <User size={20} />
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner overflow-hidden">
+              {treatment.patient.image ? (
+                <img src={treatment.patient.image} alt={treatment.patient.name} className="w-full h-full object-cover" />
+              ) : (
+                <User size={20} />
+              )}
             </div>
             <div>
               <p className="font-bold text-[var(--foreground)]">{treatment.patient.name}</p>
@@ -294,29 +302,40 @@ function TreatmentCard({ treatment, onEdit, onDelete }) {
           </div>
         </div>
 
-        {treatment.type === 'MULTI_SESSION' && (
-          <div className="space-y-3 pt-2">
-            <div className="flex justify-between text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-              <span>Progress</span>
-              <span className="text-indigo-400">{completedSessions} / {treatment.totalSessions} Sessions</span>
+        {/* Progress section with fixed height for alignment */}
+        <div>
+          {treatment.type === 'MULTI_SESSION' ? (
+            <div className="space-y-3">
+              <div className="flex justify-between text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                <span>Progress</span>
+                <span className="text-indigo-400">{completedSessions} / {treatment.totalSessions} Sessions</span>
+              </div>
+              <div className="w-full h-2.5 bg-[var(--background)] rounded-full overflow-hidden border border-[var(--border)]">
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(99,102,241,0.4)]"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             </div>
-            <div className="w-full h-2.5 bg-[var(--background)] rounded-full overflow-hidden border border-[var(--border)]">
-              <div 
-                className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(99,102,241,0.4)]"
-                style={{ width: `${progress}%` }}
-              ></div>
+          ) : (
+            <div className="h-full flex items-center">
+              <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-40 italic">Single Session Record</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="bg-[var(--surface-hover)]/50 p-6 border-t border-[var(--border)] flex items-center justify-between">
+      <div className="bg-[var(--surface-hover)]/50 p-6 border-t border-[var(--border)] flex items-center justify-between mt-auto">
         <div className="space-y-0.5">
-          <p className="text-[9px] text-[var(--text-muted)] uppercase font-bold tracking-widest">Amount Paid</p>
-          <p className="text-2xl font-black text-[var(--foreground)]">₹{treatment.sessions?.reduce((acc, s) => acc + (s.paidAmount || 0), 0) || 0}</p>
+          <p className="text-[9px] text-[var(--text-muted)] uppercase font-bold tracking-widest">Financial Status</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-black text-emerald-500">₹{formatAmount(treatment.sessions?.reduce((acc, s) => acc + (s.paidAmount || 0), 0))}</p>
+            <p className="text-sm font-bold text-[var(--text-muted)] opacity-40">/</p>
+            <p className="text-lg font-bold text-[var(--foreground)] opacity-60">₹{formatAmount(treatment.finalAmount)}</p>
+          </div>
         </div>
-        <Button 
-          variant="secondary" 
+        <Button
+          variant="secondary"
           className="rounded-xl px-6 h-11 flex items-center gap-2 group/btn font-bold text-sm"
           onClick={() => window.location.href = `/treatments/${treatment.id}`}
         >

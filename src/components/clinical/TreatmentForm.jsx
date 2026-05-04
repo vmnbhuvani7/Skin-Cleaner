@@ -34,11 +34,14 @@ const schema = z.object({
   totalSessions: z.number().min(1, 'At least 1 session is required').default(1),
   intervalDays: z.number().min(0, 'Interval must be positive').default(0),
   paidAmount: z.number().min(0, 'Paid amount must be positive').default(0),
-  sessionDiscount: z.number().min(0).default(0),
   onlinePayment: z.number().min(0).default(0),
   cashPayment: z.number().min(0).default(0),
   notes: z.string().optional(),
 });
+
+const formatAmount = (amount) => {
+  return new Intl.NumberFormat('en-IN').format(amount || 0);
+};
 
 export default function TreatmentForm({ treatment, initialPatientId, onClose, onSuccess }) {
   const { data: patientsData, loading: patientsLoading } = useQuery(GET_PATIENTS, { variables: { limit: 100 } });
@@ -78,7 +81,7 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
       cashPayment: 0,
     }
   });
-
+console.log("errors",errors)
   const watchType = watch('type');
   const watchTotalAmount = watch('totalAmount');
   const watchDiscount = watch('discount');
@@ -307,17 +310,17 @@ export default function TreatmentForm({ treatment, initialPatientId, onClose, on
           <div className="flex items-center gap-8 md:gap-16 relative z-10">
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Total Payable</span>
-              <span className="text-2xl md:text-3xl font-black">₹{watch('finalAmount')}</span>
+              <span className="text-2xl md:text-3xl font-black">₹{formatAmount(watch('finalAmount'))}</span>
             </div>
             <div className="w-px h-12 bg-white/20"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Paid Today</span>
-              <span className="text-2xl md:text-3xl font-black text-emerald-300">₹{watch('paidAmount')}</span>
+              <span className="text-2xl md:text-3xl font-black text-emerald-300">₹{formatAmount(watch('paidAmount'))}</span>
             </div>
             <div className="w-px h-12 bg-white/20"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Remaining</span>
-              <span className="text-2xl md:text-3xl font-black text-rose-300">₹{Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0))}</span>
+              <span className="text-2xl md:text-3xl font-black text-rose-300">₹{formatAmount(Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0)))}</span>
             </div>
           </div>
         </div>

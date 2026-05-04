@@ -7,6 +7,7 @@ export const GET_TREATMENTS = gql`
       patient {
         id
         name
+        image
       }
       service {
         id
@@ -40,6 +41,7 @@ export const GET_TREATMENT_DETAILS = gql`
       patient {
         id
         name
+        image
       }
       service {
         id

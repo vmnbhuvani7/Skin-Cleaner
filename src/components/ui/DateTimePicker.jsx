@@ -6,7 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 
-export function DateTimePicker({ date, setDate, label, placeholder = "Select date and time", showTimeOnly = false }) {
+export function DateTimePicker({ date, setDate, label, placeholder = "Select date and time", showTimeOnly = false, className }) {
   const selectedDate = date ? new Date(date) : null;
 
   return (
@@ -16,7 +16,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           {label}
         </label>
       )}
-      <div className="relative group">
+      <div className="relative group w-full">
         <DatePicker
           selected={selectedDate}
           onChange={(newDate) => {
@@ -33,8 +33,10 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           timeCaption="Time"
           dateFormat={showTimeOnly ? "h:mm aa" : "MMMM d, yyyy h:mm aa"}
           placeholderText={placeholder}
+          wrapperClassName="w-full"
           className={twMerge(
-            "flex h-12 w-full items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] pl-11 pr-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 shadow-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]"
+            "flex h-12 w-full items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] pl-11 pr-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 shadow-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
+            className
           )}
           showPopperArrow={false}
           autoComplete="off"
