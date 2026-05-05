@@ -46,7 +46,7 @@ export default function TreatmentDetailsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteSessionId, setDeleteSessionId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState('card');
+  const [viewMode, setViewMode] = useState('list');
 
   const { loading, error, data, refetch } = useQuery(GET_TREATMENT_DETAILS, {
     variables: { id }
@@ -197,76 +197,69 @@ export default function TreatmentDetailsPage() {
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10">
         <div className="max-w-6xl mx-auto space-y-10 pb-20">
-          {/* Enhanced Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
+          {/* Ultra-Condensed Header */}
+          <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={() => router.push('/treatments')}
-                className="w-12 h-12 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-indigo-400 hover:bg-indigo-500/10 transition-all group"
+                className="w-9 h-9 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-indigo-400 transition-all active:scale-95 shadow-sm"
               >
-                <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+                <ChevronLeft size={18} />
               </button>
-              <div>
-                <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight leading-none mb-1">Treatment Details</h1>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 flex items-center gap-2">
-                   Plan ID: <span className="text-indigo-400">{treatment.id.slice(-8)}</span>
-                </p>
-              </div>
+              <h1 className="text-xl font-black text-[var(--foreground)] tracking-tight">Treatment Details</h1>
+              <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
+                ID: {treatment.id.slice(-8)}
+              </span>
             </div>
-            <div className="flex gap-3">
-              <Button onClick={() => setIsEditModalOpen(true)} variant="outline" className="rounded-2xl h-12 px-6 font-black uppercase tracking-widest text-[10px] border-[var(--border)] bg-[var(--surface)] hover:border-indigo-500/30">
-                <Edit3 size={16} className="mr-2" /> Edit Plan
-              </Button>
-            </div>
+            <Button onClick={() => setIsEditModalOpen(true)} variant="outline" className="rounded-lg h-9 px-4 font-black uppercase tracking-widest text-[8px] border-[var(--border)] bg-[var(--surface)]">
+              <Edit3 size={14} className="mr-2" /> Edit Plan
+            </Button>
           </div>
 
           {/* 2026 Bento Grid Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Main Treatment & Patient Module (Bento Tile 1) */}
-            <div className="lg:col-span-8 group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-[2.5rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden h-full flex flex-col justify-between backdrop-blur-xl">
-                <div className="absolute -right-20 -top-20 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-700 pointer-events-none">
-                  <Activity size={400} />
-                </div>
-                
-                <div className="relative z-10 space-y-12">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl">
-                      <Zap size={14} className="text-indigo-400" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">{treatment.type.replace('_', ' ')}</span>
-                    </div>
-                    <div className={`flex items-center gap-2 border px-4 py-2 rounded-2xl ${
-                      treatment.status === 'COMPLETED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                    }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${treatment.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest">{treatment.status.replace('_', ' ')}</span>
+            <div className="lg:col-span-8 group relative h-full">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-lg h-full flex flex-col justify-between backdrop-blur-xl">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 bg-indigo-500/5 border border-indigo-500/10 px-2 py-1 rounded-md text-indigo-400">
+                        <Zap size={10} />
+                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">{treatment.type.replace('_', ' ')}</span>
+                      </div>
+                      <div className={`flex items-center gap-2 border px-2 py-1 rounded-md ${
+                        treatment.status === 'COMPLETED' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-500' : 'bg-blue-500/5 border-blue-500/10 text-blue-400'
+                      }`}>
+                        <div className={`w-1 h-1 rounded-full ${treatment.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">{treatment.status.replace('_', ' ')}</span>
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-[0.9] text-[var(--foreground)] group-hover:text-indigo-400 transition-colors duration-500">
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6 text-[var(--foreground)] group-hover:text-indigo-400 transition-colors">
                       {treatment.service.title}
                     </h2>
                     
-                    <div className="flex flex-wrap items-center gap-6">
-                      <div className="flex items-center gap-4 bg-[var(--surface-hover)] border border-[var(--border)] p-2 pr-6 rounded-3xl group/patient hover:border-indigo-500/30 transition-all cursor-pointer">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center overflow-hidden border border-[var(--border)] group-hover/patient:scale-105 transition-transform">
-                          {treatment.patient.image ? <img src={treatment.patient.image} className="w-full h-full object-cover" /> : <User size={24} className="text-indigo-400" />}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-3 bg-[var(--surface-hover)] border border-[var(--border)] p-1.5 rounded-xl">
+                        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-[var(--border)]">
+                          {treatment.patient.image ? <img src={treatment.patient.image} className="w-full h-full object-cover rounded-lg" /> : <User size={16} className="text-indigo-400" />}
                         </div>
-                        <div>
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-50 mb-1">Assigned Patient</p>
-                          <p className="font-bold text-lg text-[var(--foreground)] leading-none">{treatment.patient.name}</p>
+                        <div className="overflow-hidden">
+                          <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50">Patient</p>
+                          <p className="font-bold text-sm text-[var(--foreground)] truncate">{treatment.patient.name}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 bg-[var(--surface-hover)] border border-[var(--border)] p-2 pr-6 rounded-3xl hover:border-indigo-500/30 transition-all">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-[var(--border)]">
-                          <Calendar size={24} />
+                      <div className="flex items-center gap-3 bg-[var(--surface-hover)] border border-[var(--border)] p-1.5 rounded-xl">
+                        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-[var(--border)]">
+                          <Calendar size={16} />
                         </div>
                         <div>
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-50 mb-1">Clinical Launch</p>
-                          <p className="font-bold text-lg text-[var(--foreground)] leading-none">{new Date(treatment.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                          <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50">Launch</p>
+                          <p className="font-bold text-sm text-[var(--foreground)]">{new Date(treatment.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</p>
                         </div>
                       </div>
                     </div>
@@ -274,26 +267,13 @@ export default function TreatmentDetailsPage() {
                 </div>
 
                 {treatment.type === 'MULTI_SESSION' && (
-                  <div className="mt-16 relative">
-                    <div className="flex justify-between items-end mb-4">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Therapeutic Progression</p>
-                        <div className="flex items-baseline gap-2">
-                           <span className="text-3xl font-black text-[var(--foreground)]">{completedSessions}</span>
-                           <span className="text-sm font-bold text-[var(--text-muted)] opacity-40">/ {treatment.totalSessions} sessions</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                         <span className="text-4xl font-black text-indigo-500">{Math.round(progress)}%</span>
-                      </div>
+                  <div className="mt-6 pt-4 border-t border-[var(--border)]">
+                    <div className="flex justify-between items-center mb-2">
+                       <p className="text-[8px] font-black uppercase tracking-[0.2em] text-indigo-400">Progression</p>
+                       <span className="text-[10px] font-black text-indigo-500">{Math.round(progress)}% Complete</span>
                     </div>
-                    <div className="h-4 w-full bg-[var(--surface-hover)] rounded-full overflow-hidden p-1 border border-[var(--border)] shadow-inner">
-                      <div 
-                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(99,102,241,0.4)]"
-                        style={{ width: `${progress}%` }}
-                      >
-                        <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-                      </div>
+                    <div className="h-1.5 w-full bg-[var(--surface-hover)] rounded-full overflow-hidden border border-[var(--border)]">
+                      <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                     </div>
                   </div>
                 )}
@@ -301,50 +281,44 @@ export default function TreatmentDetailsPage() {
             </div>
 
             {/* Financial Health & Stats (Bento Tile 2) */}
-            <div className="lg:col-span-4 grid grid-cols-1 gap-6">
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group h-full flex flex-col justify-between">
-                <div className="absolute -right-6 -top-6 text-indigo-500/5 rotate-12 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                  <Wallet size={120} />
-                </div>
-                
-                <div className="relative z-10 flex flex-col h-full">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-10 flex items-center gap-2">
-                    <ShieldCheck size={14} /> Settlement Hub
-                  </p>
+            <div className="lg:col-span-4 grid grid-cols-1">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400">Financials</p>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
+                  </div>
                   
-                  <div className="space-y-8 flex-1">
-                    <div className="flex justify-between items-center group/item">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mb-1">Contract Value</p>
-                        <p className="text-2xl font-black text-[var(--foreground)] group-hover/item:text-indigo-400 transition-colors">₹{formatAmount(treatment.finalAmount)}</p>
+                        <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-40">Contract</p>
+                        <p className="text-xl font-black text-[var(--foreground)]">₹{formatAmount(treatment.finalAmount)}</p>
                       </div>
-                      <div className="w-12 h-12 rounded-2xl bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] group-hover/item:text-indigo-400 group-hover/item:border-indigo-500/30 transition-all">
-                        <IndianRupee size={20} />
+                      <div className="w-9 h-9 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)]">
+                        <IndianRupee size={16} />
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center group/item">
+                    <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mb-1">Liquidated Funds</p>
-                        <p className="text-2xl font-black text-emerald-500">₹{formatAmount(totalPaid)}</p>
+                        <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-40">Liquidated</p>
+                        <p className="text-xl font-black text-emerald-500">₹{formatAmount(totalPaid)}</p>
                       </div>
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover/item:scale-110 transition-all">
-                        <Zap size={20} />
+                      <div className="w-9 h-9 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center text-emerald-500">
+                        <Zap size={16} />
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="pt-8 border-t border-[var(--border)] mt-8">
-                    <div className={`p-6 rounded-[2rem] flex flex-col justify-between transition-all relative overflow-hidden ${remainingBalance > 0 ? 'bg-rose-500/5 border border-rose-500/10 shadow-[0_0_30px_rgba(244,63,94,0.05)]' : 'bg-emerald-500/5 border border-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.05)]'}`}>
-                      <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-white/5 to-transparent rounded-full -mr-12 -mt-12 blur-2xl"></div>
-                      <p className={`text-[9px] font-black uppercase tracking-[0.2em] mb-4 ${remainingBalance > 0 ? 'text-rose-500/60' : 'text-emerald-500/60'}`}>Audit Balance</p>
-                      <div className="flex items-center justify-between">
-                         <p className={`text-4xl font-black tracking-tighter ${remainingBalance > 0 ? 'text-rose-500 drop-shadow-[0_0_12px_rgba(244,63,94,0.3)]' : 'text-emerald-500 drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]'}`}>
-                           ₹{formatAmount(remainingBalance)}
-                         </p>
-                         {remainingBalance === 0 && <Star className="text-emerald-500 animate-spin-slow" size={32} />}
-                      </div>
+                <div className="pt-4 border-t border-[var(--border)] mt-4">
+                  <div className={`p-4 rounded-xl flex items-center justify-between ${remainingBalance > 0 ? 'bg-rose-500/5 border border-rose-500/10' : 'bg-emerald-500/5 border border-emerald-500/10'}`}>
+                    <div>
+                      <p className={`text-[7px] font-black uppercase tracking-widest ${remainingBalance > 0 ? 'text-rose-500/60' : 'text-emerald-500/60'}`}>Balance</p>
+                      <p className={`text-2xl font-black tracking-tight ${remainingBalance > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>₹{formatAmount(remainingBalance)}</p>
                     </div>
+                    {remainingBalance === 0 ? <ShieldCheck size={20} className="text-emerald-500" /> : <AlertCircle size={20} className="text-rose-500" />}
                   </div>
                 </div>
               </div>
@@ -375,7 +349,7 @@ export default function TreatmentDetailsPage() {
               </div>
             </div>
 
-            {viewMode === 'card' ? (
+            {viewMode === 'grid' ? (
               <div className="space-y-4 relative before:absolute before:left-[19px] md:before:left-[23px] before:top-6 before:bottom-6 before:w-0.5 before:bg-[var(--border)] before:opacity-50">
                 {sessions.map((session, index) => (
                   <SessionCard 
