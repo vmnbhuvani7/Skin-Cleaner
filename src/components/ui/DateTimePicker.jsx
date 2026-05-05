@@ -3,8 +3,27 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { getMonth, getYear } from 'date-fns';
+
+const months = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const years = Array.from(
+  { length: new Date().getFullYear() + 21 - 1900 },
+  (_, i) => 1900 + i
+);
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './Select';
 
 export function DateTimePicker({ date, setDate, label, placeholder = "Select date and time", showTimeOnly = false, error, className }) {
   const selectedDate = date ? new Date(date) : null;
@@ -41,6 +60,69 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           )}
           showPopperArrow={false}
           autoComplete="off"
+          renderCustomHeader={({
+            date,
+            changeYear,
+            changeMonth,
+            decreaseMonth,
+            increaseMonth,
+            prevMonthButtonDisabled,
+            nextMonthButtonDisabled,
+          }) => (
+            <div className="flex items-center justify-between px-3 h-14 bg-[var(--surface)]">
+              <button
+                onClick={decreaseMonth}
+                disabled={prevMonthButtonDisabled}
+                type="button"
+                className="p-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors disabled:opacity-30"
+              >
+                <ChevronLeft className="h-4 w-4 text-indigo-500" />
+              </button>
+
+              <div className="flex items-center gap-1">
+                <Select
+                  value={getMonth(date).toString()}
+                  onValueChange={(value) => changeMonth(parseInt(value))}
+                >
+                  <SelectTrigger className="h-7 border-none bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold uppercase hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[280px] overflow-y-auto custom-scrollbar">
+                    {months.map((month, index) => (
+                      <SelectItem key={month} value={index.toString()} className="text-[11px] uppercase font-bold">
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={getYear(date).toString()}
+                  onValueChange={(value) => changeYear(parseInt(value))}
+                >
+                  <SelectTrigger className="h-7 border-none bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[280px] overflow-y-auto custom-scrollbar">
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()} className="text-[11px] font-bold">
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <button
+                onClick={increaseMonth}
+                disabled={nextMonthButtonDisabled}
+                type="button"
+                className="p-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors disabled:opacity-30"
+              >
+                <ChevronRight className="h-4 w-4 text-indigo-500" />
+              </button>
+            </div>
+          )}
         />
         {showTimeOnly ? (
           <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
