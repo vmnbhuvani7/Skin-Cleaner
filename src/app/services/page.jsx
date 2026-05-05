@@ -300,7 +300,7 @@ export default function ServicesPage() {
             onPageChange={setCurrentPage}
           />
 
-          {services.length === 0 && !loading && (
+          {services.length === 0 && !loading && viewMode !== 'list' && (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
               <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
                 <Scissors size={40} />

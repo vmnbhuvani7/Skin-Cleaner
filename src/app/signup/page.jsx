@@ -22,6 +22,7 @@ export default function SignupPage() {
     password: '',
     confirmPassword: '',
     roleName: 'Patient',
+    organizationName: '',
     acceptTerms: false,
   });
   const [error, setError] = useState('');
@@ -55,6 +56,7 @@ export default function SignupPage() {
         mobile: formData.mobile,
         password: formData.password,
         roleName: formData.roleName,
+        organizationName: formData.roleName === 'Organization' ? formData.organizationName : undefined,
       }
     });
   };
@@ -149,6 +151,17 @@ export default function SignupPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
+          
+          {formData.roleName === 'Organization' && (
+            <Input
+              label="Organization Name"
+              icon={Zap}
+              required
+              placeholder="Apex Clinical Center"
+              value={formData.organizationName}
+              onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
+            />
+          )}
 
           <Input
             label="Mobile Number"

@@ -26,11 +26,34 @@ const handler = startServerAndCreateNextHandler(server, {
     const getMe = async () => {
       if (!decodedUser) return null;
       await dbConnect();
-      return await User.findById(decodedUser.id).select('-password');
+      return await User.findById(decodedUser.id)
+        .populate('role')
+        .populate('organization')
+        .select('-password');
     };
 
     return { user: decodedUser, getMe };
   },
 });
 
-export { handler as GET, handler as POST };
+export async function GET(request) {
+  try {
+    return await handler(request);
+  } catch (error) {
+    console.error('GraphQL GET Error:', error.message);
+    return new Response(JSON.stringify({ error: 'Bad Request' }), { status: 400 });
+  }
+}
+
+export async function POST(request) {
+  try {
+    // Clone the request to prevent stream issues if Next.js already read it
+    return await handler(request);
+  } catch (error) {
+    console.error('GraphQL POST Error:', error.message);
+    return new Response(JSON.stringify({ error: 'Invalid Request Format', details: error.message }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}

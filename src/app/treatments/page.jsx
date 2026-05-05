@@ -190,7 +190,7 @@ function TreatmentsContent() {
     }
   ];
 
-  if (loading) return <Loader fullScreen />;
+  // if (loading) return <Loader fullScreen />;
   if (error) return <div className="p-8 text-red-500">Error: {error.message}</div>;
 
   return (
@@ -217,7 +217,13 @@ function TreatmentsContent() {
         </Modal>
 
         <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {loading ? (
+            <div className="h-[60vh] flex items-center justify-center">
+              <Loader />
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Treatments</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage patient treatments and multi-session plans</p>
@@ -283,13 +289,15 @@ function TreatmentsContent() {
             onPageChange={setCurrentPage}
           />
 
-          {filteredTreatments.length === 0 && (
+          {filteredTreatments.length === 0 && viewMode !== 'list' && (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
               <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
                 <Activity size={40} />
               </div>
               <p className="text-[var(--text-muted)] text-lg font-medium">No treatments found.</p>
             </div>
+          )}
+            </>
           )}
         </div>
       </main>

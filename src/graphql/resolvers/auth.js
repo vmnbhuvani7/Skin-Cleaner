@@ -17,7 +17,7 @@ export const authResolvers = {
       // Find user by email or mobile and populate role
       const user = await User.findOne({
         $or: [{ email: identifier }, { mobile: identifier }],
-      }).populate('role');
+      }).populate('role').populate('organization');
 
       if (!user) {
         throw new Error('Invalid credentials');
@@ -35,15 +35,21 @@ export const authResolvers = {
           name: user.name,
           email: user.email,
           mobile: user.mobile,
+          organizationName: user.organizationName,
           role: user.role ? {
             id: user.role._id,
             name: user.role.name,
+          } : null,
+          organization: user.organization ? {
+            id: user.organization._id,
+            name: user.organization.name,
+            organizationName: user.organization.organizationName,
           } : null,
         },
       };
     },
 
-    signup: async (_, { name, email, mobile, password, roleName }) => {
+    signup: async (_, { name, email, mobile, password, roleName, organizationName }) => {
       await dbConnect();
 
       // 1. Email Validation using deep-email-validator
@@ -84,10 +90,12 @@ export const authResolvers = {
         mobile,
         password,
         role: roleDoc._id,
+        organizationName,
       });
 
-      // Populate role for response
+      // Populate role and organization for response
       await user.populate('role');
+      await user.populate('organization');
 
       if (user) {
         return {
@@ -97,9 +105,15 @@ export const authResolvers = {
             name: user.name,
             email: user.email,
             mobile: user.mobile,
+            organizationName: user.organizationName,
             role: user.role ? {
               id: user.role._id,
               name: user.role.name,
+            } : null,
+            organization: user.organization ? {
+              id: user.organization._id,
+              name: user.organization.name,
+              organizationName: user.organization.organizationName,
             } : null,
           },
         };

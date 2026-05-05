@@ -15,6 +15,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a mobile number'],
   },
+  organizationName: {
+    type: String,
+  },
   password: {
     type: String,
     // Not strictly required since patients might not have passwords immediately when created by an org

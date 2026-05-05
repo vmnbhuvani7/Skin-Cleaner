@@ -46,7 +46,13 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
             "h-[var(--radix-select-content-available-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
       >
-        {children}
+        {React.Children.toArray(children).filter(Boolean).length === 0 ? (
+          <div className="py-6 px-4 text-center">
+            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] opacity-60">No options available</p>
+          </div>
+        ) : (
+          children
+        )}
       </SelectPrimitive.Viewport>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>

@@ -249,9 +249,18 @@ export default function Sidebar() {
               {user ? user.name.substring(0, 2).toUpperCase() : 'U'}
             </div>
             {!isCollapsed && (
-              <div className="flex flex-col animate-in fade-in duration-300">
-                <span className="text-xs font-bold text-[var(--foreground)] truncate max-w-[100px]">{user ? user.name : 'User'}</span>
-                <span className="text-[10px] text-indigo-400 font-medium">{user?.role?.name || 'Organization'}</span>
+              <div className="flex flex-col animate-in fade-in duration-300 overflow-hidden">
+                <span className="text-xs font-bold text-[var(--foreground)] truncate max-w-[120px]">{user ? user.name : 'User'}</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest leading-tight">
+                    {user?.role?.name === 'Organization' ? (user.organizationName || 'Organization') : 'Patient'}
+                  </span>
+                  {user?.role?.name === 'Patient' && user?.organization?.organizationName && (
+                    <span className="text-[9px] text-[var(--text-muted)] font-bold truncate max-w-[120px] opacity-60">
+                       @{user.organization.organizationName}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>

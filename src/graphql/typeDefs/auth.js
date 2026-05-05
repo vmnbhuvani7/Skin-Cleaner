@@ -9,7 +9,9 @@ export const authTypeDefs = `#graphql
     name: String
     email: String
     mobile: String
+    organizationName: String
     role: Role
+    organization: User
   }
 
   type AuthPayload {
@@ -29,6 +31,7 @@ export const authTypeDefs = `#graphql
       mobile: String!
       password: String!
       roleName: String!
+      organizationName: String
     ): AuthPayload
   }
 `;

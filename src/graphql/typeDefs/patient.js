@@ -4,8 +4,8 @@ export const patientTypeDefs = `#graphql
     name: String!
     email: String!
     mobile: String!
-    birthdate: String!
-    age: Int!
+    birthdate: String
+    age: Int
     gender: String!
     address: String
     medicalHistory: String
@@ -34,7 +34,7 @@ export const patientTypeDefs = `#graphql
       name: String!
       email: String!
       mobile: String!
-      birthdate: String!
+      birthdate: String
       gender: String!
       address: String
       medicalHistory: String

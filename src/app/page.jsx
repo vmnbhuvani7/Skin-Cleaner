@@ -45,12 +45,14 @@ const iconMap = {
 
 export default function LandingPage() {
   const [page, setPage] = React.useState(1);
-  const { data, loading } = useQuery(GET_SERVICES, {
-    variables: { page, limit: 6, isActive: true },
-    fetchPolicy: 'cache-and-network'
-  });
+  // const { data, loading } = useQuery(GET_SERVICES, {
+  //   variables: { page, limit: 6, isActive: true },
+  //   fetchPolicy: 'cache-and-network'
+  // });
 
   // const services = data?.getServices?.services || [];
+  // const totalPages = data?.getServices?.totalPages || 1;
+
   const services = [
     {
       "id": 1,
@@ -83,7 +85,7 @@ export default function LandingPage() {
       "icon": "Heart",
     },
   ];
-  const totalPages = data?.getServices?.totalPages || 1;
+  const totalPages = 1;
 
   return (
     <div className="bg-white dark:bg-[#030712] min-h-screen selection:bg-indigo-100 dark:selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-indigo-200 transition-colors duration-300">
@@ -144,7 +146,8 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {loading ? (
+            {/* {loading ? ( */}
+            {false ? (
               [...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white dark:bg-[#0f1117] p-8 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm animate-pulse">
                   <div className="w-14 h-14 rounded-2xl bg-indigo-50/50 mb-8"></div>

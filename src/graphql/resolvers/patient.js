@@ -8,7 +8,10 @@ import { DEFAULT_PASSWORD } from '@/utils/constants';
 
 export const patientResolvers = {
   Patient: {
-    age: (parent) => calculateAge(parent.birthdate),
+    age: (parent) => {
+      const calculated = calculateAge(parent.birthdate);
+      return calculated === '' ? null : calculated;
+    },
     birthdate: (parent) => parent.birthdate ? parent.birthdate.toISOString() : null,
   },
   Query: {
@@ -16,6 +19,9 @@ export const patientResolvers = {
       await dbConnect();
       
       let patientRole = await Role.findOne({ name: 'Patient' });
+      if (!patientRole) {
+        return { patients: [], totalCount: 0, totalPages: 0, currentPage: page, hasMore: false };
+      }
       let query = { role: patientRole._id, organization: context.user.id };
       
       if (search) {

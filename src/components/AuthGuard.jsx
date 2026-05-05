@@ -5,45 +5,60 @@ import { useRouter, usePathname } from 'next/navigation';
 import { PUBLIC_ROUTES, AUTH_ROUTES, DEFAULT_LOGIN_REDIRECT, DEFAULT_LOGOUT_REDIRECT } from '@/constants/routes';
 import { hasAccess } from '@/utils/roleUtils';
 import Loader from '@/components/ui/Loader';
+import { toast } from 'react-toastify';
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
     const token = localStorage.getItem('token');
     const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
     const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
+    let shouldRedirect = false;
+    let targetPath = '';
+
     if (token) {
-      // Logged in: only redirect away from auth pages like login/signup
       if (isAuthRoute) {
-        router.replace(DEFAULT_LOGIN_REDIRECT);
+        shouldRedirect = true;
+        targetPath = DEFAULT_LOGIN_REDIRECT;
       } else {
         const storedUser = localStorage.getItem('user');
         const user = storedUser ? JSON.parse(storedUser) : null;
         const userRole = user?.role?.name || 'Organization';
         
         if (!isPublicRoute && !hasAccess(userRole, pathname)) {
-          // If trying to access unauthorized route, redirect to default
-          router.replace(DEFAULT_LOGIN_REDIRECT);
-        } else {
-          setLoading(false);
+          toast.error('You do not have permission to access this page');
+          shouldRedirect = true;
+          targetPath = DEFAULT_LOGIN_REDIRECT;
         }
       }
     } else {
-      // Not logged in: redirect away if the route is NOT public (so all new routes are private by default)
       if (!isPublicRoute) {
-        router.replace(DEFAULT_LOGOUT_REDIRECT);
-      } else {
-        setLoading(false);
+        shouldRedirect = true;
+        targetPath = DEFAULT_LOGOUT_REDIRECT;
       }
+    }
+
+    if (shouldRedirect && pathname !== targetPath) {
+      setIsRedirecting(true);
+      router.replace(targetPath);
+      // Safety timeout to clear loading if navigation takes too long or fails
+      const timer = setTimeout(() => {
+        setIsRedirecting(false);
+        setIsInitialized(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setIsRedirecting(false);
+      setIsInitialized(true);
     }
   }, [pathname, router]);
 
-  if (loading) {
+  if (!isInitialized || isRedirecting) {
     return <Loader fullScreen />;
   }
 
