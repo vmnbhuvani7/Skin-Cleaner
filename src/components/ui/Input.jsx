@@ -27,6 +27,12 @@ const Input = React.forwardRef(({ className, icon: Icon, label, error, ...props 
             ),
             className
           )}
+          onFocus={(e) => {
+            if (props.type === 'number') {
+              e.target.select();
+            }
+            if (props.onFocus) props.onFocus(e);
+          }}
           {...props}
         />
       </div>

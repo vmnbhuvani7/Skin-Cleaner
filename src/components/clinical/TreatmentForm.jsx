@@ -13,7 +13,8 @@ import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { GET_APPOINTMENT } from '@/graphql/queries/appointment';
 import { toast } from 'react-toastify';
 import Loader from '@/components/ui/Loader';
-import { Activity, IndianRupee } from 'lucide-react';
+import { Activity } from 'lucide-react';
+import CurrencyInput from '@/components/ui/CurrencyInput';
 import {
   Select,
   SelectContent,
@@ -37,7 +38,17 @@ const schema = z.object({
   paidAmount: z.number().min(0, 'Paid amount must be positive').default(0),
   onlinePayment: z.number().min(0).default(0),
   cashPayment: z.number().min(0).default(0),
+  sessionDiscount: z.number().min(0).default(0),
   notes: z.string().optional(),
+}).refine((data) => {
+  if (data.type === 'ONE_TIME') {
+    const remaining = data.finalAmount - data.paidAmount - (data.sessionDiscount || 0);
+    return remaining <= 0;
+  }
+  return true;
+}, {
+  message: "Full payment is required for one-time treatments.",
+  path: ['paidAmount'],
 });
 
 const formatAmount = (amount) => {
@@ -45,9 +56,9 @@ const formatAmount = (amount) => {
 };
 
 export default function TreatmentForm({ treatment, initialPatientId, appointmentId, onCancel, onSuccess }) {
-  const { data: appointmentData, loading: appointmentLoading } = useQuery(GET_APPOINTMENT, { 
+  const { data: appointmentData, loading: appointmentLoading } = useQuery(GET_APPOINTMENT, {
     variables: { id: appointmentId },
-    skip: !appointmentId 
+    skip: !appointmentId
   });
   const { data: patientsData, loading: patientsLoading } = useQuery(GET_PATIENTS, { variables: { limit: 100 } });
   const { data: servicesData, loading: servicesLoading } = useQuery(GET_SERVICES, { variables: { limit: 100 } });
@@ -71,6 +82,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
       paidAmount: treatment.sessions?.[0]?.paidAmount || 0,
       onlinePayment: treatment.sessions?.[0]?.onlinePayment || 0,
       cashPayment: treatment.sessions?.[0]?.cashPayment || 0,
+      sessionDiscount: treatment.sessions?.[0]?.sessionDiscount || 0,
     } : {
       patientId: initialPatientId || '',
       serviceId: '',
@@ -84,9 +96,10 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
       paidAmount: 0,
       onlinePayment: 0,
       cashPayment: 0,
+      sessionDiscount: 0,
     }
   });
-console.log("errors",errors)
+  console.log("errors", errors)
   const watchType = watch('type');
   const watchTotalAmount = watch('totalAmount');
   const watchDiscount = watch('discount');
@@ -121,6 +134,7 @@ console.log("errors",errors)
         ...values,
         totalSessions: values.type === 'ONE_TIME' ? 1 : values.totalSessions,
         intervalDays: values.type === 'ONE_TIME' ? 0 : values.intervalDays,
+        status: values.type === 'ONE_TIME' ? 'COMPLETED' : 'IN_PROGRESS',
         appointmentId: appointmentId || undefined,
       };
 
@@ -241,21 +255,17 @@ console.log("errors",errors)
         {/* Financials & Sessions Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-[var(--surface-hover)]/30 rounded-2xl border border-[var(--border)]">
           <div>
-            <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Service Amount</label>
-            <Input
-              type="number"
+            <CurrencyInput
+              label="Service Amount"
               {...register('totalAmount', { valueAsNumber: true })}
-              icon={IndianRupee}
               error={errors.totalAmount?.message}
               className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1.5 ml-1">Discount</label>
-            <Input
-              type="number"
+            <CurrencyInput
+              label="Discount"
               {...register('discount', { valueAsNumber: true })}
-              icon={IndianRupee}
               className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
             />
           </div>
@@ -289,34 +299,40 @@ console.log("errors",errors)
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-[var(--surface-hover)]/50 p-4 rounded-2xl border border-[var(--border)]">
-              <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2 ml-1">Online Payment</label>
-              <Input
-                type="number"
+              <CurrencyInput
+                label="Online Payment"
                 {...register('onlinePayment', { valueAsNumber: true })}
-                icon={IndianRupee}
-                className="h-12 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10"
+                className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
               />
             </div>
             <div className="bg-[var(--surface-hover)]/50 p-4 rounded-2xl border border-[var(--border)]">
-              <label className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2 ml-1">Cash Payment</label>
-              <Input
-                type="number"
+              <CurrencyInput
+                label="Cash Payment"
                 {...register('cashPayment', { valueAsNumber: true })}
-                icon={IndianRupee}
-                className="h-12 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10"
+                className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
               />
             </div>
             <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/10">
-              <label className="block text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2 ml-1">Session Discount</label>
-              <Input
-                type="number"
+              <CurrencyInput
+                label="Session Discount"
                 {...register('sessionDiscount', { valueAsNumber: true })}
-                icon={IndianRupee}
                 className="h-12 rounded-xl bg-[var(--surface)] border-rose-500/20 text-rose-500 font-bold pl-10 placeholder:text-rose-200"
               />
             </div>
           </div>
         </div>
+        {errors.paidAmount && (
+          <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-4 mt-4 animate-in fade-in slide-in-from-top-2 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center">
+              <Activity size={16} className="text-rose-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.1em]">Validation Error</p>
+              <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">{errors.paidAmount.message}</p>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+          </div>
+        )}
         {/* Highlight Summary Bar */}
         <div className="p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-600/20 flex items-center justify-between overflow-hidden relative group">
           <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
