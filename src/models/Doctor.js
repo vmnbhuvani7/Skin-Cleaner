@@ -7,7 +7,6 @@ const DoctorSchema = new mongoose.Schema({
   },
   specialization: {
     type: String,
-    enum: ['Skin', 'Hair', 'Both'],
     required: [true, 'Please provide specialization'],
   },
   experience: {

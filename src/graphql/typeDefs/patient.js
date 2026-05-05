@@ -6,7 +6,7 @@ export const patientTypeDefs = `#graphql
     mobile: String!
     birthdate: String
     age: Int
-    gender: String!
+    gender: String
     address: String
     medicalHistory: String
     ongoingTreatments: String

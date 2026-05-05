@@ -11,7 +11,6 @@ export const servicesTool = createTool({
   }),
   execute: async ({ category }) => {
     await dbConnect();
-    console.log("🚀 ~ query servicesTool category:", category)
     const query = category ? { desc: { $regex: category, $options: 'i' } } : {};
     const services = await Service.find({ ...query, isActive: true });
     

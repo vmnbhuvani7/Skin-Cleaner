@@ -24,10 +24,19 @@ export const LOGIN_MUTATION = gql`
     }
   }
 `;
+export const GET_PUBLIC_ORGANIZATIONS = gql`
+  query PublicGetOrganizations {
+    publicGetOrganizations {
+      id
+      name
+      organizationName
+    }
+  }
+`;
 
 export const SIGNUP_MUTATION = gql`
-  mutation Signup($name: String!, $email: String!, $mobile: String!, $password: String!, $roleName: String!, $organizationName: String) {
-    signup(name: $name, email: $email, mobile: $mobile, password: $password, roleName: $roleName, organizationName: $organizationName) {
+  mutation Signup($name: String!, $email: String!, $mobile: String!, $password: String!, $roleName: String!, $organizationName: String, $organizationId: ID, $birthdate: String, $gender: String) {
+    signup(name: $name, email: $email, mobile: $mobile, password: $password, roleName: $roleName, organizationName: $organizationName, organizationId: $organizationId, birthdate: $birthdate, gender: $gender) {
       token
       user {
         id

@@ -4,6 +4,7 @@ import { typeDefs } from '@/graphql/typeDefs';
 import { resolvers } from '@/graphql/resolvers';
 
 import { verifyToken } from '@/utils/auth';
+import mongoose from 'mongoose';
 
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
@@ -21,6 +22,10 @@ const handler = startServerAndCreateNextHandler(server, {
 
     if (token) {
       decodedUser = verifyToken(token);
+      if (decodedUser && decodedUser.id) {
+        // Convert to ObjectId for project-level consistency in queries
+        decodedUser.id = new mongoose.Types.ObjectId(decodedUser.id);
+      }
     }
 
     const getMe = async () => {

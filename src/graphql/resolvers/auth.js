@@ -9,6 +9,12 @@ export const authResolvers = {
     me: async (_, __, { getMe }) => {
       return await getMe();
     },
+    publicGetOrganizations: async () => {
+      await dbConnect();
+      const role = await Role.findOne({ name: 'Organization' });
+      if (!role) return [];
+      return await User.find({ role: role._id, isActive: true }).select('id name organizationName');
+    },
   },
   Mutation: {
     login: async (_, { identifier, password }) => {
@@ -49,7 +55,7 @@ export const authResolvers = {
       };
     },
 
-    signup: async (_, { name, email, mobile, password, roleName, organizationName }) => {
+    signup: async (_, { name, email, mobile, password, roleName, organizationName, organizationId, birthdate, gender }) => {
       await dbConnect();
 
       // 1. Email Validation using deep-email-validator
@@ -91,6 +97,9 @@ export const authResolvers = {
         password,
         role: roleDoc._id,
         organizationName,
+        organization: organizationId,
+        birthdate,
+        gender
       });
 
       // Populate role and organization for response

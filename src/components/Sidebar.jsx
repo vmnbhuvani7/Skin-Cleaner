@@ -28,6 +28,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import Button from './ui/Button';
 import { ROLE_ROUTES } from '@/utils/roleUtils';
+import { DEFAULT_LOGOUT_REDIRECT } from '@/constants/routes';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function Sidebar() {
 
   const handleSignOut = () => {
     localStorage.clear();
-    window.location.href = '/';
+    window.location.href = DEFAULT_LOGOUT_REDIRECT;
   };
 
   const handleChatClick = (id) => {

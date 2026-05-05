@@ -81,7 +81,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right Section: Form Content */}
-      <div className="flex-1 flex items-center justify-center p-8 relative z-10 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 flex items-center justify-center pt-8 relative z-10 overflow-y-auto custom-scrollbar">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -90,11 +90,11 @@ export default function AuthLayout({
         >
           {children}
           
-          <div className="mt-10 mb-10 text-center flex items-center justify-center gap-4 text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">
+          {/* <div className="mt-10 mb-10 text-center flex items-center justify-center gap-4 text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">
             <span className="w-10 h-px bg-gray-200 dark:bg-white/10"></span>
             <span>Skin Cleaner AI • Secure Portal</span>
             <span className="w-10 h-px bg-gray-200 dark:bg-white/10"></span>
-          </div>
+          </div> */}
         </motion.div>
       </div>
     </div>

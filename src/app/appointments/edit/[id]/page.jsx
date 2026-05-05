@@ -1,32 +1,42 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Calendar, User, Stethoscope, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/Select';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Loader from '@/components/ui/Loader';
 
-import { CREATE_APPOINTMENT } from '@/graphql/mutations/appointment';
+import { UPDATE_APPOINTMENT } from '@/graphql/mutations/appointment';
+import { GET_APPOINTMENT } from '@/graphql/queries/appointment';
 import { GET_PATIENTS } from '@/graphql/queries/patient';
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
+import { isOrganization } from '@/utils/roleUtils';
 
-import { Suspense } from 'react';
-import Loader from '@/components/ui/Loader';
-
-function AddAppointmentContent() {
+function EditAppointmentContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const patientIdParam = searchParams.get('patient');
+  const params = useParams();
+  const appointmentId = params.id;
+
   const [userRole, setUserRole] = useState('');
+  const [formData, setFormData] = useState({
+    patient: '',
+    service: '',
+    doctor: null,
+    appointmentDate: '',
+    notes: '',
+    status: ''
+  });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -36,17 +46,27 @@ function AddAppointmentContent() {
     }
   }, []);
 
-  const [formData, setFormData] = useState({
-    patient: patientIdParam || '',
-    service: '',
-    doctor: null,
-    appointmentDate: '',
-    notes: ''
+  const isOrg = isOrganization(userRole);
+
+  const { data: appointmentData, loading: appointmentLoading } = useQuery(GET_APPOINTMENT, {
+    variables: { id: appointmentId },
+    skip: !appointmentId,
+    onCompleted: (data) => {
+      const appt = data.getAppointment;
+      setFormData({
+        patient: appt.patient.id,
+        service: appt.service.id,
+        doctor: appt.doctor?.id || null,
+        appointmentDate: appt.appointmentDate,
+        notes: appt.notes || '',
+        status: appt.status
+      });
+    }
   });
-  const [errors, setErrors] = useState({});
 
   const { data: patientsData } = useQuery(GET_PATIENTS, {
-    variables: { page: 1, limit: 100, isActive: true }
+    variables: { page: 1, limit: 100, isActive: true },
+    skip: !isOrg // Only fetch all patients if organization
   });
   const { data: servicesData } = useQuery(GET_SERVICES, {
     variables: { page: 1, limit: 100, isActive: true }
@@ -59,20 +79,23 @@ function AddAppointmentContent() {
   const services = servicesData?.getServices?.services || [];
   const doctors = doctorsData?.getDoctors?.doctors || [];
 
-  const [createAppointment, { loading }] = useMutation(CREATE_APPOINTMENT, {
-    refetchQueries: ['GetAppointments', 'GetAppointmentStats'],
+  const [updateAppointment, { loading: updating }] = useMutation(UPDATE_APPOINTMENT, {
+    refetchQueries: ['GetAppointments', 'GetAppointmentStats', 'GetAppointment'],
     onCompleted: () => {
-      toast.success('Appointment booked successfully!');
+      toast.success('Appointment updated successfully!');
       setTimeout(() => router.push('/appointments'), 1500);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to book appointment');
+      toast.error(err.message || 'Failed to update appointment');
     }
   });
 
   const validate = () => {
     const newErrors = {};
-    if (userRole !== 'Patient' && !formData.patient) newErrors.patient = 'Please select a patient';
+    if (!isOrg && !formData.patient) {
+        // This shouldn't happen for patients as they edit their own, 
+        // but for orgs it might.
+    }
     if (!formData.service) newErrors.service = 'Please select a service';
     if (!formData.appointmentDate) newErrors.appointmentDate = 'Please select appointment date and time';
     
@@ -84,14 +107,23 @@ function AddAppointmentContent() {
     e.preventDefault();
     if (!validate()) return;
 
-    createAppointment({ 
-      variables: {
-        ...formData,
-      }
-    });
+    const variables = {
+        id: appointmentId,
+        ...formData
+    };
+
+    // Remove patient if it's a patient editing (resolver handles it, but cleaner to send less)
+    if (!isOrg) {
+        delete variables.patient;
+        delete variables.status; // Patients can't change status
+    }
+
+    updateAppointment({ variables });
   };
 
   const { theme } = useTheme();
+
+  if (appointmentLoading) return <Loader fullScreen />;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
@@ -117,35 +149,33 @@ function AddAppointmentContent() {
                   <Calendar size={24} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Book New Appointment</h1>
-                  <p className="text-[var(--text-muted)] text-xs">Schedule a patient appointment with service details.</p>
+                  <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Edit Appointment</h1>
+                  <p className="text-[var(--text-muted)] text-xs">Update your clinical booking details.</p>
                 </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                {userRole !== 'Patient' && (
+                {isOrg && (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Select Patient</label>
-                  <Select 
-                    value={formData.patient} 
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, patient: value });
-                      if (errors.patient) setErrors({ ...errors, patient: null });
-                    }}
-                    disabled={!!patientIdParam}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Choose a patient" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {patients.map((patient) => (
-                        <SelectItem key={patient.id} value={patient.id}>
-                          {patient.name} ({patient.mobile})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                    {errors.patient && <p className="text-[11px] text-rose-500 ml-1 mt-1">{errors.patient}</p>}
+                    <Select 
+                        value={formData.patient} 
+                        onValueChange={(value) => {
+                            setFormData({ ...formData, patient: value });
+                            if (errors.patient) setErrors({ ...errors, patient: null });
+                        }}
+                    >
+                        <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Choose a patient" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {patients.map((patient) => (
+                            <SelectItem key={patient.id} value={patient.id}>
+                            {patient.name} ({patient.mobile})
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
                   </div>
                 )}
 
@@ -218,14 +248,33 @@ function AddAppointmentContent() {
                   </div>
                 </div>
 
+                {isOrg && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Status</label>
+                    <Select 
+                      value={formData.status} 
+                      onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Change status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Approved">Approved</SelectItem>
+                        <SelectItem value="Rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="pt-2">
                   <Button
                     type="submit"
                     className="w-full py-4"
-                    isLoading={loading}
+                    isLoading={updating}
                     icon={CheckCircle2}
                   >
-                    Book Appointment
+                    Update Appointment
                   </Button>
                 </div>
               </form>
@@ -237,10 +286,10 @@ function AddAppointmentContent() {
   );
 }
 
-export default function AddAppointmentPage() {
+export default function EditAppointmentPage() {
   return (
     <Suspense fallback={<Loader fullScreen />}>
-      <AddAppointmentContent />
+      <EditAppointmentContent />
     </Suspense>
   );
 }

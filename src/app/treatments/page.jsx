@@ -23,6 +23,7 @@ const formatAmount = (amount) => {
 import { GET_TREATMENTS } from '@/graphql/queries/treatment';
 import { DELETE_TREATMENT } from '@/graphql/mutations/treatment';
 import { ITEMS_PER_PAGE } from '@/constants/settings';
+import { isOrganization } from '@/utils/roleUtils';
 
 import { Suspense } from 'react';
 
@@ -35,6 +36,17 @@ function TreatmentsContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserRole(user.role?.name || '');
+    }
+  }, []);
+
+  const isOrg = isOrganization(userRole);
 
   const { loading, error, data, refetch } = useQuery(GET_TREATMENTS);
 
@@ -169,16 +181,18 @@ function TreatmentsContent() {
       }
     },
     {
-      header: 'Actions',
-      align: 'center',
       accessor: (row) => (
         <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => handleEdit(row)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
-            <Edit2 size={16} />
-          </button>
-          <button onClick={() => handleDeleteClick(row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
-            <Trash2 size={16} />
-          </button>
+          {isOrg ? (
+            <>
+              <button onClick={() => handleEdit(row)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+                <Edit2 size={16} />
+              </button>
+              <button onClick={() => handleDeleteClick(row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
+                <Trash2 size={16} />
+              </button>
+            </>
+          ) : null}
           <button 
             onClick={() => window.location.href = `/treatments/${row.id}`}
             className="p-2 hover:bg-emerald-500/10 rounded-xl text-emerald-500 transition-all"
@@ -228,10 +242,12 @@ function TreatmentsContent() {
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Treatments</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage patient treatments and multi-session plans</p>
             </div>
-            <Button onClick={handleAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
-              <Plus size={18} />
-              <span>New Treatment</span>
-            </Button>
+            {isOrg && (
+              <Button onClick={handleAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+                <Plus size={18} />
+                <span>New Treatment</span>
+              </Button>
+            )}
           </div>
 
           {/* Stats Section */}
@@ -276,7 +292,7 @@ function TreatmentsContent() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {currentItems.map((treatment) => (
-                <TreatmentCard key={treatment.id} treatment={treatment} onEdit={handleEdit} onDelete={handleDeleteClick} />
+                <TreatmentCard key={treatment.id} treatment={treatment} onEdit={handleEdit} onDelete={handleDeleteClick} isOrg={isOrg} />
               ))}
             </div>
           )}
@@ -332,7 +348,7 @@ export default function TreatmentsPage() {
   );
 }
 
-function TreatmentCard({ treatment, onEdit, onDelete }) {
+function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
   const completedSessions = treatment.sessions?.filter(s => s.status === 'COMPLETED').length || 0;
   const progress = treatment.type === 'MULTI_SESSION'
     ? (completedSessions / treatment.totalSessions) * 100
@@ -352,14 +368,16 @@ function TreatmentCard({ treatment, onEdit, onDelete }) {
             <span className={`text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border ${statusColors[treatment.status]}`}>
               {treatment.status.replace('_', ' ')}
             </span>
-            <div className="flex gap-2">
-              <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
-                <Edit2 size={18} />
-              </button>
-              <button onClick={() => onDelete(treatment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
-                <Trash2 size={18} />
-              </button>
-            </div>
+            {isOrg && (
+              <div className="flex gap-2">
+                <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+                  <Edit2 size={18} />
+                </button>
+                <button onClick={() => onDelete(treatment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            )}
           </div>
           <h3 className="text-2xl font-bold text-[var(--foreground)] group-hover:text-indigo-400 transition-colors line-clamp-1">{treatment.service.title}</h3>
         </div>

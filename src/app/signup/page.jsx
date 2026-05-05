@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, ArrowRight, Zap, CheckSquare, Square, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, Zap, CheckSquare, Square, Eye, EyeOff, Building2, Calendar } from 'lucide-react';
 import * as Apollo from '@apollo/client';
-const { useMutation } = Apollo;
+const { useMutation, useQuery } = Apollo;
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { SIGNUP_MUTATION } from '@/graphql/mutations/auth';
+import { SIGNUP_MUTATION, GET_PUBLIC_ORGANIZATIONS } from '@/graphql/mutations/auth';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { DEFAULT_LOGIN_REDIRECT } from '@/constants/routes';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { calculateAge } from '@/utils/dateUtils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -23,11 +26,24 @@ export default function SignupPage() {
     confirmPassword: '',
     roleName: 'Patient',
     organizationName: '',
+    organizationId: '',
+    birthdate: null,
+    gender: 'Male',
     acceptTerms: false,
   });
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
+  const [age, setAge] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (formData.birthdate) {
+      setAge(calculateAge(formData.birthdate));
+    } else {
+      setAge('');
+    }
+  }, [formData.birthdate]);
 
   const [signup, { loading }] = useMutation(SIGNUP_MUTATION, {
     onCompleted: (data) => {
@@ -40,10 +56,18 @@ export default function SignupPage() {
     }
   });
 
+  const { data: orgData } = useQuery(GET_PUBLIC_ORGANIZATIONS);
+
+  useEffect(() => {
+    if (orgData?.publicGetOrganizations?.length > 0 && !formData.organizationId) {
+      setFormData(prev => ({ ...prev, organizationId: orgData.publicGetOrganizations[0].id }));
+    }
+  }, [orgData, formData.organizationId]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -57,6 +81,9 @@ export default function SignupPage() {
         password: formData.password,
         roleName: formData.roleName,
         organizationName: formData.roleName === 'Organization' ? formData.organizationName : undefined,
+        organizationId: formData.roleName === 'Patient' ? formData.organizationId : undefined,
+        birthdate: formData.roleName === 'Patient' ? formData.birthdate : undefined,
+        gender: formData.roleName === 'Patient' ? formData.gender : undefined,
       }
     });
   };
@@ -95,11 +122,10 @@ export default function SignupPage() {
         <div className="flex gap-4 mb-8">
           <div
             onClick={() => setFormData({ ...formData, roleName: 'Patient' })}
-            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${
-              formData.roleName === 'Patient'
+            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${formData.roleName === 'Patient'
                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
                 : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${formData.roleName === 'Patient' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
@@ -113,11 +139,10 @@ export default function SignupPage() {
           </div>
           <div
             onClick={() => setFormData({ ...formData, roleName: 'Organization' })}
-            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${
-              formData.roleName === 'Organization'
+            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${formData.roleName === 'Organization'
                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
                 : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${formData.roleName === 'Organization' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
@@ -132,6 +157,84 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {formData.roleName === 'Patient' && orgData?.publicGetOrganizations?.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1 flex items-center gap-2">
+                <Building2 size={12} />
+                Select Clinic / Organization
+              </label>
+              <Select
+                value={formData.organizationId}
+                onValueChange={(val) => setFormData({ ...formData, organizationId: val })}
+              >
+                <SelectTrigger className="h-14 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-sm font-medium focus:ring-indigo-500 shadow-sm">
+                  <SelectValue placeholder="Choose Organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  {orgData.publicGetOrganizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id} className="font-medium">
+                      {org.organizationName || org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {formData.roleName === 'Organization' && (
+            <Input
+              label="Organization Name"
+              icon={Zap}
+              required
+              placeholder="Apex Clinical Center"
+              value={formData.organizationName}
+              onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
+            />
+          )}
+
+          {formData.roleName === 'Patient' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Gender</label>
+                <Select 
+                  value={formData.gender} 
+                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                >
+                  <SelectTrigger className="h-14">
+                    <SelectValue placeholder="Select Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <DatePicker
+                label="Birth Date"
+                date={formData.birthdate}
+                setDate={(date) => {
+                  setFormData({ ...formData, birthdate: date });
+                  if (errors.birthdate) setErrors({ ...errors, birthdate: null });
+                }}
+                error={errors.birthdate}
+                placeholder="Select date"
+                className="h-14"
+              />
+
+              <Input
+                label="Age"
+                icon={Calendar}
+                type="text"
+                placeholder="Auto"
+                value={age !== '' ? `${age} Years` : ''}
+                disabled
+                className="bg-[var(--surface-hover)]/50 opacity-70 cursor-not-allowed h-14"
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Full Name"
@@ -151,17 +254,6 @@ export default function SignupPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
-          
-          {formData.roleName === 'Organization' && (
-            <Input
-              label="Organization Name"
-              icon={Zap}
-              required
-              placeholder="Apex Clinical Center"
-              value={formData.organizationName}
-              onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-            />
-          )}
 
           <Input
             label="Mobile Number"
@@ -212,8 +304,8 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div 
-            className="flex items-start gap-4 pt-2 ml-1 cursor-pointer group" 
+          <div
+            className="flex items-start gap-4 pt-2 ml-1 cursor-pointer group"
             onClick={() => setFormData({ ...formData, acceptTerms: !formData.acceptTerms })}
           >
             <div className="mt-0.5 shrink-0 transition-transform group-active:scale-90">

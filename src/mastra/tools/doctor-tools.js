@@ -11,7 +11,6 @@ export const doctorsTool = createTool({
   }),
   execute: async ({ specialization }) => {
     await dbConnect();
-    console.log("🚀 ~ query doctorsTool specialization:", specialization)
     const query = specialization ? { specialization } : {};
     const doctors = await Doctor.find({ ...query, isActive: true });
 

@@ -6,13 +6,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 
-export function DateTimePicker({ date, setDate, label, placeholder = "Select date and time", showTimeOnly = false, className }) {
+export function DateTimePicker({ date, setDate, label, placeholder = "Select date and time", showTimeOnly = false, error, className }) {
   const selectedDate = date ? new Date(date) : null;
 
   return (
     <div className="space-y-1.5 w-full relative">
       {label && (
-        <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest ml-1">
+        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">
           {label}
         </label>
       )}
@@ -36,6 +36,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           wrapperClassName="w-full"
           className={twMerge(
             "flex h-12 w-full items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] pl-11 pr-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 shadow-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
+            error && "border-rose-500 ring-rose-500/10",
             className
           )}
           showPopperArrow={false}
@@ -47,6 +48,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
         )}
       </div>
+      {error && <p className="text-[10px] font-bold text-rose-500 ml-1 mt-1 uppercase tracking-wider">{error}</p>}
     </div>
   );
 }

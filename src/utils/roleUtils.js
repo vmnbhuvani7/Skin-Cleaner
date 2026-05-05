@@ -19,6 +19,9 @@ export const ROLE_ROUTES = {
   ]
 };
 
+export const isOrganization = (role) => role === ROLES.ORGANIZATION;
+export const isPatient = (role) => role === ROLES.PATIENT;
+
 export const hasAccess = (userRole, path) => {
   if (!userRole) return false;
   // Let Organization access everything defined for them

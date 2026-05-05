@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Check, X, Calendar, Clock, User, Search, Trash2, LayoutGrid, List, Filter, ArrowRight } from 'lucide-react';
+import { Plus, Check, X, Calendar, Clock, User, Search, Trash2, LayoutGrid, List, Filter, ArrowRight, Edit2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import DataTable from '@/components/ui/DataTable';
@@ -19,6 +19,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { GET_APPOINTMENTS, GET_APPOINTMENT_STATS } from '@/graphql/queries/appointment';
 import { APPROVE_APPOINTMENT, REJECT_APPOINTMENT, DELETE_APPOINTMENT } from '@/graphql/mutations/appointment';
 import { ITEMS_PER_PAGE } from '@/constants/settings';
+import { isOrganization } from '@/utils/roleUtils';
 
 export default function AppointmentsPage() {
   const router = useRouter();
@@ -27,6 +28,17 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserRole(user.role?.name || '');
+    }
+  }, []);
+
+  const isOrg = isOrganization(userRole);
 
   const getTodayDateRange = () => {
     if (statusFilter !== 'today') return {};
@@ -177,12 +189,13 @@ export default function AppointmentsPage() {
       align: 'center',
       accessor: (row) => (
         <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-          {row.status === 'Pending' && (
+          {isOrg && row.status === 'Pending' && (
             <>
               <button onClick={(e) => handleApprove(e, row.id)} className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl text-emerald-500 transition-all"><Check size={16} /></button>
               <button onClick={(e) => handleReject(e, row.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl text-rose-500 transition-all"><X size={16} /></button>
             </>
           )}
+          <button onClick={() => router.push(`/appointments/edit/${row.id}`)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all"><Edit2 size={16} /></button>
           <button onClick={(e) => handleDeleteClick(e, row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
         </div>
       )
@@ -290,12 +303,13 @@ export default function AppointmentsPage() {
                     </div>
                   </div>
                   <div className="pt-6 border-t border-[var(--border)] flex items-center justify-end gap-3 mt-auto">
-                    {appointment.status === 'Pending' && (
+                    {isOrg && appointment.status === 'Pending' && (
                       <>
                         <button onClick={(e) => handleApprove(e, appointment.id)} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">Approve</button>
                         <button onClick={(e) => handleReject(e, appointment.id)} className="flex-1 py-2 bg-rose-500/10 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-rose-500/20 border border-rose-500/20">Reject</button>
                       </>
                     )}
+                    <button onClick={() => router.push(`/appointments/edit/${appointment.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all"><Edit2 size={16} /></button>
                     <button onClick={(e) => handleDeleteClick(e, appointment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
                   </div>
                 </div>

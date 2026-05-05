@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, User, Award, DollarSign, Phone, Sparkles, ChevronRight } from 'lucide-react';
+import { ArrowLeft, User, Award, DollarSign, Phone, Sparkles } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/Select';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
@@ -16,12 +16,15 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { CREATE_DOCTOR } from '@/graphql/mutations/doctor';
 import ImageUpload from '@/components/ui/ImageUpload';
+import { twMerge } from 'tailwind-merge';
+import { SPECIALIST_OPTIONS } from '@/utils/constants';
 
 export default function AddDoctorPage() {
   const router = useRouter();
+
   const [formData, setFormData] = useState({
     name: '',
-    specialization: 'Skin',
+    specialization: '',
     experience: '',
     consultationFee: '',
     mobile: '',
@@ -44,13 +47,14 @@ export default function AddDoctorPage() {
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = 'Doctor name is required';
+    if (!formData.specialization) newErrors.specialization = 'Specialization is required';
     if (!formData.experience) newErrors.experience = 'Experience is required';
     if (!formData.consultationFee) newErrors.consultationFee = 'Consultation fee is required';
     if (!formData.mobile) newErrors.mobile = 'Contact number is required';
     else if (!/^\d{10}$/.test(formData.mobile.replace(/\s/g, '').replace('+91', ''))) {
       newErrors.mobile = 'Enter a valid 10-digit mobile number';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -59,7 +63,7 @@ export default function AddDoctorPage() {
     e.preventDefault();
     if (!validate()) return;
 
-    createDoctor({ 
+    createDoctor({
       variables: {
         ...formData,
         experience: parseInt(formData.experience),
@@ -75,9 +79,9 @@ export default function AddDoctorPage() {
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10 relative">
         <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
-        
+
         <div className="max-w-3xl mx-auto">
-          <button 
+          <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-bold mb-8 group"
           >
@@ -87,7 +91,7 @@ export default function AddDoctorPage() {
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/5 blur-[100px] rounded-full pointer-events-none"></div>
-            
+
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
                 <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
@@ -102,14 +106,14 @@ export default function AddDoctorPage() {
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                   <div className="md:col-span-3 flex justify-center md:justify-start">
-                    <ImageUpload 
+                    <ImageUpload
                       label="Photo"
                       value={formData.image}
                       onChange={(val) => setFormData({ ...formData, image: val })}
                       className="w-full max-w-[140px]"
                     />
                   </div>
-                  
+
                   <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
                       label="Doctor Name"
@@ -122,22 +126,28 @@ export default function AddDoctorPage() {
                         if (errors.name) setErrors({ ...errors, name: null });
                       }}
                     />
-                    
+
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-1">Specialization</label>
-                      <Select 
-                        value={formData.specialization} 
-                        onValueChange={(value) => setFormData({ ...formData, specialization: value })}
+                      <Select
+                        value={formData.specialization || undefined}
+                        onValueChange={(value) => {
+                          setFormData({ ...formData, specialization: value });
+                          if (errors.specialization) setErrors({ ...errors, specialization: null });
+                        }}
                       >
-                        <SelectTrigger className="h-12">
+                        <SelectTrigger className={twMerge("h-12", errors.specialization && "border-rose-500 ring-rose-500/10")}>
                           <SelectValue placeholder="Select Specialization" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Skin">Skin Specialist</SelectItem>
-                          <SelectItem value="Hair">Hair Specialist</SelectItem>
-                          <SelectItem value="Both">Skin & Hair Specialist</SelectItem>
+                          {SPECIALIST_OPTIONS?.map(data => {
+                            return (
+                              <SelectItem key={data.value} value={data.value}>{data.label}</SelectItem>
+                            )
+                          })}
                         </SelectContent>
                       </Select>
+                      {errors.specialization && <p className="text-[10px] font-bold text-rose-500 ml-1 mt-1 uppercase tracking-wider">{errors.specialization}</p>}
                     </div>
 
                     <Input

@@ -74,7 +74,7 @@ export const appointmentResolvers = {
       }
       return appointment;
     }),
-    getAppointmentStats: isOrganization(async (_, __, context) => {
+    getAppointmentStats: isAuthenticated(async (_, __, context) => {
       await dbConnect();
       
       const today = new Date();
@@ -82,7 +82,17 @@ export const appointmentResolvers = {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const baseQuery = { organization: context.user.id };
+      let baseQuery = {};
+      if (context.user.role === 'Organization') {
+        baseQuery = { organization: context.user.id };
+      } else if (context.user.role === 'Patient') {
+        baseQuery = { patient: context.user.id };
+      } else {
+        return {
+          totalPending: 0, totalApproved: 0, totalRejected: 0,
+          todayAppointments: 0, todayPending: 0, todayApproved: 0, todayRejected: 0
+        };
+      }
       
       const totalPending = await Appointment.countDocuments({ ...baseQuery, status: 'Pending' });
       const totalApproved = await Appointment.countDocuments({ ...baseQuery, status: 'Approved' });
@@ -140,8 +150,20 @@ export const appointmentResolvers = {
       await dbConnect();
       return await Appointment.findByIdAndUpdate(id, { status: 'Rejected' }, { new: true });
     }),
-    deleteAppointment: isOrganization(async (_, { id }, context) => {
+    deleteAppointment: isAuthenticated(async (_, { id }, context) => {
       await dbConnect();
+      const appointment = await Appointment.findById(id);
+      if (!appointment) throw new Error('Appointment not found');
+
+      // Security check: Only owner or assigned organization can delete
+      if (context.user.role === 'Patient' && appointment.patient.toString() !== context.user.id) {
+        throw new Error('Unauthorized: You can only delete your own appointments');
+      }
+      
+      if (context.user.role === 'Organization' && appointment.organization.toString() !== context.user.id) {
+        throw new Error('Unauthorized: You can only delete appointments for your own clinic');
+      }
+
       await Appointment.findByIdAndDelete(id);
       return true;
     }),

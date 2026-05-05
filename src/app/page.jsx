@@ -34,6 +34,7 @@ import {
 import { useQuery } from '@apollo/client';
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { testimonials, faqs } from '@/constants/page-data';
+import { DEFAULT_SERVICES } from '@/utils/constants';
 
 const iconMap = {
   Zap,
@@ -53,38 +54,7 @@ export default function LandingPage() {
   // const services = data?.getServices?.services || [];
   // const totalPages = data?.getServices?.totalPages || 1;
 
-  const services = [
-    {
-      "id": 1,
-      "title": "Skin Rejuvenation",
-      "desc": "Reverse aging signs with chemical peels, micro-needling, and collagen boosters.",
-      "icon": "Zap",
-    },
-    {
-      "id": 2,
-      "title": "Facial & Skin Care",
-      "desc": "Deep cleansing and nourishing facials tailored to your unique skin concerns.",
-      "icon": "Droplets",
-    },
-    {
-      "id": 3,
-      "title": "Hair Growth Therapy",
-      "desc": "Medical-grade hair restoration treatments including PRP and growth factor injections.",
-      "icon": "Scissors",
-    },
-    {
-      "id": 4,
-      "title": "Acne & Pimple Treatment",
-      "desc": "Advanced dermatological protocols to clear active acne and prevent future breakouts.",
-      "icon": "Smile",
-    },
-    {
-      "id": 5,
-      "title": "Laser Hair Removal",
-      "desc": "Painless, high-precision laser technology for permanent hair reduction on all skin types.\n",
-      "icon": "Heart",
-    },
-  ];
+  const services = DEFAULT_SERVICES;
   const totalPages = 1;
 
   return (

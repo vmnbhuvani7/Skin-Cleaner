@@ -21,6 +21,7 @@ export const authTypeDefs = `#graphql
 
   type Query {
     me: User
+    publicGetOrganizations: [User]
   }
 
   type Mutation {
@@ -32,6 +33,9 @@ export const authTypeDefs = `#graphql
       password: String!
       roleName: String!
       organizationName: String
+      organizationId: ID
+      birthdate: String
+      gender: String
     ): AuthPayload
   }
 `;

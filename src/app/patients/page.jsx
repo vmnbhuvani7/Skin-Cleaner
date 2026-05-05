@@ -121,10 +121,10 @@ export default function PatientsPage() {
       accessor: (row) => (
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-black uppercase tracking-widest bg-[var(--surface-hover)] px-2 py-1 rounded-lg border border-[var(--border)]">
-            {row.gender}
+            {row.gender || '-'}
           </span>
           <span className="text-[10px] font-black uppercase tracking-widest bg-[var(--surface-hover)] px-2 py-1 rounded-lg border border-[var(--border)] text-indigo-400">
-            {row.age}Y
+            {row.age ? `${row.age}Y` : '-'}
           </span>
         </div>
       )
@@ -267,7 +267,9 @@ export default function PatientsPage() {
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--foreground)] mb-1">{patient.name}</h3>
-                  <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">{patient.gender}, {patient.age}Y</p>
+                  <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                    {patient.gender || '-'}, {patient.age ? `${patient.age}Y` : '-'}
+                  </p>
                   <div className="space-y-4 mb-8 flex-1">
                     <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm">
                       <Phone size={16} className="opacity-50" />
