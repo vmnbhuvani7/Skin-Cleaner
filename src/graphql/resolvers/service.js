@@ -3,7 +3,7 @@ import dbConnect from '@/lib/mongodb';
 
 export const serviceResolvers = {
   Query: {
-    getServices: async (_, { page = 1, limit = 10, search = "", isActive }) => {
+    getServices: async (_, { page = 1, limit = 10, search = "", isActive, sortBy, sortOrder }) => {
       await dbConnect();
       
       let query = {};
@@ -19,9 +19,16 @@ export const serviceResolvers = {
         query.isActive = isActive;
       }
 
+      const sort = {};
+      if (sortBy) {
+        sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+      } else {
+        sort.createdAt = -1;
+      }
+
       const skip = (page - 1) * limit;
       const services = await Service.find(query)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip(skip)
         .limit(limit);
       

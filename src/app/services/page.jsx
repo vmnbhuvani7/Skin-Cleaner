@@ -9,6 +9,14 @@ import DataTable from '@/components/ui/DataTable';
 import ViewToggle from '@/components/ui/ViewToggle';
 import Pagination from '@/components/ui/Pagination';
 import Input from '@/components/ui/Input';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/Select';
+import { SortAsc, SortDesc } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
@@ -34,13 +42,17 @@ export default function ServicesPage() {
   const [statusFilter, setStatusFilter] = useState('both');
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const { data, loading, refetch } = useQuery(GET_SERVICES, {
     variables: { 
       page: currentPage, 
       limit: ITEMS_PER_PAGE,
       search: searchTerm,
-      isActive: statusFilter === 'both' ? undefined : statusFilter === 'active'
+      isActive: statusFilter === 'both' ? undefined : statusFilter === 'active',
+      sortBy,
+      sortOrder
     },
     fetchPolicy: 'cache-and-network'
   });
@@ -192,7 +204,28 @@ export default function ServicesPage() {
               />
             </div>
             
-            <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+              {/* Sorting */}
+              <div className="flex items-center gap-2">
+                <Select value={sortBy} onValueChange={(val) => { setSortBy(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="w-40 h-14 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-xs font-bold shadow-sm">
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="title" className="text-xs font-bold">Title</SelectItem>
+                    <SelectItem value="createdAt" className="text-xs font-bold">Date Created</SelectItem>
+                    <SelectItem value="isActive" className="text-xs font-bold">Status</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <button 
+                  onClick={() => { setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); setCurrentPage(1); }}
+                  className="w-14 h-14 flex items-center justify-center bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-[var(--text-muted)] hover:text-indigo-400 transition-all shadow-sm active:scale-95"
+                >
+                  {sortOrder === 'asc' ? <SortAsc size={20} /> : <SortDesc size={20} />}
+                </button>
+              </div>
+
               <div className="flex bg-[var(--surface)] border border-[var(--border)] p-1.5 rounded-2xl shadow-sm">
                 {['both', 'active', 'inactive'].map((f) => (
                   <button 

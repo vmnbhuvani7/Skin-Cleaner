@@ -17,7 +17,7 @@ export const serviceTypeDefs = `#graphql
   }
 
   extend type Query {
-    getServices(page: Int, limit: Int, search: String, isActive: Boolean): ServicesResponse
+    getServices(page: Int, limit: Int, search: String, isActive: Boolean, sortBy: String, sortOrder: String): ServicesResponse
     getService(id: ID!): Service
   }
 
