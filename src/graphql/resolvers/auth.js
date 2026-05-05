@@ -1,4 +1,5 @@
 import User from '@/models/User';
+import Role from '@/models/Role';
 import dbConnect from '@/lib/mongodb';
 import { createToken } from '@/utils/auth';
 import validate from 'deep-email-validator';
@@ -13,10 +14,10 @@ export const authResolvers = {
     login: async (_, { identifier, password }) => {
       await dbConnect();
 
-      // Find user by email or mobile
+      // Find user by email or mobile and populate role
       const user = await User.findOne({
         $or: [{ email: identifier }, { mobile: identifier }],
-      });
+      }).populate('role');
 
       if (!user) {
         throw new Error('Invalid credentials');
@@ -34,11 +35,15 @@ export const authResolvers = {
           name: user.name,
           email: user.email,
           mobile: user.mobile,
+          role: user.role ? {
+            id: user.role._id,
+            name: user.role.name,
+          } : null,
         },
       };
     },
 
-    signup: async (_, { name, email, mobile, password }) => {
+    signup: async (_, { name, email, mobile, password, roleName }) => {
       await dbConnect();
 
       // 1. Email Validation using deep-email-validator
@@ -58,7 +63,18 @@ export const authResolvers = {
       // 2. Check if user already exists
       const userExists = await User.findOne({ email });
       if (userExists) {
-        throw new Error('User already exists with this email');
+        throw new Error('Email is already registered in our system.');
+      }
+
+      // Ensure roles exist
+      let roleDoc = await Role.findOne({ name: roleName });
+      if (!roleDoc) {
+        // Create default roles if they don't exist
+        await Role.create([{ name: 'Organization' }, { name: 'Patient' }]);
+        roleDoc = await Role.findOne({ name: roleName });
+        if (!roleDoc) {
+          throw new Error('Invalid role selected');
+        }
       }
 
       // 3. Create User
@@ -67,7 +83,11 @@ export const authResolvers = {
         email,
         mobile,
         password,
+        role: roleDoc._id,
       });
+
+      // Populate role for response
+      await user.populate('role');
 
       if (user) {
         return {
@@ -77,6 +97,10 @@ export const authResolvers = {
             name: user.name,
             email: user.email,
             mobile: user.mobile,
+            role: user.role ? {
+              id: user.role._id,
+              name: user.role.name,
+            } : null,
           },
         };
       } else {

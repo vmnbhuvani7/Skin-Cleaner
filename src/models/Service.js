@@ -24,6 +24,11 @@ const ServiceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
 
 export default mongoose.models.Service || mongoose.model('Service', ServiceSchema);

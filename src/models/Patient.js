@@ -42,6 +42,10 @@ const PatientSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  role: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+  },
 });
 
 export default mongoose.models.Patient || mongoose.model('Patient', PatientSchema);

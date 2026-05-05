@@ -4,14 +4,14 @@ import React from 'react';
 import LandingHeader from '@/components/landing/LandingHeader';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { 
-  Sparkles, 
-  ShieldCheck, 
-  Users, 
-  Zap, 
-  ChevronRight, 
-  Star, 
-  CheckCircle2, 
+import {
+  Sparkles,
+  ShieldCheck,
+  Users,
+  Zap,
+  ChevronRight,
+  Star,
+  CheckCircle2,
   ArrowRight,
   Droplets,
   Scissors,
@@ -27,8 +27,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/Select';
 
 import { useQuery } from '@apollo/client';
@@ -50,7 +50,39 @@ export default function LandingPage() {
     fetchPolicy: 'cache-and-network'
   });
 
-  const services = data?.getServices?.services || [];
+  // const services = data?.getServices?.services || [];
+  const services = [
+    {
+      "id": 1,
+      "title": "Skin Rejuvenation",
+      "desc": "Reverse aging signs with chemical peels, micro-needling, and collagen boosters.",
+      "icon": "Zap",
+    },
+    {
+      "id": 2,
+      "title": "Facial & Skin Care",
+      "desc": "Deep cleansing and nourishing facials tailored to your unique skin concerns.",
+      "icon": "Droplets",
+    },
+    {
+      "id": 3,
+      "title": "Hair Growth Therapy",
+      "desc": "Medical-grade hair restoration treatments including PRP and growth factor injections.",
+      "icon": "Scissors",
+    },
+    {
+      "id": 4,
+      "title": "Acne & Pimple Treatment",
+      "desc": "Advanced dermatological protocols to clear active acne and prevent future breakouts.",
+      "icon": "Smile",
+    },
+    {
+      "id": 5,
+      "title": "Laser Hair Removal",
+      "desc": "Painless, high-precision laser technology for permanent hair reduction on all skin types.\n",
+      "icon": "Heart",
+    },
+  ];
   const totalPages = data?.getServices?.totalPages || 1;
 
   return (
@@ -60,9 +92,9 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/dermatology_clinic_hero_1777282738062.png" 
-            alt="Clinic Interior" 
+          <img
+            src="/dermatology_clinic_hero_1777282738062.png"
+            alt="Clinic Interior"
             className="w-full h-full object-cover opacity-20 md:opacity-40"
           />
           {/* Background top image */}
@@ -70,7 +102,7 @@ export default function LandingPage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -96,7 +128,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
         </div>
-        
+
         {/* Floating Decor */}
         <div className="hidden lg:block absolute bottom-20 right-20 w-[400px] h-[500px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-[#0f1117] animate-bounce-slow">
           <img src="/dermatology_treatment_visual_1777282762115.png" alt="Treatment" className="w-full h-full object-cover" />
@@ -126,7 +158,7 @@ export default function LandingPage() {
               services.map((service, idx) => {
                 const IconComponent = iconMap[service.icon] || Zap;
                 return (
-                  <motion.div 
+                  <motion.div
                     key={service.id}
                     whileHover={{ y: -10 }}
                     className="bg-white dark:bg-[#0f1117] p-8 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/5 transition-all group"
@@ -151,7 +183,7 @@ export default function LandingPage() {
 
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-4">
-              <button 
+              <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="w-12 h-12 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-200 dark:disabled:hover:border-white/10 transition-all"
@@ -159,7 +191,7 @@ export default function LandingPage() {
                 <ChevronRight size={20} className="rotate-180" />
               </button>
               <span className="text-sm font-bold text-gray-900 dark:text-white">Page {page} of {totalPages}</span>
-              <button 
+              <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="w-12 h-12 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-200 dark:disabled:hover:border-white/10 transition-all"
@@ -259,7 +291,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 relative">
             {/* Connector Line */}
             <div className="hidden lg:block absolute top-10 left-40 right-40 h-0.5 bg-dashed-border dark:opacity-20 -z-0"></div>
-            
+
             {[
               { step: "01", title: "Book Consultation", desc: "Schedule a time that works for you online or via phone." },
               { step: "02", title: "Skin/Hair Analysis", desc: "Our experts perform a deep analysis of your unique needs." },
@@ -428,7 +460,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-      
+
       {/* Custom Styles */}
       <style jsx>{`
         .bg-dashed-border {

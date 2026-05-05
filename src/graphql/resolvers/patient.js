@@ -1,6 +1,10 @@
-import Patient from '@/models/Patient';
+
+import User from '@/models/User';
+import Role from '@/models/Role';
 import dbConnect from '@/lib/mongodb';
 import { calculateAge } from '@/utils/dateUtils';
+import { isOrganization, isSelfOrOrganization } from '@/graphql/middleware/auth';
+import { DEFAULT_PASSWORD } from '@/utils/constants';
 
 export const patientResolvers = {
   Patient: {
@@ -8,10 +12,11 @@ export const patientResolvers = {
     birthdate: (parent) => parent.birthdate ? parent.birthdate.toISOString() : null,
   },
   Query: {
-    getPatients: async (_, { page = 1, limit = 10, search = "", isActive }) => {
+    getPatients: isOrganization(async (_, { page = 1, limit = 10, search = "", isActive }, context) => {
       await dbConnect();
       
-      let query = {};
+      let patientRole = await Role.findOne({ name: 'Patient' });
+      let query = { role: patientRole._id, organization: context.user.id };
       
       if (search) {
         query.$or = [
@@ -26,12 +31,13 @@ export const patientResolvers = {
       }
 
       const skip = (page - 1) * limit;
-      const patients = await Patient.find(query)
+      const patients = await User.find(query)
+        .populate('role')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
       
-      const totalCount = await Patient.countDocuments(query);
+      const totalCount = await User.countDocuments(query);
       
       return {
         patients,
@@ -40,25 +46,50 @@ export const patientResolvers = {
         currentPage: page,
         hasMore: totalCount > (skip + patients.length)
       };
-    },
-    getPatient: async (_, { id }) => {
+    }),
+    getPatient: isSelfOrOrganization(async (_, { id }) => {
       await dbConnect();
-      return await Patient.findById(id);
-    },
+      return await User.findById(id).populate('role');
+    }),
   },
   Mutation: {
-    createPatient: async (_, args) => {
+    createPatient: isOrganization(async (_, args, context) => {
       await dbConnect();
-      return await Patient.create(args);
-    },
-    updatePatient: async (_, { id, ...args }) => {
+
+      // Check email uniqueness across User model
+      const existingUser = await User.findOne({ email: args.email });
+      if (existingUser) {
+        throw new Error('Email is already registered. Please use a different email.');
+      }
+
+      // Find or create 'Patient' role
+      let patientRole = await Role.findOne({ name: 'Patient' });
+      if (!patientRole) {
+        await Role.create([{ name: 'Organization' }, { name: 'Patient' }]);
+        patientRole = await Role.findOne({ name: 'Patient' });
+      }
+
+      // Set default password if not provided
+      const password = args.password || DEFAULT_PASSWORD;
+
+      const newPatient = await User.create({ ...args, password, role: patientRole._id, organization: context.user.id });
+      return await newPatient.populate('role');
+    }),
+    updatePatient: isSelfOrOrganization(async (_, { id, ...args }) => {
       await dbConnect();
-      return await Patient.findByIdAndUpdate(id, args, { new: true });
-    },
-    deletePatient: async (_, { id }) => {
+
+      if (args.email) {
+        const existingUser = await User.findOne({ email: args.email, _id: { $ne: id } });
+        if (existingUser) {
+          throw new Error('Email is already registered.');
+        }
+      }
+      return await User.findByIdAndUpdate(id, args, { new: true }).populate('role');
+    }),
+    deletePatient: isOrganization(async (_, { id }) => {
       await dbConnect();
-      await Patient.findByIdAndDelete(id);
+      await User.findByIdAndDelete(id);
       return true;
-    },
+    }),
   },
 };

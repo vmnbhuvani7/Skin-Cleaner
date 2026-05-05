@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [login, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       localStorage.setItem('token', data.login.token);
+      localStorage.setItem('user', JSON.stringify(data.login.user));
       router.push(DEFAULT_LOGIN_REDIRECT);
     },
     onError: (err) => {

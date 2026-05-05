@@ -1,15 +1,16 @@
 import Treatment from '@/models/Treatment';
 import TreatmentSession from '@/models/TreatmentSession';
-import Patient from '@/models/Patient';
+import User from '@/models/User';
 import Service from '@/models/Service';
 import Doctor from '@/models/Doctor';
 import dbConnect from '@/lib/mongodb';
+import { isAuthenticated, isOrganization, isSelfOrOrganization } from '@/graphql/middleware/auth';
 
 export const treatmentResolvers = {
   Treatment: {
     patient: async (parent) => {
       await dbConnect();
-      return await Patient.findById(parent.patient);
+      return await User.findById(parent.patient);
     },
     service: async (parent) => {
       await dbConnect();
@@ -36,21 +37,32 @@ export const treatmentResolvers = {
     createdAt: (parent) => parent.createdAt ? parent.createdAt.toISOString() : null,
   },
   Query: {
-    getTreatments: async () => {
+    getTreatments: isAuthenticated(async (_, __, context) => {
       await dbConnect();
-      return await Treatment.find().sort({ createdAt: -1 });
-    },
-    getTreatment: async (_, { id }) => {
+      
+      let query = {};
+      if (context.user.role === 'Patient') {
+        query.patient = context.user.id;
+      } else if (context.user.role === 'Organization') {
+        query.organization = context.user.id;
+      }
+      return await Treatment.find(query).sort({ createdAt: -1 });
+    }),
+    getTreatment: isAuthenticated(async (_, { id }, context) => {
       await dbConnect();
-      return await Treatment.findById(id);
-    },
-    getPatientTreatments: async (_, { patientId }) => {
+      const treatment = await Treatment.findById(id);
+      if (context.user.role === 'Patient' && treatment.patient.toString() !== context.user.id) {
+        throw new Error('Unauthorized access');
+      }
+      return treatment;
+    }),
+    getPatientTreatments: isSelfOrOrganization(async (_, { patientId }) => {
       await dbConnect();
       return await Treatment.find({ patient: patientId }).sort({ createdAt: -1 });
-    },
+    }),
   },
   Mutation: {
-    createTreatment: async (_, { input }) => {
+    createTreatment: isOrganization(async (_, { input }, context) => {
       await dbConnect();
       const {
         patientId, serviceId, doctorId, type, totalAmount, discount, finalAmount,
@@ -62,6 +74,7 @@ export const treatmentResolvers = {
         patient: patientId,
         service: serviceId,
         doctor: doctorId,
+        organization: context.user.id,
         type,
         totalAmount,
         discount,
@@ -107,19 +120,19 @@ export const treatmentResolvers = {
       }
 
       return treatment;
-    },
-    updateTreatment: async (_, { id, input }) => {
+    }),
+    updateTreatment: isOrganization(async (_, { id, input }) => {
       await dbConnect();
       const treatment = await Treatment.findByIdAndUpdate(id, input, { new: true });
       return treatment;
-    },
-    deleteTreatment: async (_, { id }) => {
+    }),
+    deleteTreatment: isOrganization(async (_, { id }) => {
       await dbConnect();
       await TreatmentSession.deleteMany({ treatment: id });
       await Treatment.findByIdAndDelete(id);
       return true;
-    },
-    addSession: async (_, { input }) => {
+    }),
+    addSession: isOrganization(async (_, { input }) => {
         await dbConnect();
         // This is for adding a session that wasn't pre-generated or filling an estimated one
         // Check if sessionNumber already exists as ESTIMATED
@@ -142,8 +155,8 @@ export const treatmentResolvers = {
             date: input.date ? new Date(input.date) : new Date(),
             status: input.status || 'COMPLETED'
         });
-    },
-    updateSession: async (_, { id, input }) => {
+    }),
+    updateSession: isOrganization(async (_, { id, input }) => {
       await dbConnect();
       const updateData = { ...input };
       if (input.date) updateData.date = new Date(input.date);
@@ -161,11 +174,11 @@ export const treatmentResolvers = {
       }
       
       return session;
-    },
-    deleteSession: async (_, { id }) => {
+    }),
+    deleteSession: isOrganization(async (_, { id }) => {
       await dbConnect();
       await TreatmentSession.findByIdAndDelete(id);
       return true;
-    },
+    }),
   },
 };

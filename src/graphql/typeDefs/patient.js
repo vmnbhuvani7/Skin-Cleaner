@@ -13,6 +13,7 @@ export const patientTypeDefs = `#graphql
     isActive: Boolean!
     image: String
     createdAt: String
+    role: Role
   }
 
   type PatientsResponse {

@@ -17,11 +17,42 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    // Not strictly required since patients might not have passwords immediately when created by an org
+  },
+  birthdate: {
+    type: Date,
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other'],
+  },
+  address: {
+    type: String,
+  },
+  medicalHistory: {
+    type: String,
+  },
+  ongoingTreatments: {
+    type: String,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  image: {
+    type: String,
   },
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  role: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+  },
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
 });
 

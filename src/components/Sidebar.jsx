@@ -27,6 +27,7 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import Button from './ui/Button';
+import { ROLE_ROUTES } from '@/utils/roleUtils';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -38,6 +39,14 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -63,51 +72,24 @@ export default function Sidebar() {
     chat.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const menuItems = [
-    { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      onClick: () => router.push('/dashboard'),
-      isActive: pathname === '/dashboard'
-    },
-    { 
-      icon: User, 
-      label: 'Doctors', 
-      onClick: () => router.push('/doctors'),
-      isActive: pathname === '/doctors'
-    },
-    { 
-      icon: Users, 
-      label: 'Patients', 
-      onClick: () => router.push('/patients'),
-      isActive: pathname === '/patients' || pathname.startsWith('/patients/')
-    },
-    { 
-      icon: MessageSquare, 
-      label: 'Services', 
-      onClick: () => router.push('/services'),
-      isActive: pathname === '/services'
-    },
-    { 
-      icon: Calendar, 
-      label: 'Appointments', 
-      onClick: () => router.push('/appointments'),
-      isActive: pathname === '/appointments' || pathname.startsWith('/appointments/')
-    },
-    { 
-      icon: Activity, 
-      label: 'Treatments', 
-      onClick: () => router.push('/treatments'),
-      isActive: pathname === '/treatments' || pathname.startsWith('/treatments/')
-    },
-    // { 
-    //   icon: Bot, 
-    //   label: 'AI Helper', 
-    //   hasSubmenu: true, 
-    //   onClick: () => setView('chat'),
-    //   isActive: view === 'chat'
-    // },
-  ];
+  const iconMap = {
+    LayoutDashboard,
+    User,
+    Users,
+    MessageSquare,
+    Calendar,
+    Activity,
+  };
+
+  const userRole = user?.role?.name || 'Organization'; // default to Organization for existing users without role
+  const allowedRoutes = ROLE_ROUTES[userRole] || ROLE_ROUTES['Organization'];
+
+  const menuItems = allowedRoutes.map(route => ({
+    icon: iconMap[route.icon],
+    label: route.label,
+    onClick: () => router.push(route.path),
+    isActive: pathname === route.path || (route.path !== '/dashboard' && pathname.startsWith(`${route.path}/`)),
+  }));
 
   const ThemeIcon = {
     light: Sun,
@@ -264,12 +246,12 @@ export default function Sidebar() {
         )}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-sm font-bold shadow-inner">
-              JD
+              {user ? user.name.substring(0, 2).toUpperCase() : 'U'}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col animate-in fade-in duration-300">
-                <span className="text-xs font-bold text-[var(--foreground)]">John Doe</span>
-                <span className="text-[10px] text-indigo-400 font-medium">Pro Member</span>
+                <span className="text-xs font-bold text-[var(--foreground)] truncate max-w-[100px]">{user ? user.name : 'User'}</span>
+                <span className="text-[10px] text-indigo-400 font-medium">{user?.role?.name || 'Organization'}</span>
               </div>
             )}
           </div>

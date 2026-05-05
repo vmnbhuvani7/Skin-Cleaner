@@ -21,6 +21,7 @@ export default function SignupPage() {
     mobile: '',
     password: '',
     confirmPassword: '',
+    roleName: 'Patient',
     acceptTerms: false,
   });
   const [error, setError] = useState('');
@@ -30,6 +31,7 @@ export default function SignupPage() {
   const [signup, { loading }] = useMutation(SIGNUP_MUTATION, {
     onCompleted: (data) => {
       localStorage.setItem('token', data.signup.token);
+      localStorage.setItem('user', JSON.stringify(data.signup.user));
       router.push(DEFAULT_LOGIN_REDIRECT);
     },
     onError: (err) => {
@@ -52,6 +54,7 @@ export default function SignupPage() {
         email: formData.email,
         mobile: formData.mobile,
         password: formData.password,
+        roleName: formData.roleName,
       }
     });
   };
@@ -85,6 +88,46 @@ export default function SignupPage() {
             {error}
           </motion.div>
         )}
+
+        {/* Role Selection */}
+        <div className="flex gap-4 mb-8">
+          <div
+            onClick={() => setFormData({ ...formData, roleName: 'Patient' })}
+            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${
+              formData.roleName === 'Patient'
+                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl ${formData.roleName === 'Patient' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
+                <User size={20} />
+              </div>
+              <div>
+                <h3 className={`font-bold ${formData.roleName === 'Patient' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>Patient</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Personal account</p>
+              </div>
+            </div>
+          </div>
+          <div
+            onClick={() => setFormData({ ...formData, roleName: 'Organization' })}
+            className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${
+              formData.roleName === 'Organization'
+                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl ${formData.roleName === 'Organization' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
+                <Zap size={20} />
+              </div>
+              <div>
+                <h3 className={`font-bold ${formData.roleName === 'Organization' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>Organization</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Business account</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

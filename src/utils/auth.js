@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'vmn_skin_care_secret_2026';
 
 export const createToken = (user) => {
   return jwt.sign(
-    { id: user._id, email: user.email },
+    { id: user._id, email: user.email, role: user.role?.name || user.role },
     JWT_SECRET,
     { expiresIn: '30d' }
   );

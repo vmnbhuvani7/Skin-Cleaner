@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { PUBLIC_ROUTES, AUTH_ROUTES, DEFAULT_LOGIN_REDIRECT, DEFAULT_LOGOUT_REDIRECT } from '@/constants/routes';
+import { hasAccess } from '@/utils/roleUtils';
 import Loader from '@/components/ui/Loader';
 
 export default function AuthGuard({ children }) {
@@ -21,7 +22,16 @@ export default function AuthGuard({ children }) {
       if (isAuthRoute) {
         router.replace(DEFAULT_LOGIN_REDIRECT);
       } else {
-        setLoading(false);
+        const storedUser = localStorage.getItem('user');
+        const user = storedUser ? JSON.parse(storedUser) : null;
+        const userRole = user?.role?.name || 'Organization';
+        
+        if (!isPublicRoute && !hasAccess(userRole, pathname)) {
+          // If trying to access unauthorized route, redirect to default
+          router.replace(DEFAULT_LOGIN_REDIRECT);
+        } else {
+          setLoading(false);
+        }
       }
     } else {
       // Not logged in: redirect away if the route is NOT public (so all new routes are private by default)

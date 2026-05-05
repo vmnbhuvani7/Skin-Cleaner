@@ -1,12 +1,16 @@
 import Service from '@/models/Service';
 import dbConnect from '@/lib/mongodb';
+import { isAuthenticated, isOrganization } from '@/graphql/middleware/auth';
 
 export const serviceResolvers = {
   Query: {
-    getServices: async (_, { page = 1, limit = 10, search = "", isActive, sortBy, sortOrder }) => {
+    getServices: isAuthenticated(async (_, { page = 1, limit = 10, search = "", isActive, sortBy, sortOrder }, context) => {
       await dbConnect();
       
       let query = {};
+      if (context.user.role === 'Organization') {
+        query.organization = context.user.id;
+      }
       
       if (search) {
         query.$or = [
@@ -41,25 +45,25 @@ export const serviceResolvers = {
         totalPages,
         currentPage: page
       };
-    },
-    getService: async (_, { id }) => {
+    }),
+    getService: isAuthenticated(async (_, { id }) => {
       await dbConnect();
       return await Service.findById(id);
-    },
+    }),
   },
   Mutation: {
-    createService: async (_, args) => {
+    createService: isOrganization(async (_, args, context) => {
       await dbConnect();
-      return await Service.create(args);
-    },
-    updateService: async (_, { id, ...args }) => {
+      return await Service.create({ ...args, organization: context.user.id });
+    }),
+    updateService: isOrganization(async (_, { id, ...args }) => {
       await dbConnect();
       return await Service.findByIdAndUpdate(id, args, { new: true });
-    },
-    deleteService: async (_, { id }) => {
+    }),
+    deleteService: isOrganization(async (_, { id }) => {
       await dbConnect();
       await Service.findByIdAndDelete(id);
       return true;
-    },
+    }),
   },
 };
