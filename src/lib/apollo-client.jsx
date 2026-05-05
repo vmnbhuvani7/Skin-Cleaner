@@ -3,6 +3,8 @@
 import * as Apollo from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { useMemo } from 'react';
+import { onError } from "@apollo/client/link/error";
+import { ApolloLink } from "@apollo/client";
 
 const { ApolloClient, InMemoryCache, createHttpLink, ApolloProvider } = Apollo;
 
@@ -22,9 +24,28 @@ const authLink = setContext((_, { headers }) => {
 
 export default function GraphQLProvider({ children }) {
   const client = useMemo(() => {
+    const errorLink = onError(({ graphQLErrors, networkError }) => {
+      if (graphQLErrors)
+        graphQLErrors.forEach(({ message, locations, path }) =>
+          console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+        );
+      if (networkError) console.log(`[Network error]: ${networkError}`);
+    });
+
     return new ApolloClient({
-      link: authLink.concat(httpLink),
+      link: ApolloLink.from([errorLink, authLink, httpLink]),
       cache: new InMemoryCache(),
+      defaultOptions: {
+        watchQuery: {
+          errorPolicy: 'all',
+        },
+        query: {
+          errorPolicy: 'all',
+        },
+        mutate: {
+          errorPolicy: 'all',
+        },
+      },
     });
   }, []);
 

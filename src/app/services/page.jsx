@@ -140,9 +140,9 @@ export default function ServicesPage() {
     },
     {
       header: 'Actions',
-      align: 'center',
+      align: 'right',
       accessor: (row) => (
-        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
           <button onClick={() => router.push(`/services/edit/${row.id}`)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
             <Edit size={16} />
           </button>

@@ -24,22 +24,31 @@ export const appointmentResolvers = {
     createdAt: (parent) => parent.createdAt ? parent.createdAt.toISOString() : null,
   },
   Query: {
-    getAppointments: isAuthenticated(async (_, { page = 1, limit = 10, status, dateFrom, dateTo }, context) => {
+    getAppointments: isAuthenticated(async (_, { page = 1, limit = 10, filter }, context) => {
       await dbConnect();
       
       let query = {};
+      const parsedFilter = filter ? JSON.parse(filter) : {};
+      const { status, patientId, dateFrom, dateTo, searchTerm } = parsedFilter;
       
-      // If user is Patient, they can only see their own appointments
+      // Role-based scoping
       if (context.user.role === 'Patient') {
         query.patient = context.user.id;
       } else if (context.user.role === 'Organization') {
         query.organization = context.user.id;
       }
       
-      if (status) {
+      // Status Filter
+      if (status && status !== 'all') {
         query.status = status;
       }
 
+      // Patient Filter (for Orgs)
+      if (patientId && patientId !== 'all' && context.user.role === 'Organization') {
+        query.patient = patientId;
+      }
+
+      // Date Range Filter
       if (dateFrom || dateTo) {
         query.appointmentDate = {};
         if (dateFrom) {
@@ -50,9 +59,29 @@ export const appointmentResolvers = {
         }
       }
 
+      // Backend Search Logic
+      if (searchTerm) {
+        // Search in patients
+        const matchingPatients = await User.find({ 
+          name: { $regex: searchTerm, $options: 'i' },
+          role: 'Patient'
+        }).select('_id');
+        
+        // Search in services
+        const matchingServices = await Service.find({
+          title: { $regex: searchTerm, $options: 'i' }
+        }).select('_id');
+
+        query.$or = [
+          { patient: { $in: matchingPatients.map(p => p._id) } },
+          { service: { $in: matchingServices.map(s => s._id) } },
+          { notes: { $regex: searchTerm, $options: 'i' } }
+        ];
+      }
+
       const skip = (page - 1) * limit;
       const appointments = await Appointment.find(query)
-        .sort({ appointmentDate: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
       
@@ -124,6 +153,7 @@ export const appointmentResolvers = {
       // If patient, force the patient ID to be their own ID
       if (context.user.role === 'Patient') {
         args.patient = context.user.id;
+        args.status = 'Pending';
         // Find patient's organization and assign it
         const patientData = await User.findById(context.user.id);
         if (patientData && patientData.organization) {
@@ -131,6 +161,7 @@ export const appointmentResolvers = {
         }
       } else if (context.user.role === 'Organization') {
         args.organization = context.user.id;
+        if (!args.status) args.status = 'Approved';
       }
       return await Appointment.create(args);
     }),

@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GET_APPOINTMENTS = gql`
-  query GetAppointments($page: Int, $limit: Int, $status: String, $dateFrom: String, $dateTo: String) {
-    getAppointments(page: $page, limit: $limit, status: $status, dateFrom: $dateFrom, dateTo: $dateTo) {
+  query GetAppointments($page: Int, $limit: Int, $filter: String) {
+    getAppointments(page: $page, limit: $limit, filter: $filter) {
       appointments {
         id
         patient {

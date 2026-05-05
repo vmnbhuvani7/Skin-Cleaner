@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import { GET_PATIENTS } from '@/graphql/queries/patient';
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
+import { GET_APPOINTMENT } from '@/graphql/queries/appointment';
 import { toast } from 'react-toastify';
 import Loader from '@/components/ui/Loader';
 import { Activity, IndianRupee } from 'lucide-react';
@@ -43,7 +44,11 @@ const formatAmount = (amount) => {
   return new Intl.NumberFormat('en-IN').format(amount || 0);
 };
 
-export default function TreatmentForm({ treatment, initialPatientId, onClose, onSuccess }) {
+export default function TreatmentForm({ treatment, initialPatientId, appointmentId, onCancel, onSuccess }) {
+  const { data: appointmentData, loading: appointmentLoading } = useQuery(GET_APPOINTMENT, { 
+    variables: { id: appointmentId },
+    skip: !appointmentId 
+  });
   const { data: patientsData, loading: patientsLoading } = useQuery(GET_PATIENTS, { variables: { limit: 100 } });
   const { data: servicesData, loading: servicesLoading } = useQuery(GET_SERVICES, { variables: { limit: 100 } });
   const { data: doctorsData, loading: doctorsLoading } = useQuery(GET_DOCTORS, { variables: { limit: 100 } });
@@ -88,6 +93,16 @@ console.log("errors",errors)
   const watchOnlinePayment = watch('onlinePayment');
   const watchCashPayment = watch('cashPayment');
 
+  // Pre-fill form from appointment data
+  useEffect(() => {
+    if (appointmentData?.getAppointment && !treatment) {
+      const appt = appointmentData.getAppointment;
+      if (appt.patient?.id) setValue('patientId', appt.patient.id);
+      if (appt.service?.id) setValue('serviceId', appt.service.id);
+      if (appt.doctor?.id) setValue('doctorId', appt.doctor.id);
+    }
+  }, [appointmentData, treatment, setValue]);
+
   // Calculate final amount whenever total or discount changes
   useEffect(() => {
     const final = Math.max(0, (watchTotalAmount || 0) - (watchDiscount || 0));
@@ -106,6 +121,7 @@ console.log("errors",errors)
         ...values,
         totalSessions: values.type === 'ONE_TIME' ? 1 : values.totalSessions,
         intervalDays: values.type === 'ONE_TIME' ? 0 : values.intervalDays,
+        appointmentId: appointmentId || undefined,
       };
 
       if (treatment) {
@@ -137,7 +153,7 @@ console.log("errors",errors)
     }
   };
 
-  if (patientsLoading || servicesLoading || doctorsLoading) return <Loader />;
+  if (patientsLoading || servicesLoading || doctorsLoading || appointmentLoading) return <Loader />;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex flex-col h-full">
@@ -173,7 +189,7 @@ console.log("errors",errors)
                 name="patientId"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment || !!appointmentId}>
                     <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.patientId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
                       <SelectValue placeholder="Select Patient" />
                     </SelectTrigger>
@@ -190,7 +206,7 @@ console.log("errors",errors)
                 name="serviceId"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment}>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment || !!appointmentId}>
                     <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.serviceId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
                       <SelectValue placeholder="Select Service" />
                     </SelectTrigger>
@@ -329,7 +345,7 @@ console.log("errors",errors)
 
       {/* Sticky Action Footer */}
       <div className="sticky bottom-0 bg-[var(--surface)] pt-6 border-t border-[var(--border)] flex justify-end gap-3 z-10 pb-2 mt-4">
-        <Button variant="ghost" onClick={onClose} type="button" className="px-6 h-11 rounded-xl font-bold text-xs uppercase tracking-wider">Cancel</Button>
+        <Button variant="ghost" onClick={onCancel} type="button" className="px-6 h-11 rounded-xl font-bold text-xs uppercase tracking-wider">Cancel</Button>
         <Button
           type="submit"
           disabled={creating || updating}

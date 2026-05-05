@@ -21,6 +21,7 @@ import { GET_PATIENTS } from '@/graphql/queries/patient';
 import { GET_SERVICES } from '@/graphql/queries/service';
 import { GET_DOCTORS } from '@/graphql/queries/doctor';
 import { isOrganization } from '@/utils/roleUtils';
+import { APPOINTMENT_STATUS_OPTIONS } from '@/utils/constants';
 
 function EditAppointmentContent() {
   const router = useRouter();
@@ -259,9 +260,11 @@ function EditAppointmentContent() {
                         <SelectValue placeholder="Change status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Pending">Pending</SelectItem>
-                        <SelectItem value="Approved">Approved</SelectItem>
-                        <SelectItem value="Rejected">Rejected</SelectItem>
+                        {APPOINTMENT_STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

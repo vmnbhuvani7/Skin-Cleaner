@@ -65,6 +65,7 @@ export const treatmentTypeDefs = `#graphql
     onlinePayment: Float
     cashPayment: Float
     notes: String
+    appointmentId: ID
   }
 
   input UpdateTreatmentInput {

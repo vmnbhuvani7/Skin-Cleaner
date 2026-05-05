@@ -61,6 +61,10 @@ const TreatmentSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  appointment: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Appointment',
+  },
 });
 
 TreatmentSchema.pre('save', function () {

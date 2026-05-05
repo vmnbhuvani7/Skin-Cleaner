@@ -49,7 +49,7 @@ export const appointmentTypeDefs = `#graphql
   }
 
   extend type Query {
-    getAppointments(page: Int, limit: Int, status: String, dateFrom: String, dateTo: String): AppointmentsResponse
+    getAppointments(page: Int, limit: Int, filter: String): AppointmentsResponse
     getAppointment(id: ID!): Appointment
     getAppointmentStats: AppointmentStats
   }

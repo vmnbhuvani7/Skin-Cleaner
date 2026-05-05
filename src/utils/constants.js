@@ -40,3 +40,10 @@ export const DEFAULT_SERVICES = [
         "icon": "Heart",
     },
 ];
+
+export const APPOINTMENT_STATUS_OPTIONS = [
+    { label: 'Pending', value: 'Pending' },
+    { label: 'Approved', value: 'Approved' },
+    { label: 'Completed', value: 'Completed' },
+    { label: 'Cancelled', value: 'Cancelled' },
+];

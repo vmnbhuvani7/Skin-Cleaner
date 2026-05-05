@@ -3,6 +3,7 @@ import TreatmentSession from '@/models/TreatmentSession';
 import User from '@/models/User';
 import Service from '@/models/Service';
 import Doctor from '@/models/Doctor';
+import Appointment from '@/models/Appointment';
 import dbConnect from '@/lib/mongodb';
 import { isAuthenticated, isOrganization, isSelfOrOrganization } from '@/graphql/middleware/auth';
 
@@ -67,8 +68,26 @@ export const treatmentResolvers = {
       const {
         patientId, serviceId, doctorId, type, totalAmount, discount, finalAmount,
         totalSessions, intervalDays, paidAmount, onlinePayment, cashPayment, notes,
-        sessionDiscount
+        sessionDiscount, appointmentId
       } = input;
+
+      let linkedAppointmentId = appointmentId;
+
+      if (linkedAppointmentId) {
+        await Appointment.findByIdAndUpdate(linkedAppointmentId, { status: 'Completed' });
+      } else {
+        // Create an approved appointment automatically if started directly
+        const newAppt = await Appointment.create({
+          patient: patientId,
+          service: serviceId,
+          doctor: doctorId,
+          appointmentDate: new Date(),
+          status: 'Approved',
+          organization: context.user.id,
+          notes: ''
+        });
+        linkedAppointmentId = newAppt._id;
+      }
 
       const treatment = await Treatment.create({
         patient: patientId,
@@ -81,8 +100,11 @@ export const treatmentResolvers = {
         finalAmount,
         totalSessions,
         intervalDays,
-        status: 'IN_PROGRESS'
+        status: 'IN_PROGRESS',
+        appointment: linkedAppointmentId
       });
+
+
 
       // Create first session (Completed)
       await TreatmentSession.create({
@@ -134,27 +156,38 @@ export const treatmentResolvers = {
     }),
     addSession: isOrganization(async (_, { input }) => {
         await dbConnect();
-        // This is for adding a session that wasn't pre-generated or filling an estimated one
-        // Check if sessionNumber already exists as ESTIMATED
         const existingSession = await TreatmentSession.findOne({ 
             treatment: input.treatmentId, 
             sessionNumber: input.sessionNumber 
         });
 
+        let session;
         if (existingSession) {
-            return await TreatmentSession.findByIdAndUpdate(existingSession._id, {
+            session = await TreatmentSession.findByIdAndUpdate(existingSession._id, {
                 ...input,
                 status: input.status || 'COMPLETED',
                 date: input.date ? new Date(input.date) : new Date()
             }, { new: true });
+        } else {
+            session = await TreatmentSession.create({
+                ...input,
+                treatment: input.treatmentId,
+                date: input.date ? new Date(input.date) : new Date(),
+                status: input.status || 'COMPLETED'
+            });
         }
 
-        return await TreatmentSession.create({
-            ...input,
-            treatment: input.treatmentId,
-            date: input.date ? new Date(input.date) : new Date(),
-            status: input.status || 'COMPLETED'
-        });
+        // Check for treatment completion
+        const treatment = await Treatment.findById(session.treatment);
+        const allSessions = await TreatmentSession.find({ treatment: treatment._id });
+        const completedSessions = allSessions.filter(s => s.status === 'COMPLETED');
+
+        if (completedSessions.length >= treatment.totalSessions && treatment.status !== 'COMPLETED') {
+            treatment.status = 'COMPLETED';
+            await treatment.save();
+        }
+
+        return session;
     }),
     updateSession: isOrganization(async (_, { id, input }) => {
       await dbConnect();
@@ -163,13 +196,17 @@ export const treatmentResolvers = {
       
       const session = await TreatmentSession.findByIdAndUpdate(id, updateData, { new: true });
       
-      // Check if all sessions are completed to update treatment status
+      // Check for treatment completion
       const treatment = await Treatment.findById(session.treatment);
       const allSessions = await TreatmentSession.find({ treatment: treatment._id });
-      const allCompleted = allSessions.every(s => s.status === 'COMPLETED');
-      
-      if (allCompleted && treatment.status !== 'COMPLETED') {
+      const completedSessions = allSessions.filter(s => s.status === 'COMPLETED');
+
+      if (completedSessions.length >= treatment.totalSessions && treatment.status !== 'COMPLETED') {
           treatment.status = 'COMPLETED';
+          await treatment.save();
+      } else if (completedSessions.length < treatment.totalSessions && treatment.status === 'COMPLETED') {
+          // If a session was moved back from COMPLETED, reopen the treatment
+          treatment.status = 'IN_PROGRESS';
           await treatment.save();
       }
       

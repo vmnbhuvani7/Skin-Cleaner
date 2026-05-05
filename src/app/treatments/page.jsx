@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client';
 import { Plus, Search, Filter, MoreVertical, Trash2, Edit2, Calendar, User, Activity, ArrowRight, CheckCircle, Clock, IndianRupee } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
@@ -29,7 +29,9 @@ import { Suspense } from 'react';
 
 function TreatmentsContent() {
   const searchParams = useSearchParams();
-  const patientId = searchParams.get('patient');
+  const router = useRouter();
+  const patientId = searchParams.get('patientId') || searchParams.get('patient');
+  const appointmentId = searchParams.get('appointmentId');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState(null);
@@ -51,10 +53,10 @@ function TreatmentsContent() {
   const { loading, error, data, refetch } = useQuery(GET_TREATMENTS);
 
   useEffect(() => {
-    if (patientId) {
+    if (patientId || appointmentId) {
       setIsModalOpen(true);
     }
-  }, [patientId]);
+  }, [patientId, appointmentId]);
 
   const [deleteTreatment] = useMutation(DELETE_TREATMENT, {
     onCompleted: () => {
@@ -83,6 +85,14 @@ function TreatmentsContent() {
   const handleEdit = (treatment) => {
     setEditingTreatment(treatment);
     setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingTreatment(null);
+    if (patientId || appointmentId) {
+      router.replace('/treatments', { scroll: false });
+    }
   };
 
   const handleAdd = () => {
@@ -181,8 +191,10 @@ function TreatmentsContent() {
       }
     },
     {
+      header: 'Actions',
+      align: 'right',
       accessor: (row) => (
-        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
           {isOrg ? (
             <>
               <button onClick={() => handleEdit(row)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
@@ -226,9 +238,25 @@ function TreatmentsContent() {
           </div>
         </Modal>
 
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingTreatment ? 'Edit Treatment' : 'New Treatment'} size="4xl">
-          <TreatmentForm treatment={editingTreatment} initialPatientId={patientId} onClose={() => setIsModalOpen(false)} onSuccess={() => { setIsModalOpen(false); refetch(); }} />
-        </Modal>
+        {isModalOpen && (
+          <Modal 
+            isOpen={isModalOpen} 
+            onClose={handleCloseModal} 
+            title={editingTreatment ? "Edit Treatment" : "Add New Treatment"} 
+            size="max-w-4xl"
+          >
+            <TreatmentForm
+              treatment={editingTreatment}
+              onSuccess={() => {
+                handleCloseModal();
+                refetch();
+              }}
+              onCancel={handleCloseModal}
+              initialPatientId={patientId}
+              appointmentId={appointmentId}
+            />
+          </Modal>
+        )}
 
         <div className="max-w-7xl mx-auto space-y-8">
           {loading ? (
