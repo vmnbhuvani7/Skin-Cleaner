@@ -25,13 +25,12 @@ export default function DataTable({
       </div>
     );
   }
-
   return (
     <div className="w-full overflow-x-auto custom-scrollbar">
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
           <tr className="bg-[var(--surface-hover)]/50 border-b border-[var(--border)]">
-            {columns.map((col, idx) => (
+            {columns?.map((col, idx) => (
               <th 
                 key={idx} 
                 className={twMerge(
@@ -57,7 +56,7 @@ export default function DataTable({
                   onRowClick ? "cursor-pointer hover:bg-indigo-500/[0.03]" : "hover:bg-[var(--surface-hover)]/30"
                 )}
               >
-                {columns.map((col, colIdx) => (
+                {columns?.map((col, colIdx) => (
                   <td 
                     key={colIdx} 
                     className={twMerge(
@@ -76,7 +75,7 @@ export default function DataTable({
             ))
           ) : (
             <tr>
-              <td colSpan={columns.length} className="py-20 text-center">
+              <td colSpan={columns?.length} className="py-20 text-center">
                 <p className="text-[var(--text-muted)] font-medium italic opacity-60">{emptyMessage}</p>
               </td>
             </tr>

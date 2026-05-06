@@ -22,7 +22,8 @@ import {
   Menu,
   X,
   Stethoscope,
-  Activity
+  Activity,
+  BarChart
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
@@ -80,6 +81,7 @@ export default function Sidebar() {
     MessageSquare,
     Calendar,
     Activity,
+    BarChart,
   };
 
   const userRole = user?.role?.name || 'Organization'; // default to Organization for existing users without role

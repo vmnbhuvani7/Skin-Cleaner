@@ -11,6 +11,7 @@ export const ROLE_ROUTES = {
     { path: '/services', label: 'Services', icon: 'MessageSquare' },
     { path: '/appointments', label: 'Appointments', icon: 'Calendar' },
     { path: '/treatments', label: 'Treatments', icon: 'Activity' },
+    { path: '/reports', label: 'Reports', icon: 'BarChart' },
   ],
   [ROLES.PATIENT]: [
     { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },

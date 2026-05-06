@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GET_TREATMENTS = gql`
-  query GetTreatments {
-    getTreatments {
+  query GetTreatments($filter: String) {
+    getTreatments(filter: $filter) {
       id
       patient {
         id

@@ -103,7 +103,7 @@ export const treatmentTypeDefs = `#graphql
   }
 
   extend type Query {
-    getTreatments: [Treatment]
+    getTreatments(filter: String): [Treatment]
     getTreatment(id: ID!): Treatment
     getPatientTreatments(patientId: ID!): [Treatment]
   }

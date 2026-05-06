@@ -38,7 +38,7 @@ export const treatmentResolvers = {
     createdAt: (parent) => parent.createdAt ? parent.createdAt.toISOString() : null,
   },
   Query: {
-    getTreatments: isAuthenticated(async (_, __, context) => {
+    getTreatments: isAuthenticated(async (_, { filter }, context) => {
       await dbConnect();
       
       let query = {};
@@ -47,6 +47,30 @@ export const treatmentResolvers = {
       } else if (context.user.role === 'Organization') {
         query.organization = context.user.id;
       }
+
+      if (filter && filter !== 'all') {
+        const now = new Date();
+        let startDate;
+
+        if (filter === 'today') {
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+        } else if (filter === 'week') {
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+          startDate = new Date(now.setDate(diff));
+          startDate.setHours(0, 0, 0, 0);
+        } else if (filter === 'month') {
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else if (filter === 'year') {
+          startDate = new Date(now.getFullYear(), 0, 1);
+        }
+
+        if (startDate) {
+          query.createdAt = { $gte: startDate };
+        }
+      }
+
       return await Treatment.find(query).sort({ createdAt: -1 });
     }),
     getTreatment: isAuthenticated(async (_, { id }, context) => {
