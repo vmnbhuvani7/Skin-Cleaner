@@ -57,18 +57,18 @@ export default function ReportsPage() {
         if (!date) return false;
 
         if (timeRange === 'today') return isToday(date);
-        
+
         if (timeRange === 'week') {
           return isWithinInterval(date, {
             start: startOfWeek(now, { weekStartsOn: 1 }), // Start from Monday
             end: endOfWeek(now, { weekStartsOn: 1 })
           });
         }
-        
+
         if (timeRange === 'month') return isSameMonth(date, now);
-        
+
         if (timeRange === 'year') return isSameYear(date, now);
-        
+
         return true;
       });
     }
@@ -181,22 +181,6 @@ export default function ReportsPage() {
                 <h1 className="text-4xl md:text-5xl font-black text-[var(--foreground)] tracking-tight leading-none">
                   Intelligence Reports
                 </h1>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="rounded-xl border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] font-bold text-[10px] uppercase tracking-widest px-4 h-12"
-                  onClick={() => window.print()}
-                >
-                  <Printer size={16} className="mr-2" /> Print
-                </Button>
-                <Button
-                  className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/20 font-bold text-[10px] uppercase tracking-widest px-6 h-12"
-                  onClick={() => {/* CSV Export logic */ }}
-                >
-                  <Download size={16} className="mr-2" /> Export CSV
-                </Button>
               </div>
             </div>
 
