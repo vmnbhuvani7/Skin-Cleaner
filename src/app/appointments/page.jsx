@@ -1,23 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Check, X, Calendar, Clock, User, Search, Trash2, LayoutGrid, List, Filter, ArrowRight, Edit2, Activity } from 'lucide-react';
+import { Plus, Check, X, Calendar, Clock, User, Trash2, LayoutGrid, List, Filter, ArrowRight, Edit2, Activity } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import DataTable from '@/components/ui/DataTable';
 import ViewToggle from '@/components/ui/ViewToggle';
 import Pagination from '@/components/ui/Pagination';
-import Input from '@/components/ui/Input';
 import Loader from '@/components/ui/Loader';
-import { DatePicker } from '@/components/ui/DatePicker';
+import FilterDrawer from '@/components/ui/FilterDrawer';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '@/components/ui/Select';
 import { useTheme } from '@/context/ThemeContext';
 
 import { GET_APPOINTMENTS, GET_APPOINTMENT_STATS } from '@/graphql/queries/appointment';
@@ -27,33 +23,42 @@ import { ITEMS_PER_PAGE } from '@/constants/settings';
 import { isOrganization } from '@/utils/roleUtils';
 import { APPOINTMENT_STATUS_OPTIONS } from '@/utils/constants';
 
+const getLocalDateStr = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function AppointmentsPage() {
   const router = useRouter();
   const { theme } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Default date range: Today and Next Day
-  const today = new Date();
-  const getLocalDateStr = (d) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
-  const todayStr = getLocalDateStr(today);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = getLocalDateStr(tomorrow);
+  const { todayStr, tomorrowStr, initialDefaultFilters } = useMemo(() => {
+    const today = new Date();
+    const tStr = getLocalDateStr(today);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomStr = getLocalDateStr(tomorrow);
+    return {
+      todayStr: tStr,
+      tomorrowStr: tomStr,
+      initialDefaultFilters: {
+        search: '',
+        dateFrom: tStr,
+        dateTo: tomStr,
+        status: 'all',
+        patient: 'all'
+      }
+    };
+  }, []);
 
-  const [dateFrom, setDateFrom] = useState(todayStr);
-  const [dateTo, setDateTo] = useState(tomorrowStr);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [patientFilter, setPatientFilter] = useState('all');
+  const [filters, setFilters] = useState(initialDefaultFilters);
   
   const [viewMode, setViewMode] = useState('list');
   const [currentPage, setCurrentPage] = useState(1);
   const [userRole, setUserRole] = useState('');
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -75,11 +80,11 @@ export default function AppointmentsPage() {
       page: currentPage, 
       limit: ITEMS_PER_PAGE, 
       filter: JSON.stringify({
-        status: statusFilter,
-        patientId: patientFilter,
-        dateFrom: dateFrom ? new Date(dateFrom).toISOString() : undefined,
-        dateTo: dateTo ? new Date(dateTo).toISOString() : undefined,
-        searchTerm
+        status: filters.status,
+        patientId: filters.patient,
+        dateFrom: filters.dateFrom ? new Date(filters.dateFrom).toISOString() : undefined,
+        dateTo: filters.dateTo ? new Date(filters.dateTo).toISOString() : undefined,
+        searchTerm: filters.search
       })
     },
     fetchPolicy: 'cache-and-network'
@@ -96,7 +101,7 @@ export default function AppointmentsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
 
-  const handleApprove = async (e, id) => {
+  const handleApprove = useCallback(async (e, id) => {
     e.stopPropagation();
     try {
       await approveAppointment({ variables: { id } });
@@ -105,9 +110,9 @@ export default function AppointmentsPage() {
     } catch (err) {
       toast.error('Failed to approve appointment');
     }
-  };
+  }, [approveAppointment, refetch]);
 
-  const handleReject = async (e, id) => {
+  const handleReject = useCallback(async (e, id) => {
     e.stopPropagation();
     try {
       await rejectAppointment({ variables: { id } });
@@ -116,15 +121,15 @@ export default function AppointmentsPage() {
     } catch (err) {
       toast.error('Failed to reject appointment');
     }
-  };
+  }, [rejectAppointment, refetch]);
 
-  const handleDeleteClick = (e, id) => {
+  const handleDeleteClick = useCallback((e, id) => {
     e.stopPropagation();
     setAppointmentToDelete(id);
     setDeleteModalOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     if (!appointmentToDelete) return;
     try {
       await deleteAppointment({ variables: { id: appointmentToDelete } });
@@ -135,7 +140,7 @@ export default function AppointmentsPage() {
     } catch (err) {
       toast.error('Failed to delete appointment');
     }
-  };
+  }, [appointmentToDelete, deleteAppointment, refetch]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -161,7 +166,44 @@ export default function AppointmentsPage() {
     totalPending: 0, totalApproved: 0, totalRejected: 0, todayAppointments: 0
   };
 
-  const columns = [
+  const activeFilters = useMemo(() => {
+    const arr = [];
+    if (filters.search) arr.push({ id: 'search', label: `Search: ${filters.search}` });
+    if (filters.status !== 'all') arr.push({ id: 'status', label: `Status: ${filters.status}` });
+    if (filters.patient !== 'all') {
+      const patientName = patientsData?.getPatients?.patients?.find(p => p.id === filters.patient)?.name || 'Patient';
+      arr.push({ id: 'patient', label: `Patient: ${patientName}` });
+    }
+    if (filters.dateFrom || filters.dateTo) {
+      let dateLabel = 'Date';
+      if (filters.dateFrom && filters.dateTo) {
+         if (filters.dateFrom === filters.dateTo) dateLabel = `Date: ${filters.dateFrom}`;
+         else dateLabel = `Date: ${filters.dateFrom} to ${filters.dateTo}`;
+      } else if (filters.dateFrom) {
+         dateLabel = `Date: From ${filters.dateFrom}`;
+      } else {
+         dateLabel = `Date: Until ${filters.dateTo}`;
+      }
+      arr.push({ id: 'date', label: dateLabel });
+    }
+    return arr;
+  }, [filters, patientsData]);
+
+  const activeFiltersCount = activeFilters.length;
+
+  const removeFilter = useCallback((id) => {
+    setFilters(prev => {
+      const next = { ...prev };
+      if (id === 'search') next.search = '';
+      if (id === 'status') next.status = 'all';
+      if (id === 'patient') next.patient = 'all';
+      if (id === 'date') { next.dateFrom = ''; next.dateTo = ''; }
+      return next;
+    });
+    setCurrentPage(1);
+  }, []);
+
+  const columns = useMemo(() => [
     {
       header: 'Patient',
       accessor: (row) => (
@@ -227,7 +269,7 @@ export default function AppointmentsPage() {
         </div>
       )
     }
-  ];
+  ], [isOrg, router, handleApprove, handleReject, handleDeleteClick]);
 
   if (loading) return <Loader fullScreen />;
 
@@ -252,7 +294,7 @@ export default function AppointmentsPage() {
         </Modal>
 
         <div className="max-w-[1600px] mx-auto space-y-4">
-          {/* Compact Top Header & Stats */}
+          {/* Top Header & Filters Toggle */}
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-6">
               <div>
@@ -270,8 +312,11 @@ export default function AppointmentsPage() {
                 ].map((s) => (
                   <div 
                     key={s.label}
-                    onClick={() => setStatusFilter(s.filter)}
-                    className={`flex items-center gap-2.5 cursor-pointer transition-all hover:scale-105 ${statusFilter === s.filter ? 'opacity-100 scale-105' : 'opacity-50 hover:opacity-100'}`}
+                    onClick={() => {
+                      setFilters(prev => ({ ...prev, status: s.filter }));
+                      setCurrentPage(1);
+                    }}
+                    className={`flex items-center gap-2.5 cursor-pointer transition-all hover:scale-105 ${filters.status === s.filter ? 'opacity-100 scale-105' : 'opacity-50 hover:opacity-100'}`}
                   >
                     <div className={`w-7 h-7 rounded-lg bg-${s.color}-500/10 flex items-center justify-center text-${s.color}-500`}>
                       <s.icon size={14} />
@@ -285,127 +330,56 @@ export default function AppointmentsPage() {
               </div>
             </div>
 
-            <Button onClick={() => router.push('/appointments/add')} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[9px]">
-              <Plus size={14} />
-              <span>Book Appointment</span>
-            </Button>
-          </div>
-
-          {/* Compact Filter Dash */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3 shadow-sm flex flex-wrap items-center gap-3">
-            <div className="flex-1 min-w-[180px] relative group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={14} />
-              <Input
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-10 h-10 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-indigo-500/10 bg-[var(--surface-hover)] text-xs font-bold"
-              />
-            </div>
-
-            {isOrg && (
-              <div className="w-40">
-                <Select value={patientFilter} onValueChange={setPatientFilter}>
-                  <SelectTrigger className="h-10 bg-[var(--surface-hover)] border-[var(--border)] rounded-xl font-bold text-[9px] uppercase tracking-widest">
-                    <SelectValue placeholder="PATIENT" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ALL PATIENTS</SelectItem>
-                    {patientsData?.getPatients?.patients?.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="w-36">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-10 bg-[var(--surface-hover)] border-[var(--border)] rounded-xl font-bold text-[9px] uppercase tracking-widest">
-                  <SelectValue placeholder="STATUS" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">ALL STATUS</SelectItem>
-                  {APPOINTMENT_STATUS_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <div className="w-36">
-                <DatePicker 
-                  placeholder="FROM"
-                  date={dateFrom}
-                  setDate={setDateFrom}
-                />
-              </div>
-              <div className="w-36">
-                <DatePicker 
-                  placeholder="TO"
-                  date={dateTo}
-                  setDate={setDateTo}
-                />
-              </div>
-            </div>
-
-            <div className="h-6 w-px bg-[var(--border)] mx-1" />
-
-            <div className="flex items-center gap-1.5 pl-2">
-              <Button 
-                variant="ghost" 
-                onClick={() => {
-                  setDateFrom('');
-                  setDateTo('');
-                  setStatusFilter('all');
-                  setPatientFilter('all');
-                  setSearchTerm('');
-                  setCurrentPage(1);
-                }}
-                className={`h-8 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!dateFrom && !dateTo ? 'bg-indigo-500 text-white shadow-md' : 'hover:bg-indigo-500/10 text-indigo-500'}`}
-              >
-                ALL
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => {
-                  const t = new Date();
-                  const tStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
-                  setDateFrom(tStr);
-                  setDateTo(tStr);
-                  setCurrentPage(1);
-                }}
-                className={`h-8 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${dateFrom && dateTo && dateFrom === dateTo ? 'bg-emerald-500 text-white shadow-md' : 'hover:bg-emerald-500/10 text-emerald-500'}`}
-              >
-                TODAY
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => {
-                  const t = new Date();
-                  const tStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
-                  const n = new Date(t);
-                  n.setDate(n.getDate() + 1);
-                  const nStr = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
-                  setDateFrom(tStr);
-                  setDateTo(nStr);
-                  setStatusFilter('all');
-                  setPatientFilter('all');
-                  setSearchTerm('');
-                  setCurrentPage(1);
-                }}
-                className="h-8 w-8 p-0 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-all flex items-center justify-center border border-transparent hover:border-rose-500/20"
-                title="Reset"
-              >
-                <X size={14} />
-              </Button>
-            </div>
-
-            <div className="flex justify-end min-w-[70px] ml-auto">
+            <div className="flex items-center flex-wrap gap-3">
               <ViewToggle mode={viewMode} setMode={setViewMode} />
+              
+              <button 
+                onClick={() => {
+                  setIsFilterDrawerOpen(true);
+                }}
+                className="relative h-[42px] px-4 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl border border-[var(--border)] text-[var(--foreground)] transition-all flex items-center gap-2"
+              >
+                <Filter size={16} className="text-indigo-500" />
+                <span className="text-xs font-bold uppercase tracking-widest">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[var(--surface)] shadow-sm">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              <Button onClick={() => router.push('/appointments/add')} className="h-[42px] bg-indigo-600 hover:bg-indigo-700 text-white px-5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+                <Plus size={16} />
+                <span className="hidden sm:inline">Book Appointment</span>
+              </Button>
             </div>
           </div>
+
+          {/* Active Filters Bar */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3 px-4 shadow-sm">
+              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mr-2">Active Filters:</span>
+              {activeFilters.map(filter => (
+                <span key={filter.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                  {filter.label}
+                  <X 
+                    size={14} 
+                    className="cursor-pointer hover:text-rose-500 transition-colors ml-1" 
+                    onClick={() => removeFilter(filter.id)} 
+                  />
+                </span>
+              ))}
+              <button 
+                onClick={() => {
+                  setFilters({ search: '', status: 'all', patient: 'all', dateFrom: '', dateTo: '' });
+                  setCurrentPage(1);
+                }}
+                className="text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 px-3 py-1.5 rounded-lg uppercase tracking-wider ml-auto transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
 
           {viewMode === 'list' ? (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
@@ -465,6 +439,38 @@ export default function AppointmentsPage() {
           <Pagination totalItems={totalCount} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
         </div>
       </main>
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        title="Filters"
+        subtitle="Refine appointments"
+        activeFilters={filters}
+        onReset={() => {
+          const clearedFilters = { search: '', status: 'all', patient: 'all', dateFrom: '', dateTo: '' };
+          setFilters(clearedFilters);
+          setCurrentPage(1);
+          setIsFilterDrawerOpen(false);
+        }}
+        onApply={(newFilters) => {
+          setFilters(newFilters);
+          setCurrentPage(1);
+          setIsFilterDrawerOpen(false);
+        }}
+        filtersConfig={[
+          { type: 'select', key: 'status', label: 'Status', placeholder: 'All Status', options: APPOINTMENT_STATUS_OPTIONS },
+          { 
+            type: 'select', 
+            key: 'patient', 
+            label: 'Patient', 
+            placeholder: 'All Patients', 
+            options: patientsData?.getPatients?.patients?.map(p => ({ label: p.name, value: p.id })) || [], 
+            hidden: !isOrg 
+          },
+          { type: 'dateRange', keyFrom: 'dateFrom', keyTo: 'dateTo', label: 'Date Range' }
+        ]}
+      />
     </div>
   );
 }
