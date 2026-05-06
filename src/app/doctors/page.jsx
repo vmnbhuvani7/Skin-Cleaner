@@ -178,13 +178,7 @@ export default function DoctorsPage() {
         </Modal>
 
         <div className="max-w-7xl mx-auto space-y-8">
-          {loading ? (
-            <div className="h-[60vh] flex items-center justify-center">
-              <Loader />
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Clinical Staff</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage your specialized medical team</p>
@@ -222,6 +216,17 @@ export default function DoctorsPage() {
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden shadow-sm">
               <DataTable columns={columns} data={currentItems} onRowClick={(row) => router.push(`/doctors/edit/${row.id}`)} isLoading={loading} />
             </div>
+          ) : loading ? (
+            <div className="flex justify-center items-center py-20 bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] shadow-sm">
+              <Loader />
+            </div>
+          ) : currentItems.length === 0 ? (
+            <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
+              <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
+                <Award size={40} />
+              </div>
+              <p className="text-[var(--text-muted)] text-lg font-medium">No doctors found matching your search.</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {currentItems.map((doctor) => (
@@ -257,17 +262,6 @@ export default function DoctorsPage() {
           )}
 
           <Pagination totalItems={filteredDoctors.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
-          
-          {filteredDoctors.length === 0 && !loading && viewMode !== 'list' && (
-            <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
-              <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
-                <Award size={40} />
-              </div>
-              <p className="text-[var(--text-muted)] text-lg font-medium">No doctors found matching your search.</p>
-            </div>
-          )}
-            </>
-          )}
         </div>
       </main>
     </div>

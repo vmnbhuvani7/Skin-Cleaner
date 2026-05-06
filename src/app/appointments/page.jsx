@@ -271,8 +271,6 @@ export default function AppointmentsPage() {
     }
   ], [isOrg, router, handleApprove, handleReject, handleDeleteClick]);
 
-  if (loading) return <Loader fullScreen />;
-
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)]">
       <Sidebar />
@@ -385,6 +383,18 @@ export default function AppointmentsPage() {
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
               <DataTable columns={columns} data={currentItems} isLoading={loading} />
             </div>
+          ) : loading ? (
+            <div className="flex justify-center items-center py-20 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm">
+              <Loader />
+            </div>
+          ) : currentItems.length === 0 ? (
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] shadow-sm">
+              <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mb-4">
+                <Calendar size={32} />
+              </div>
+              <h3 className="text-lg font-black text-[var(--foreground)] mb-2">No Appointments Found</h3>
+              <p className="text-[var(--text-muted)] text-sm font-medium">Try adjusting your filters or search terms.</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {currentItems.map((appointment) => (
@@ -396,6 +406,7 @@ export default function AppointmentsPage() {
                     <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
                       appointment.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                       appointment.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                      appointment.status === 'Completed' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
                       'bg-rose-500/10 text-rose-500 border-rose-500/20'
                     }`}>
                       {appointment.status}
@@ -434,7 +445,7 @@ export default function AppointmentsPage() {
                 </div>
               ))}
             </div>
-          ) }
+          )}
 
           <Pagination totalItems={totalCount} itemsPerPage={ITEMS_PER_PAGE} currentPage={currentPage} onPageChange={setCurrentPage} />
         </div>
