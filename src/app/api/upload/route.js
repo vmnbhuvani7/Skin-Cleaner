@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Media from '@/models/Media';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req) {
   try {
-    await dbConnect();
     const formData = await req.formData();
     const file = formData.get('file');
 
@@ -15,17 +19,22 @@ export async function POST(req) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Save to MongoDB (works on Vercel)
-    const media = await Media.create({
-      filename: file.name,
-      contentType: file.type,
-      data: buffer,
+    // Upload to Cloudinary using a stream
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'skin_cleaner' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      
+      // End the stream with the buffer
+      uploadStream.end(buffer);
     });
 
-    // Return the URL to fetch the image from our new API route
-    const fileUrl = `/api/images/${media._id}`;
-
-    return NextResponse.json({ url: fileUrl });
+    // Return the secure URL from Cloudinary
+    return NextResponse.json({ url: uploadResult.secure_url });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

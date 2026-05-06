@@ -23,6 +23,7 @@
     "@vercel/blob": "^2.3.3",
     "ai": "^6.0.169",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "deep-email-validator": "^0.1.27",
