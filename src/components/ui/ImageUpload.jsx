@@ -73,13 +73,13 @@ const ImageUpload = ({ value, onChange, label, className }) => {
       <div 
         onClick={() => fileInputRef.current?.click()}
         className={twMerge(
-          "relative group w-32 h-32 rounded-3xl border-2 border-dashed border-[var(--border)] bg-[var(--surface-hover)] flex flex-col items-center justify-center cursor-pointer transition-all hover:border-indigo-500/50 hover:bg-indigo-500/5 overflow-hidden",
-          preview && "border-solid border-indigo-500/30"
+          "relative group w-32 h-32 rounded-3xl border-2 border-dashed border-[var(--border)] bg-[var(--sidebar)] flex flex-col items-center justify-center cursor-pointer transition-all hover:border-teal-500/50 hover:bg-teal-500/5 overflow-hidden",
+          preview && "border-solid border-teal-500/30"
         )}
       >
         {uploading ? (
-          <div className="flex flex-col items-center gap-2 text-indigo-400">
-            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="flex flex-col items-center gap-2 text-teal-400">
+            <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-[10px] font-bold uppercase tracking-widest">Uploading...</span>
           </div>
         ) : preview ? (
@@ -96,8 +96,8 @@ const ImageUpload = ({ value, onChange, label, className }) => {
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-2 text-[var(--text-muted)] group-hover:text-indigo-400 transition-colors">
-            <div className="p-3 bg-[var(--surface)] rounded-2xl border border-[var(--border)] group-hover:border-indigo-500/20 group-hover:shadow-lg transition-all">
+          <div className="flex flex-col items-center gap-2 text-[var(--text-muted)] group-hover:text-teal-400 transition-colors">
+            <div className="p-3 bg-[var(--surface)] rounded-2xl border border-[var(--border)] group-hover:border-teal-500/20 group-hover:shadow-lg transition-all">
               <UploadCloud size={24} />
             </div>
             <span className="text-[10px] font-bold uppercase tracking-widest">Upload Photo</span>

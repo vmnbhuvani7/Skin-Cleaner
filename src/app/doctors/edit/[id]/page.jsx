@@ -95,18 +95,18 @@ export default function EditDoctorPage() {
         <div className="max-w-3xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-bold mb-8 group"
+            className="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors text-sm font-bold mb-8 group"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Back to List
           </button>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-teal-600/5 blur-[100px] rounded-full pointer-events-none"></div>
 
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0">
                   <Edit size={24} />
                 </div>
                 <div>
@@ -117,7 +117,7 @@ export default function EditDoctorPage() {
 
               {queryLoading ? (
                 <div className="py-20 text-center">
-                  <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6" noValidate>

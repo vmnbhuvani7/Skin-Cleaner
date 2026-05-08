@@ -208,12 +208,12 @@ export default function AppointmentsPage() {
       header: 'Patient',
       accessor: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
             <User size={18} />
           </div>
           <div>
             <p className="font-bold text-[var(--foreground)] leading-none mb-1">{row.patient.name}</p>
-            <p className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest">{row.service.title}</p>
+            <p className="text-[10px] font-bold text-teal-400/60 uppercase tracking-widest">{row.service.title}</p>
           </div>
         </div>
       )
@@ -223,7 +223,7 @@ export default function AppointmentsPage() {
       accessor: (row) => (
         <div className="space-y-1">
           <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Calendar size={12} className="text-indigo-400" /> {formatDate(row.appointmentDate)}
+            <Calendar size={12} className="text-teal-400" /> {formatDate(row.appointmentDate)}
           </p>
           <p className="text-[10px] font-medium text-[var(--text-muted)] flex items-center gap-2 opacity-60">
             <Clock size={12} /> {formatTime(row.appointmentDate)}
@@ -237,7 +237,7 @@ export default function AppointmentsPage() {
         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
           row.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
           row.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-          row.status === 'Completed' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
+          row.status === 'Completed' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
           'bg-rose-500/10 text-rose-500 border-rose-500/20'
         }`}>
           {row.status}
@@ -258,13 +258,13 @@ export default function AppointmentsPage() {
           {isOrg && row.status === 'Approved' && (
             <button 
               onClick={() => router.push(`/treatments?appointmentId=${row.id}`)} 
-              className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl text-indigo-500 transition-all flex items-center gap-1"
+              className="p-2 bg-teal-500/10 hover:bg-teal-500/20 rounded-xl text-teal-500 transition-all flex items-center gap-1"
               title="Start Treatment"
             >
               <Activity size={16} />
             </button>
           )}
-          <button onClick={() => router.push(`/appointments/edit/${row.id}`)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all"><Edit2 size={16} /></button>
+          <button onClick={() => router.push(`/appointments/edit/${row.id}`)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-500 transition-all"><Edit2 size={16} /></button>
           <button onClick={(e) => handleDeleteClick(e, row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
         </div>
       )
@@ -306,7 +306,7 @@ export default function AppointmentsPage() {
                   { label: 'Pending', count: stats.totalPending, icon: Clock, color: 'amber', filter: 'Pending' },
                   { label: 'Approved', count: stats.totalApproved, icon: Check, color: 'emerald', filter: 'Approved' },
                   { label: 'Rejected', count: stats.totalRejected, icon: X, color: 'rose', filter: 'Rejected' },
-                  { label: 'Today', count: stats.todayAppointments, icon: Calendar, color: 'indigo', filter: 'today' }
+                  { label: 'Today', count: stats.todayAppointments, icon: Calendar, color: 'teal', filter: 'today' }
                 ].map((s) => (
                   <div 
                     key={s.label}
@@ -335,9 +335,9 @@ export default function AppointmentsPage() {
                 onClick={() => {
                   setIsFilterDrawerOpen(true);
                 }}
-                className="relative h-[42px] px-4 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl border border-[var(--border)] text-[var(--foreground)] transition-all flex items-center gap-2"
+                className="relative h-[42px] px-4 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl border border-[var(--border)] text-[var(--foreground)] transition-all flex items-center gap-2"
               >
-                <Filter size={16} className="text-indigo-500" />
+                <Filter size={16} className="text-teal-500" />
                 <span className="text-xs font-bold uppercase tracking-widest">Filters</span>
                 {activeFiltersCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[var(--surface)] shadow-sm">
@@ -346,7 +346,7 @@ export default function AppointmentsPage() {
                 )}
               </button>
 
-              <Button onClick={() => router.push('/appointments/add')} className="h-[42px] bg-indigo-600 hover:bg-indigo-700 text-white px-5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+              <Button onClick={() => router.push('/appointments/add')} className="h-[42px] bg-teal-600 hover:bg-teal-700 text-white px-5 rounded-xl flex items-center gap-2 shadow-lg shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
                 <Plus size={16} />
                 <span className="hidden sm:inline">Book Appointment</span>
               </Button>
@@ -358,7 +358,7 @@ export default function AppointmentsPage() {
             <div className="flex flex-wrap items-center gap-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3 px-4 shadow-sm">
               <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mr-2">Active Filters:</span>
               {activeFilters.map(filter => (
-                <span key={filter.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                <span key={filter.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 text-teal-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">
                   {filter.label}
                   <X 
                     size={14} 
@@ -389,7 +389,7 @@ export default function AppointmentsPage() {
             </div>
           ) : currentItems.length === 0 ? (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] shadow-sm">
-              <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mb-4">
+              <div className="w-16 h-16 bg-teal-500/10 rounded-full flex items-center justify-center text-teal-500 mb-4">
                 <Calendar size={32} />
               </div>
               <h3 className="text-lg font-black text-[var(--foreground)] mb-2">No Appointments Found</h3>
@@ -400,20 +400,20 @@ export default function AppointmentsPage() {
               {currentItems.map((appointment) => (
                 <div key={appointment.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/10 to-teal-700/10 flex items-center justify-center text-teal-500 shrink-0">
                       <User size={20} />
                     </div>
                     <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
                       appointment.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                       appointment.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                      appointment.status === 'Completed' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
+                      appointment.status === 'Completed' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
                       'bg-rose-500/10 text-rose-500 border-rose-500/20'
                     }`}>
                       {appointment.status}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-[var(--foreground)] mb-0.5 truncate">{appointment.patient.name}</h3>
-                  <p className="text-indigo-400 text-[9px] font-black uppercase tracking-[0.15em] mb-4 truncate">{appointment.service.title}</p>
+                  <p className="text-teal-400 text-[9px] font-black uppercase tracking-[0.15em] mb-4 truncate">{appointment.service.title}</p>
                   <div className="space-y-2 mb-6 flex-1">
                     <div className="flex items-center gap-2 text-[var(--text-muted)] text-[11px] font-medium opacity-80">
                       <Calendar size={12} className="opacity-50" />
@@ -434,12 +434,12 @@ export default function AppointmentsPage() {
                     {isOrg && appointment.status === 'Approved' && (
                       <button 
                         onClick={() => router.push(`/treatments?appointmentId=${appointment.id}`)} 
-                        className="flex-1 py-2 bg-indigo-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all hover:bg-indigo-600 shadow-md flex items-center justify-center gap-2"
+                        className="flex-1 py-2 bg-teal-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all hover:bg-teal-600 shadow-md flex items-center justify-center gap-2"
                       >
                         <Activity size={12} /> Start Treatment
                       </button>
                     )}
-                    <button onClick={() => router.push(`/appointments/edit/${appointment.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-lg text-[var(--text-muted)] hover:text-indigo-500 transition-all"><Edit2 size={14} /></button>
+                    <button onClick={() => router.push(`/appointments/edit/${appointment.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-lg text-[var(--text-muted)] hover:text-teal-500 transition-all"><Edit2 size={14} /></button>
                     <button onClick={(e) => handleDeleteClick(e, appointment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-lg text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
                   </div>
                 </div>

@@ -54,7 +54,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
           placeholderText={placeholder}
           wrapperClassName="w-full"
           className={twMerge(
-            "flex h-12 w-full items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] pl-11 pr-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 shadow-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
+            "flex h-12 w-full items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--surface-hover)] pl-11 pr-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 shadow-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
             error && "border-rose-500 ring-rose-500/10",
             className
           )}
@@ -74,9 +74,9 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
                 onClick={decreaseMonth}
                 disabled={prevMonthButtonDisabled}
                 type="button"
-                className="p-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors disabled:opacity-30"
+                className="p-1.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-xl transition-colors disabled:opacity-30"
               >
-                <ChevronLeft className="h-4 w-4 text-indigo-500" />
+                <ChevronLeft className="h-4 w-4 text-teal-500" />
               </button>
 
               <div className="flex items-center gap-1">
@@ -84,7 +84,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
                   value={getMonth(date).toString()}
                   onValueChange={(value) => changeMonth(parseInt(value))}
                 >
-                  <SelectTrigger className="h-7 border-none bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold uppercase hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
+                  <SelectTrigger className="h-7 border-none bg-teal-50/50 dark:bg-teal-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold uppercase hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-[280px] overflow-y-auto custom-scrollbar">
@@ -100,7 +100,7 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
                   value={getYear(date).toString()}
                   onValueChange={(value) => changeYear(parseInt(value))}
                 >
-                  <SelectTrigger className="h-7 border-none bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
+                  <SelectTrigger className="h-7 border-none bg-teal-50/50 dark:bg-teal-900/20 px-2 py-0 w-auto gap-1 text-[11px] font-extrabold hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-all focus:ring-0 shadow-none rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-[280px] overflow-y-auto custom-scrollbar">
@@ -117,17 +117,17 @@ export function DateTimePicker({ date, setDate, label, placeholder = "Select dat
                 onClick={increaseMonth}
                 disabled={nextMonthButtonDisabled}
                 type="button"
-                className="p-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-colors disabled:opacity-30"
+                className="p-1.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-xl transition-colors disabled:opacity-30"
               >
-                <ChevronRight className="h-4 w-4 text-indigo-500" />
+                <ChevronRight className="h-4 w-4 text-teal-500" />
               </button>
             </div>
           )}
         />
         {showTimeOnly ? (
-          <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
+          <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-400 pointer-events-none" />
         ) : (
-          <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
+          <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-400 pointer-events-none" />
         )}
       </div>
       {error && <p className="text-[10px] font-bold text-rose-500 ml-1 mt-1 uppercase tracking-wider">{error}</p>}

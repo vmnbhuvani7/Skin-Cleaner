@@ -117,7 +117,7 @@ function TreatmentsContent() {
       header: 'Patient',
       accessor: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 overflow-hidden shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 overflow-hidden shrink-0">
             {row.patient.image ? (
               <img src={row.patient.image} alt={row.patient.name} className="w-full h-full object-cover" />
             ) : (
@@ -126,7 +126,7 @@ function TreatmentsContent() {
           </div>
           <div>
             <p className="font-bold text-[var(--foreground)] leading-none mb-1">{row.patient.name}</p>
-            <p className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest">ID: {row.patient.id?.slice(-6)}</p>
+            <p className="text-[10px] font-bold text-teal-400/60 uppercase tracking-widest">ID: {row.patient.id?.slice(-6)}</p>
           </div>
         </div>
       )
@@ -146,7 +146,7 @@ function TreatmentsContent() {
       header: 'Status',
       accessor: (row) => {
         const statusColors = {
-          'IN_PROGRESS': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+          'IN_PROGRESS': 'bg-teal-500/10 text-teal-500 border-teal-500/20',
           'COMPLETED': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
           'CANCELLED': 'bg-rose-500/10 text-rose-500 border-rose-500/20',
         };
@@ -168,7 +168,7 @@ function TreatmentsContent() {
           <div className="flex items-center gap-4 min-w-[120px]">
             <div className="flex-1 h-1.5 bg-[var(--surface-hover)] rounded-full overflow-hidden border border-[var(--border)]">
               <div 
-                className="h-full bg-indigo-500 rounded-full transition-all duration-700 ease-out"
+                className="h-full bg-teal-500 rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -197,7 +197,7 @@ function TreatmentsContent() {
         <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
           {isOrg ? (
             <>
-              <button onClick={() => handleEdit(row)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+              <button onClick={() => handleEdit(row)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-400 transition-all">
                 <Edit2 size={16} />
               </button>
               <button onClick={() => handleDeleteClick(row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
@@ -265,7 +265,7 @@ function TreatmentsContent() {
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage patient treatments and multi-session plans</p>
             </div>
             {isOrg && (
-              <Button onClick={handleAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+              <Button onClick={handleAdd} className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
                 <Plus size={18} />
                 <span>New Treatment</span>
               </Button>
@@ -274,10 +274,10 @@ function TreatmentsContent() {
 
           {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard icon={<Activity size={24}/>} title="Total" value={data?.getTreatments?.length || 0} color="indigo" />
-            <StatCard icon={<Clock size={24}/>} title="Active" value={data?.getTreatments?.filter(t => t.status === 'IN_PROGRESS').length || 0} color="blue" badge="In Progress" />
+            <StatCard icon={<Activity size={24}/>} title="Total" value={data?.getTreatments?.length || 0} color="teal" />
+            <StatCard icon={<Clock size={24}/>} title="Active" value={data?.getTreatments?.filter(t => t.status === 'IN_PROGRESS').length || 0} color="teal" badge="In Progress" />
             <StatCard icon={<CheckCircle size={24}/>} title="Completed" value={data?.getTreatments?.filter(t => t.status === 'COMPLETED').length || 0} color="emerald" badge="Done" />
-            <StatCard icon={<IndianRupee size={24}/>} title="Multi-Session" value={data?.getTreatments?.filter(t => t.type === 'MULTI_SESSION').length || 0} color="purple" />
+            <StatCard icon={<IndianRupee size={24}/>} title="Multi-Session" value={data?.getTreatments?.filter(t => t.type === 'MULTI_SESSION').length || 0} color="teal" />
           </div>
 
           {/* Controls Bar */}
@@ -288,7 +288,7 @@ function TreatmentsContent() {
                 placeholder="Search by patient or service..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-indigo-500 bg-[var(--surface)] text-[var(--foreground)] shadow-sm"
+                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-teal-500 bg-[var(--surface)] text-[var(--foreground)] shadow-sm"
               />
             </div>
             
@@ -317,7 +317,7 @@ function TreatmentsContent() {
             </div>
           ) : currentItems.length === 0 ? (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
-              <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
+              <div className="bg-teal-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-teal-400">
                 <Activity size={40} />
               </div>
               <p className="text-[var(--text-muted)] text-lg font-medium">No treatments found.</p>
@@ -345,13 +345,11 @@ function TreatmentsContent() {
 
 function StatCard({ icon, title, value, color, badge }) {
   const colorMap = {
-    indigo: 'text-indigo-500 bg-indigo-500/10',
-    blue: 'text-blue-500 bg-blue-500/10',
+    teal: 'text-teal-500 bg-teal-500/10',
     emerald: 'text-emerald-500 bg-emerald-500/10',
-    purple: 'text-purple-500 bg-purple-500/10',
   };
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 hover:border-indigo-500/20 transition-all shadow-sm">
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-6 hover:border-teal-500/20 transition-all shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${colorMap[color]}`}>{icon}</div>
         {badge && <span className={`${colorMap[color]} text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-current opacity-70`}>{badge}</span>}
@@ -377,7 +375,7 @@ function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
     : (treatment.status === 'COMPLETED' ? 100 : 0);
 
   const statusColors = {
-    'IN_PROGRESS': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    'IN_PROGRESS': 'bg-teal-500/10 text-teal-500 border-teal-500/20',
     'COMPLETED': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     'CANCELLED': 'bg-rose-500/10 text-rose-500 border-rose-500/20',
   };
@@ -392,7 +390,7 @@ function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
             </span>
             {isOrg && (
               <div className="flex gap-2">
-                <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+                <button onClick={() => onEdit(treatment)} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-400 transition-all">
                   <Edit2 size={18} />
                 </button>
                 <button onClick={() => onDelete(treatment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
@@ -401,12 +399,12 @@ function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
               </div>
             )}
           </div>
-          <h3 className="text-2xl font-bold text-[var(--foreground)] group-hover:text-indigo-400 transition-colors line-clamp-1">{treatment.service.title}</h3>
+          <h3 className="text-2xl font-bold text-[var(--foreground)] group-hover:text-teal-400 transition-colors line-clamp-1">{treatment.service.title}</h3>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center gap-4 text-sm text-[var(--text-muted)] bg-[var(--background)] p-4 rounded-2xl border border-[var(--border)]">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 shadow-inner overflow-hidden">
               {treatment.patient.image ? (
                 <img src={treatment.patient.image} alt={treatment.patient.name} className="w-full h-full object-cover" />
               ) : (
@@ -415,17 +413,17 @@ function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
             </div>
             <div>
               <p className="font-bold text-[var(--foreground)]">{treatment.patient.name}</p>
-              <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Patient</p>
+              <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Patient</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-              <Activity size={14} className="text-indigo-400" />
+              <Activity size={14} className="text-teal-400" />
               <span>{treatment.type === 'ONE_TIME' ? 'One-time' : 'Multi-session'}</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-              <Calendar size={14} className="text-indigo-400" />
+              <Calendar size={14} className="text-teal-400" />
               <span>{new Date(treatment.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -437,11 +435,11 @@ function TreatmentCard({ treatment, onEdit, onDelete, isOrg }) {
             <div className="space-y-3">
               <div className="flex justify-between text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
                 <span>Progress</span>
-                <span className="text-indigo-400">{completedSessions} / {treatment.totalSessions} Sessions</span>
+                <span className="text-teal-400">{completedSessions} / {treatment.totalSessions} Sessions</span>
               </div>
               <div className="w-full h-2.5 bg-[var(--background)] rounded-full overflow-hidden border border-[var(--border)]">
                 <div
-                  className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(99,102,241,0.4)]"
+                  className="h-full bg-teal-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(20,184,166,0.4)]"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>

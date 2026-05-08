@@ -101,7 +101,7 @@ export default function ServicesPage() {
         const IconComponent = iconMap[row.icon] || Zap;
         return (
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0">
               <IconComponent size={24} />
             </div>
             <div>
@@ -115,7 +115,7 @@ export default function ServicesPage() {
     {
       header: 'Icon Class',
       accessor: (row) => (
-        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400/60 bg-indigo-500/5 px-2 py-1 rounded-lg border border-indigo-500/10">
+        <span className="text-[10px] font-black uppercase tracking-widest text-teal-400/60 bg-teal-500/5 px-2 py-1 rounded-lg border border-teal-500/10">
           {row.icon}
         </span>
       )
@@ -143,7 +143,7 @@ export default function ServicesPage() {
       align: 'right',
       accessor: (row) => (
         <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => router.push(`/services/edit/${row.id}`)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+          <button onClick={() => router.push(`/services/edit/${row.id}`)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-400 transition-all">
             <Edit size={16} />
           </button>
           <button onClick={() => handleDeleteClick(row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
@@ -186,7 +186,7 @@ export default function ServicesPage() {
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Services</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage the clinical services and treatment offerings</p>
             </div>
-            <Button onClick={() => router.push('/services/add')} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+            <Button onClick={() => router.push('/services/add')} className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
               <Plus size={18} />
               <span>Add Service</span>
             </Button>
@@ -200,7 +200,7 @@ export default function ServicesPage() {
                 placeholder="Search services..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-indigo-500 bg-[var(--surface)] text-[var(--foreground)] shadow-sm"
+                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-teal-500 bg-[var(--surface)] text-[var(--foreground)] shadow-sm"
               />
             </div>
             
@@ -220,7 +220,7 @@ export default function ServicesPage() {
 
                 <button 
                   onClick={() => { setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); setCurrentPage(1); }}
-                  className="w-14 h-14 flex items-center justify-center bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-[var(--text-muted)] hover:text-indigo-400 transition-all shadow-sm active:scale-95"
+                  className="w-14 h-14 flex items-center justify-center bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-[var(--text-muted)] hover:text-teal-400 transition-all shadow-sm active:scale-95"
                 >
                   {sortOrder === 'asc' ? <SortAsc size={20} /> : <SortDesc size={20} />}
                 </button>
@@ -231,7 +231,7 @@ export default function ServicesPage() {
                   <button 
                     key={f}
                     onClick={() => { setStatusFilter(f); setCurrentPage(1); }}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
                   >
                     {f}
                   </button>
@@ -258,11 +258,11 @@ export default function ServicesPage() {
                 return (
                   <div key={service.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm flex flex-col h-full">
                     <div className="flex items-start justify-between mb-6">
-                      <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                      <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400">
                         <IconComponent size={32} />
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => router.push(`/services/edit/${service.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all">
+                        <button onClick={() => router.push(`/services/edit/${service.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-500 transition-all">
                           <Edit size={16} />
                         </button>
                         <button onClick={() => handleDeleteClick(service.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
@@ -281,7 +281,7 @@ export default function ServicesPage() {
                       </div>
                       <button 
                         onClick={() => toggleStatus(service.id, service.isActive)}
-                        className="text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded-lg border border-indigo-500/10 text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                        className="text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded-lg border border-teal-500/10 text-teal-400 hover:bg-teal-500/10 transition-all"
                       >
                         {service.isActive ? 'Hide' : 'Show'}
                       </button>
@@ -302,7 +302,7 @@ export default function ServicesPage() {
 
           {services.length === 0 && !loading && viewMode !== 'list' && (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
-              <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
+              <div className="bg-teal-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-teal-400">
                 <Scissors size={40} />
               </div>
               <p className="text-[var(--text-muted)] text-lg font-medium">No services found matching your criteria.</p>

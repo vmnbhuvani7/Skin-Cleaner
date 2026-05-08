@@ -18,7 +18,7 @@ export default function NotFound() {
       />
       
       {/* Decorative Blurs */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-600/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-pink-600/20 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Content Card */}
@@ -29,7 +29,7 @@ export default function NotFound() {
           </h1>
           <div className="-mt-24 space-y-2">
             <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-              Lost in the <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Void</span>
+              Lost in the <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-purple-400 to-pink-400">Void</span>
             </h2>
             <p className="text-lg text-gray-400 max-w-md mx-auto leading-relaxed">
               The page you're looking for has vanished into thin air or moved to another dimension.
@@ -41,7 +41,7 @@ export default function NotFound() {
           <Link href="/">
             <Button 
               size="lg" 
-              className="px-8 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/20 group"
+              className="px-8 h-14 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-600/20 group"
               icon={Home}
             >
               Back to Safety
@@ -57,7 +57,7 @@ export default function NotFound() {
         </div>
 
         {/* Floating Elements (Micro-animations) */}
-        <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-xl animate-pulse" />
+        <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full blur-xl animate-pulse" />
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-tr from-pink-500/10 to-transparent rounded-full blur-2xl animate-pulse delay-700" />
       </div>
       

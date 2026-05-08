@@ -48,7 +48,7 @@ export default function FilterDrawer({
       <div className={`fixed top-0 right-0 h-full w-full max-w-sm bg-[var(--surface)] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-[var(--border)] flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between p-6 border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-500">
               <Filter size={20} />
             </div>
             <div>
@@ -73,12 +73,12 @@ export default function FilterDrawer({
                 <div key={idx} className="space-y-3">
                   <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">{field.label}</label>
                   <div className="relative group">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-500 transition-colors" size={16} />
                     <Input
                       placeholder={field.placeholder || 'Search...'}
                       value={draftFilters[field.key] || ''}
                       onChange={(e) => setDraftFilters(prev => ({ ...prev, [field.key]: e.target.value }))}
-                      className="pl-10 h-12 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-indigo-500/10 bg-[var(--surface-hover)] text-sm font-bold w-full"
+                      className="pl-10 h-12 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-teal-500/10 bg-[var(--surface-hover)] text-sm font-bold w-full"
                     />
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export default function FilterDrawer({
                         const nStr = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
                         setDraftFilters(prev => ({ ...prev, [field.keyFrom]: tStr, [field.keyTo]: nStr }));
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${draftFilters[field.keyFrom] && draftFilters[field.keyTo] && draftFilters[field.keyFrom] !== draftFilters[field.keyTo] ? 'bg-indigo-500 text-white shadow-md' : 'bg-[var(--surface-hover)] hover:bg-indigo-500/10 text-[var(--text-muted)] hover:text-indigo-500 border border-[var(--border)]'}`}
+                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${draftFilters[field.keyFrom] && draftFilters[field.keyTo] && draftFilters[field.keyFrom] !== draftFilters[field.keyTo] ? 'bg-teal-500 text-white shadow-md' : 'bg-[var(--surface-hover)] hover:bg-teal-500/10 text-[var(--text-muted)] hover:text-teal-500 border border-[var(--border)]'}`}
                     >
                       Upcoming
                     </button>
@@ -164,7 +164,7 @@ export default function FilterDrawer({
             </button>
             <button 
               onClick={handleApply}
-              className="flex-[2] py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 text-xs uppercase tracking-wider"
+              className="flex-[2] py-3.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-600/20 transition-all active:scale-95 text-xs uppercase tracking-wider"
             >
               Show Results
             </button>

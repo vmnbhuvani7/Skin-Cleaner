@@ -69,18 +69,18 @@ export default function EditServicePage() {
         <div className="max-w-3xl mx-auto">
           <button 
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors mb-8 group"
+            className="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors mb-8 group"
           >
             <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
             <span className="font-bold">Back to Services</span>
           </button>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-teal-500/5 blur-[80px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
                   <Save size={20} />
                 </div>
                 <div>
@@ -99,7 +99,7 @@ export default function EditServicePage() {
                       placeholder="e.g. Laser Hair Removal"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm"
+                      className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-sm"
                     />
                   </div>
                 </div>
@@ -112,7 +112,7 @@ export default function EditServicePage() {
                     placeholder="Describe the service in detail..."
                     value={formData.desc}
                     onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all resize-none text-sm min-h-[60px]"
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all resize-none text-sm min-h-[60px]"
                   ></textarea>
                 </div>
 
@@ -126,8 +126,8 @@ export default function EditServicePage() {
                         onClick={() => setFormData({ ...formData, icon: name })}
                         className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${
                           formData.icon === name 
-                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' 
-                            : 'bg-[var(--background)] border-[var(--border)] text-[var(--text-muted)] hover:border-indigo-500/50'
+                            ? 'bg-teal-500/10 border-teal-500 text-teal-400' 
+                            : 'bg-[var(--background)] border-[var(--border)] text-[var(--text-muted)] hover:border-teal-500/50'
                         }`}
                       >
                         <Icon size={18} />

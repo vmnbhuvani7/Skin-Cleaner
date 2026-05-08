@@ -157,7 +157,7 @@ export default function ReportsPage() {
       <div className="flex min-h-screen bg-[var(--background)]">
         <Sidebar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
         </main>
       </div>
     );
@@ -167,7 +167,7 @@ export default function ReportsPage() {
     <div className="flex min-h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-24 lg:pt-8 relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
 
         <div className="max-w-[1600px] mx-auto relative z-10 space-y-8 pb-20">
 
@@ -175,7 +175,7 @@ export default function ReportsPage() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest mb-3">
                   <BarChart size={12} /> BI Dashboard
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black text-[var(--foreground)] tracking-tight leading-none">
@@ -188,13 +188,13 @@ export default function ReportsPage() {
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-[var(--surface)] border border-[var(--border)] p-3 rounded-[2rem] shadow-xl backdrop-blur-md">
               <div className="flex flex-1 w-full lg:w-auto items-center gap-3">
                 <div className="relative flex-1 max-w-md group">
-                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-indigo-500 transition-colors" />
+                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-teal-500 transition-colors" />
                   <input
                     type="text"
                     placeholder="Search by patient, service or doctor..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all text-[var(--foreground)] placeholder:text-[var(--text-muted)] placeholder:opacity-50"
+                    className="w-full h-12 pl-12 pr-4 bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl text-sm focus:outline-none focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 transition-all text-[var(--foreground)] placeholder:text-[var(--text-muted)] placeholder:opacity-50"
                   />
                 </div>
 
@@ -212,7 +212,7 @@ export default function ReportsPage() {
                       className={twMerge(
                         "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                         timeRange === range.id
-                          ? "bg-indigo-600 text-white shadow-lg"
+                          ? "bg-teal-600 text-white shadow-lg"
                           : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)]"
                       )}
                     >
@@ -233,16 +233,16 @@ export default function ReportsPage() {
             <div className="space-y-8">
               {/* Financial Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-[2.5rem] p-8 shadow-2xl shadow-teal-500/20 relative overflow-hidden group">
                   <div className="absolute -right-10 -top-10 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                     <Wallet size={200} />
                   </div>
                   <div className="relative z-10">
-                    <p className="text-indigo-100 text-[10px] font-black uppercase tracking-widest mb-2 opacity-80">Target Revenue ({timeRange})</p>
+                    <p className="text-teal-100 text-[10px] font-black uppercase tracking-widest mb-2 opacity-80">Target Revenue ({timeRange})</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-black text-white tracking-tighter">₹{formatAmount(financials.totalRevenue)}</span>
                     </div>
-                    <div className="mt-8 flex items-center gap-2 text-indigo-100 text-xs font-bold bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md w-fit border border-white/10">
+                    <div className="mt-8 flex items-center gap-2 text-teal-100 text-xs font-bold bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md w-fit border border-white/10">
                       <TrendingUp size={16} /> Projected Financial Inflow
                     </div>
                   </div>
@@ -310,12 +310,12 @@ export default function ReportsPage() {
                       <div key={idx} className="space-y-2">
                         <div className="flex justify-between items-end">
                           <span className="text-sm font-bold text-[var(--foreground)]">{s.title}</span>
-                          <span className="text-xs font-black text-indigo-500">₹{formatAmount(s.revenue)}</span>
+                          <span className="text-xs font-black text-teal-500">₹{formatAmount(s.revenue)}</span>
                         </div>
                         <div className="w-full h-3 bg-[var(--surface-hover)] rounded-full overflow-hidden relative group">
                           <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000"
-                            style={{ width: `${(s.revenue / servicePerformance[0].revenue) * 100}%` }}
+                            className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full transition-all duration-1000"
+                            style={{ width: `${(s.revenue / (servicePerformance[0]?.revenue || 1)) * 100}%` }}
                           />
                           <div className="absolute inset-0 flex items-center px-2">
                             <span className="text-[8px] font-black text-white uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
@@ -338,7 +338,7 @@ export default function ReportsPage() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h3 className="text-xl font-black text-[var(--foreground)] flex items-center gap-3">
-                        <Users className="text-indigo-500" size={20} /> Specialist Matrix
+                        <Users className="text-teal-500" size={20} /> Specialist Matrix
                       </h3>
                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-1">Individual Contribution</p>
                     </div>
@@ -347,19 +347,19 @@ export default function ReportsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {doctorPerformance.length > 0 ? doctorPerformance?.map((d, idx) => (
-                      <div key={idx} className="bg-[var(--surface-hover)] border border-[var(--border)] p-5 rounded-3xl group hover:border-indigo-500/30 transition-all">
+                      <div key={idx} className="bg-[var(--surface-hover)] border border-[var(--border)] p-5 rounded-3xl group hover:border-teal-500/30 transition-all">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                          <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500">
                             <User size={20} />
                           </div>
                           <div>
                             <p className="text-sm font-black text-[var(--foreground)]">{d.name}</p>
-                            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">{d.count} Cases</p>
+                            <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest">{d.count} Cases</p>
                           </div>
                         </div>
                         <div className="flex justify-between items-baseline pt-4 border-t border-[var(--border)]">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50">Generated</p>
-                          <p className="text-xl font-black text-[var(--foreground)]">₹{formatAmount(d.revenue)}</p>
+                           <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50">Generated</p>
+                           <p className="text-xl font-black text-[var(--foreground)]">₹{formatAmount(d.revenue)}</p>
                         </div>
                       </div>
                     )) : (
@@ -381,7 +381,7 @@ export default function ReportsPage() {
                     </h3>
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
+                        <div className="w-3 h-3 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)]"></div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Active ({financials.activeTreatments})</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -395,10 +395,10 @@ export default function ReportsPage() {
                     {/* Dynamic Visual Indicator */}
                     <div className="flex-1 flex flex-col items-center group">
                       <div
-                        className="w-full max-w-[200px] bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-2xl relative transition-all duration-1000 group-hover:opacity-90"
+                        className="w-full max-w-[200px] bg-gradient-to-t from-teal-600 to-teal-400 rounded-2xl relative transition-all duration-1000 group-hover:opacity-90"
                         style={{ height: `${(financials.activeTreatments / (financials.activeTreatments + financials.completedTreatments || 1)) * 100}%`, minHeight: '10%' }}
                       >
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[var(--surface)] border border-[var(--border)] px-3 py-1 rounded-lg text-[10px] font-black text-indigo-500 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[var(--surface)] border border-[var(--border)] px-3 py-1 rounded-lg text-[10px] font-black text-teal-500 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
                           ACTIVE
                         </div>
                       </div>
@@ -421,8 +421,8 @@ export default function ReportsPage() {
 
                 <div className="lg:col-span-4 space-y-6">
                   <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
-                    <Users size={120} className="absolute -right-4 -bottom-4 text-purple-500 opacity-[0.03] group-hover:scale-110 transition-transform" />
-                    <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6 border border-purple-500/20">
+                    <Users size={120} className="absolute -right-4 -bottom-4 text-emerald-500 opacity-[0.03] group-hover:scale-110 transition-transform" />
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 border border-emerald-500/20">
                       <Users size={24} />
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mb-2">Total Patient Ecosystem</p>
@@ -433,14 +433,14 @@ export default function ReportsPage() {
                   </div>
 
                   <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
-                    <Calendar size={120} className="absolute -right-4 -bottom-4 text-blue-500 opacity-[0.03] group-hover:scale-110 transition-transform" />
-                    <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 border border-blue-500/20">
+                    <Calendar size={120} className="absolute -right-4 -bottom-4 text-teal-500 opacity-[0.03] group-hover:scale-110 transition-transform" />
+                    <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-500 mb-6 border border-teal-500/20">
                       <Calendar size={24} />
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mb-2">Daily Engagement</p>
                     <div className="flex items-baseline gap-4">
                       <h3 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">{stats.todayAppointments || 0}</h3>
-                      <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-3 py-1.5 rounded-xl border border-blue-500/20 uppercase tracking-widest">
+                      <span className="text-[10px] font-black text-teal-500 bg-teal-500/10 px-3 py-1.5 rounded-xl border border-teal-500/20 uppercase tracking-widest">
                         {stats.todayPending || 0} Pending
                       </span>
                     </div>
@@ -456,8 +456,8 @@ export default function ReportsPage() {
                   {
                     header: 'Patient', accessor: (row) => (
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                          {row.patient?.image ? <img src={row.patient.image} className="w-full h-full rounded-full object-cover" /> : <User size={16} className="text-indigo-500" />}
+                        <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                          {row.patient?.image ? <img src={row.patient.image} className="w-full h-full rounded-full object-cover" /> : <User size={16} className="text-teal-500" />}
                         </div>
                         <span className="font-bold text-sm">{row.patient?.name}</span>
                       </div>
@@ -495,7 +495,7 @@ export default function ReportsPage() {
                         "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
                         row.status === 'COMPLETED'
                           ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                          : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                          : "bg-teal-500/10 text-teal-500 border-teal-500/20"
                       )}>
                         {row.status}
                       </span>

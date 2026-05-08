@@ -89,8 +89,8 @@ export default function ChatWindow() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-[var(--background)] text-[var(--text-muted)] p-8 relative">
         <div className="w-24 h-24 rounded-3xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center mb-8 relative group">
-          <Bot size={48} className="text-indigo-500/50 group-hover:text-indigo-400 transition-colors" />
-          <div className="absolute inset-0 rounded-3xl border border-indigo-500/20 animate-pulse"></div>
+          <Bot size={48} className="text-teal-500/50 group-hover:text-teal-400 transition-colors" />
+          <div className="absolute inset-0 rounded-3xl border border-teal-500/20 animate-pulse"></div>
         </div>
         <h3 className="text-xl font-bold text-[var(--foreground)] mb-2 tracking-tight">Ready to assist you</h3>
         <p className="text-sm text-[var(--text-muted)] max-w-xs text-center leading-relaxed font-medium">
@@ -103,14 +103,14 @@ export default function ChatWindow() {
   return (
     <div className="flex-1 flex flex-col h-full bg-[var(--background)] overflow-hidden relative">
       {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full -z-0 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-600/5 blur-[100px] rounded-full -z-0 pointer-events-none"></div>
 
       {/* Header */}
       <div className="h-20 border-b border-[var(--border)] flex items-center justify-between px-6 md:px-8 shrink-0 bg-[var(--background)]/80 backdrop-blur-xl z-10 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center">
-            <Bot size={20} className="text-indigo-400" />
+            <Bot size={20} className="text-teal-400" />
           </div>
           <div>
             <h2 className="font-bold text-[var(--foreground)] tracking-tight truncate max-w-[150px] md:max-w-none">{currentChat?.title || 'New Chat'}</h2>
@@ -121,7 +121,7 @@ export default function ChatWindow() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-2.5 text-[var(--text-muted)] hover:text-indigo-400 transition-all bg-[var(--surface)] rounded-lg border border-[var(--border)] hover:border-indigo-500/50">
+          <button className="p-2.5 text-[var(--text-muted)] hover:text-teal-400 transition-all bg-[var(--surface)] rounded-lg border border-[var(--border)] hover:border-teal-500/50">
             <ShieldCheck size={20} />
           </button>
         </div>
@@ -140,7 +140,7 @@ export default function ChatWindow() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center justify-center py-20 text-center"
               >
-                <Sparkles size={40} className="text-indigo-500 mb-6 opacity-50" />
+                <Sparkles size={40} className="text-teal-500 mb-6 opacity-50" />
                 <h4 className="text-lg font-bold text-[var(--foreground)] mb-2">New Conversation</h4>
                 <p className="text-sm text-[var(--text-muted)] max-w-sm leading-relaxed">
                   Type your first message below to start chatting with our advanced AI assistant.
@@ -159,18 +159,18 @@ export default function ChatWindow() {
       <div className="shrink-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent z-10">
         <div className="max-w-4xl mx-auto p-4 md:p-8 md:pt-0">
           <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-600/10 to-emerald-600/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl"></div>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe your request..."
-              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-6 py-4 pr-14 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)] relative z-10"
+              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-6 py-4 pr-14 focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)] relative z-10"
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-[var(--surface)] disabled:text-[var(--text-muted)] text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-teal-600 hover:bg-teal-500 disabled:bg-[var(--surface)] disabled:text-[var(--text-muted)] text-white rounded-xl transition-all shadow-lg shadow-teal-600/20 z-10"
             >
               <Send size={20} />
             </button>

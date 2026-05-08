@@ -39,8 +39,8 @@ export default function Pagination({
           className={twMerge(
             "w-10 h-10 rounded-xl font-bold text-xs transition-all duration-200 border",
             currentPage === i 
-              ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-              : "border-[var(--border)] text-[var(--text-muted)] hover:border-indigo-400 hover:text-indigo-400 bg-[var(--surface)]"
+              ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-600/20" 
+              : "border-[var(--border)] text-[var(--text-muted)] hover:border-teal-400 hover:text-teal-400 bg-[var(--surface)]"
           )}
         >
           {i}
@@ -60,7 +60,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="w-10 h-10 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] disabled:opacity-30 disabled:cursor-not-allowed hover:border-indigo-400 hover:text-indigo-400 transition-all bg-[var(--surface)]"
+          className="w-10 h-10 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] disabled:opacity-30 disabled:cursor-not-allowed hover:border-teal-400 hover:text-teal-400 transition-all bg-[var(--surface)]"
         >
           <ChevronLeft size={18} />
         </button>
@@ -72,7 +72,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="w-10 h-10 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] disabled:opacity-30 disabled:cursor-not-allowed hover:border-indigo-400 hover:text-indigo-400 transition-all bg-[var(--surface)]"
+          className="w-10 h-10 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] disabled:opacity-30 disabled:cursor-not-allowed hover:border-teal-400 hover:text-teal-400 transition-all bg-[var(--surface)]"
         >
           <ChevronRight size={18} />
         </button>

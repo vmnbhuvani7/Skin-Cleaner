@@ -16,7 +16,7 @@ export default function Error({ error, reset }) {
       {/* Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-full">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-rose-900/10 blur-[150px] rounded-full" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/5 blur-[120px] rounded-full" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-600/5 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-xl w-full">
@@ -69,7 +69,7 @@ export default function Error({ error, reset }) {
         {/* Support Link */}
         <div className="mt-8 text-center">
           <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">
-            Need assistance? <span className="text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors">Contact System Admin</span>
+            Need assistance? <span className="text-teal-400 hover:text-teal-300 cursor-pointer transition-colors">Contact System Admin</span>
           </p>
         </div>
       </div>

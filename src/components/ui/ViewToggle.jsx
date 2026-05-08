@@ -14,10 +14,10 @@ export default function ViewToggle({ mode, setMode }) {
       <button
         onClick={() => setMode('list')}
         className={twMerge(
-          "flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest",
+          "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
           mode === 'list' 
-            ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95" 
-            : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--foreground)]"
+            ? "bg-teal-600 text-white shadow-xl shadow-teal-600/20 active:scale-95" 
+            : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
         )}
       >
         <List size={16} />
@@ -26,10 +26,10 @@ export default function ViewToggle({ mode, setMode }) {
       <button
         onClick={() => setMode('grid')}
         className={twMerge(
-          "flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest",
+          "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
           mode === 'grid' 
-            ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95" 
-            : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--foreground)]"
+            ? "bg-teal-600 text-white shadow-xl shadow-teal-600/20 active:scale-95" 
+            : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
         )}
       >
         <LayoutGrid size={16} />

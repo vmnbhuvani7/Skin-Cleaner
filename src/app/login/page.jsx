@@ -42,10 +42,10 @@ export default function LoginPage() {
       subtitle="For Your Skin."
       description="Experience the future of aesthetic medicine with our AI-powered diagnosis and personalised treatment plans."
     >
-      <div className="bg-white dark:bg-[#0f1117] border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-10 md:p-12 shadow-2xl dark:shadow-indigo-500/5 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#0f1117] border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-10 md:p-12 shadow-2xl dark:shadow-teal-500/5 relative overflow-hidden">
         {/* Mobile Branding */}
         <div className="lg:hidden flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-xl mb-4">
             <Zap size={32} className="text-white fill-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Skin Cleaner</h2>
@@ -91,13 +91,13 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-indigo-500 transition-colors"
+                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-teal-500 transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             <div className="flex justify-end pr-1">
-              <Link href="#" className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">
+              <Link href="#" className="text-[10px] font-bold text-teal-500 dark:text-teal-400 hover:text-teal-600 uppercase tracking-widest transition-colors">
                 Forgot Password?
               </Link>
             </div>
@@ -105,7 +105,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300"
+            className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-teal-500/20 hover:shadow-teal-500/40 transition-all duration-300"
             isLoading={loading}
             icon={ArrowRight}
           >
@@ -116,7 +116,7 @@ export default function LoginPage() {
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-8 transition-all">
+            <Link href="/signup" className="text-teal-500 dark:text-teal-400 font-bold hover:underline underline-offset-8 transition-all">
               Create Account
             </Link>
           </p>

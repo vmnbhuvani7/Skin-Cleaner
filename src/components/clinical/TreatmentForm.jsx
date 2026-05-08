@@ -183,14 +183,14 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
             <button
               type="button"
               onClick={() => setValue('type', 'ONE_TIME')}
-              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'ONE_TIME' ? 'bg-indigo-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'ONE_TIME' ? 'bg-teal-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
               One-Time
             </button>
             <button
               type="button"
               onClick={() => setValue('type', 'MULTI_SESSION')}
-              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'MULTI_SESSION' ? 'bg-indigo-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'MULTI_SESSION' ? 'bg-teal-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
               Multi-Session
             </button>
@@ -334,7 +334,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
           </div>
         )}
         {/* Highlight Summary Bar */}
-        <div className="p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-600/20 flex items-center justify-between overflow-hidden relative group">
+        <div className="p-6 bg-teal-600 rounded-[2rem] text-white shadow-xl shadow-teal-600/20 flex items-center justify-between overflow-hidden relative group">
           <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
             <Activity size={100} />
           </div>
@@ -365,7 +365,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
         <Button
           type="submit"
           disabled={creating || updating}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 h-11 rounded-xl font-black shadow-xl shadow-indigo-600/20 tracking-widest uppercase text-[10px] min-w-fit"
+          className="bg-teal-600 hover:bg-teal-700 text-white px-10 h-11 rounded-xl font-black shadow-xl shadow-teal-600/20 tracking-widest uppercase text-[10px] min-w-fit"
         >
           {creating || updating ? 'Processing...' : (treatment ? 'Update Plan' : 'Create Treatment')}
         </Button>

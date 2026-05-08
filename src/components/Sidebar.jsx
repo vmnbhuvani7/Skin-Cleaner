@@ -110,13 +110,13 @@ export default function Sidebar() {
         "p-6 flex items-center transition-all",
         isCollapsed ? "justify-center" : "gap-3"
       )}>
-        <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-500/20">
           <Zap size={22} className="text-white fill-white" />
         </div>
         {!isCollapsed && (
           <div className="animate-in fade-in slide-in-from-left-2 duration-300">
             <h1 className="text-[var(--foreground)] font-bold text-lg tracking-tight">Skin Cleaner</h1>
-            <p className="text-[10px] text-indigo-400 font-semibold uppercase tracking-widest">AI Assistant</p>
+            <p className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold uppercase tracking-widest">AI Assistant</p>
           </div>
         )}
       </div>
@@ -124,7 +124,7 @@ export default function Sidebar() {
       {/* Collapse Toggle (Desktop) */}
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-[var(--surface)] border border-[var(--border)] rounded-full items-center justify-center text-[var(--text-muted)] hover:text-indigo-400 transition-all z-30 shadow-sm"
+        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-[var(--surface)] border border-[var(--border)] rounded-full items-center justify-center text-[var(--text-muted)] hover:text-teal-400 transition-all z-30 shadow-sm"
       >
         {isCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
       </button>
@@ -140,17 +140,19 @@ export default function Sidebar() {
                 className={twMerge(
                   "group flex items-center rounded-2xl cursor-pointer transition-all border border-transparent",
                   isCollapsed ? "justify-center p-3" : "justify-between px-4 py-3.5",
-                  item.isActive ? "bg-indigo-500/10 border-indigo-500/20 shadow-sm" : "hover:bg-[var(--surface-hover)] text-[var(--text-muted)]"
+                  item.isActive 
+                    ? "bg-[var(--sidebar-active)] border-[var(--border)] shadow-sm text-teal-600 dark:text-teal-400" 
+                    : "hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--foreground)]"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <item.icon size={20} className={twMerge(
                     "transition-colors shrink-0",
-                    item.isActive ? "text-indigo-400" : "text-[var(--text-muted)] group-hover:text-indigo-400"
+                    item.isActive ? "text-teal-500" : "text-[var(--text-muted)] group-hover:text-teal-500"
                   )} />
                   {!isCollapsed && (
                     <span className={twMerge(
-                      "text-sm font-medium transition-colors animate-in fade-in duration-300",
+                      "text-sm font-bold transition-colors animate-in fade-in duration-300",
                       item.isActive ? "text-[var(--foreground)]" : "group-hover:text-[var(--foreground)]"
                     )}>{item.label}</span>
                   )}
@@ -167,7 +169,7 @@ export default function Sidebar() {
               <button
                 onClick={() => setView('main')}
                 className={twMerge(
-                  "flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-bold mb-6 group",
+                  "flex items-center gap-2 text-teal-600 hover:text-teal-500 transition-colors text-sm font-bold mb-6 group",
                   isCollapsed && "justify-center"
                 )}
               >
@@ -192,16 +194,18 @@ export default function Sidebar() {
                         key={chat.id}
                         className={twMerge(
                           "group flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all border border-transparent",
-                          currentChatId === chat.id ? "bg-indigo-500/5 border-indigo-500/10" : "hover:bg-[var(--surface-hover)]"
+                          currentChatId === chat.id 
+                            ? "bg-[var(--sidebar-active)] border-[var(--border)] shadow-sm" 
+                            : "hover:bg-[var(--surface-hover)]"
                         )}
                         onClick={() => handleChatClick(chat.id)}
                       >
                         <MessageSquare size={16} className={twMerge(
                           "shrink-0",
-                          currentChatId === chat.id ? "text-indigo-400" : "text-[var(--text-muted)]"
+                          currentChatId === chat.id ? "text-teal-500" : "text-[var(--text-muted)]"
                         )} />
                         <span className={twMerge(
-                          "text-sm truncate pr-2 transition-colors",
+                          "text-sm truncate pr-2 transition-colors font-medium",
                           currentChatId === chat.id ? "text-[var(--foreground)]" : "text-[var(--text-muted)] group-hover:text-[var(--foreground)]"
                         )}>{chat.title}</span>
                       </div>
@@ -233,7 +237,7 @@ export default function Sidebar() {
                 title={m.charAt(0).toUpperCase() + m.slice(1)}
                 className={twMerge(
                   "flex-1 flex items-center justify-center p-2 rounded-xl transition-all",
-                  active ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/20" : "text-[var(--text-muted)] hover:text-indigo-400 hover:bg-indigo-500/5"
+                  active ? "bg-teal-600 text-white shadow-md shadow-teal-600/20" : "text-[var(--text-muted)] hover:text-teal-500 hover:bg-teal-500/5"
                 )}
               >
                 <Icon size={16} />
@@ -248,14 +252,14 @@ export default function Sidebar() {
           isCollapsed ? "justify-center" : "justify-between"
         )}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-sm font-bold shadow-inner">
+            <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white text-sm font-bold shadow-inner">
               {user ? user.name.substring(0, 2).toUpperCase() : 'U'}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col animate-in fade-in duration-300 overflow-hidden">
                 <span className="text-xs font-bold text-[var(--foreground)] truncate max-w-[120px]">{user ? user.name : 'User'}</span>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest leading-tight">
+                  <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest leading-tight">
                     {user?.role?.name === 'Organization' ? (user.organizationName || 'Organization') : 'Patient'}
                   </span>
                   {user?.role?.name === 'Patient' && user?.organization?.organizationName && (
@@ -291,12 +295,12 @@ export default function Sidebar() {
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[var(--sidebar)] border-b border-[var(--border)] flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-2">
-          <Zap size={20} className="text-indigo-500" />
+          <Zap size={20} className="text-teal-600" />
           <span className="font-bold text-[var(--foreground)]">Skin Cleaner</span>
         </div>
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
-          className="p-2 text-[var(--text-muted)] hover:text-indigo-400 transition-colors"
+          className="p-2 text-[var(--text-muted)] hover:text-teal-500 transition-colors"
         >
           <Menu size={24} />
         </button>

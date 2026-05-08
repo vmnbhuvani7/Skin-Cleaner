@@ -94,10 +94,10 @@ export default function SignupPage() {
       subtitle="Skin Journey."
       description="Join thousands of satisfied patients who trust our AI-driven approach for clinical skincare and aesthetic perfection."
     >
-      <div className="bg-white dark:bg-[#0f1117] border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl dark:shadow-indigo-500/5 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#0f1117] border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl dark:shadow-teal-500/5 relative overflow-hidden">
         {/* Mobile Branding */}
         <div className="lg:hidden flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-xl mb-4">
             <Zap size={32} className="text-white fill-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Skin Cleaner</h2>
@@ -123,16 +123,16 @@ export default function SignupPage() {
           <div
             onClick={() => setFormData({ ...formData, roleName: 'Patient' })}
             className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${formData.roleName === 'Patient'
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+                ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10'
+                : 'border-gray-100 dark:border-white/5 hover:border-teal-200 dark:hover:border-teal-500/30'
               }`}
           >
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl ${formData.roleName === 'Patient' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
+              <div className={`p-2 rounded-xl ${formData.roleName === 'Patient' ? 'bg-teal-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
                 <User size={20} />
               </div>
               <div>
-                <h3 className={`font-bold ${formData.roleName === 'Patient' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>Patient</h3>
+                <h3 className={`font-bold ${formData.roleName === 'Patient' ? 'text-teal-700 dark:text-teal-300' : 'text-gray-700 dark:text-gray-300'}`}>Patient</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Personal account</p>
               </div>
             </div>
@@ -140,16 +140,16 @@ export default function SignupPage() {
           <div
             onClick={() => setFormData({ ...formData, roleName: 'Organization' })}
             className={`flex-1 cursor-pointer p-4 rounded-2xl border-2 transition-all ${formData.roleName === 'Organization'
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                : 'border-gray-100 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+                ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10'
+                : 'border-gray-100 dark:border-white/5 hover:border-teal-200 dark:hover:border-teal-500/30'
               }`}
           >
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl ${formData.roleName === 'Organization' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
+              <div className={`p-2 rounded-xl ${formData.roleName === 'Organization' ? 'bg-teal-500 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}>
                 <Zap size={20} />
               </div>
               <div>
-                <h3 className={`font-bold ${formData.roleName === 'Organization' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'}`}>Organization</h3>
+                <h3 className={`font-bold ${formData.roleName === 'Organization' ? 'text-teal-700 dark:text-teal-300' : 'text-gray-700 dark:text-gray-300'}`}>Organization</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Business account</p>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function SignupPage() {
                 value={formData.organizationId}
                 onValueChange={(val) => setFormData({ ...formData, organizationId: val })}
               >
-                <SelectTrigger className="h-14 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-sm font-medium focus:ring-indigo-500 shadow-sm">
+                <SelectTrigger className="h-14 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-sm font-medium focus:ring-teal-500 shadow-sm">
                   <SelectValue placeholder="Choose Organization" />
                 </SelectTrigger>
                 <SelectContent>
@@ -279,7 +279,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-indigo-500 transition-colors"
+                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-teal-500 transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -297,7 +297,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-indigo-500 transition-colors"
+                className="absolute right-4 bottom-3.5 text-gray-400 hover:text-teal-500 transition-colors"
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -310,20 +310,20 @@ export default function SignupPage() {
           >
             <div className="mt-0.5 shrink-0 transition-transform group-active:scale-90">
               {formData.acceptTerms ? (
-                <CheckSquare size={24} className="text-indigo-500" />
+                <CheckSquare size={24} className="text-teal-500" />
               ) : (
                 <Square size={24} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400" />
               )}
             </div>
             <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-              I agree to the <Link href="#" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-4">Terms of Service</Link> and <Link href="#" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-4">Privacy Policy</Link>.
+              I agree to the <Link href="#" className="text-teal-500 dark:text-teal-400 font-bold hover:underline underline-offset-4">Terms of Service</Link> and <Link href="#" className="text-teal-500 dark:text-teal-400 font-bold hover:underline underline-offset-4">Privacy Policy</Link>.
             </p>
           </div>
 
           <Button
             type="submit"
             disabled={!formData.acceptTerms}
-            className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:shadow-none transition-all duration-300 mt-4"
+            className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-teal-500/20 hover:shadow-teal-500/40 disabled:opacity-50 disabled:shadow-none transition-all duration-300 mt-4"
             isLoading={loading}
             icon={ArrowRight}
           >
@@ -334,7 +334,7 @@ export default function SignupPage() {
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Already have an account?{' '}
-            <Link href="/login" className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline underline-offset-8 transition-all">
+            <Link href="/login" className="text-teal-500 dark:text-teal-400 font-bold hover:underline underline-offset-8 transition-all">
               Sign In
             </Link>
           </p>

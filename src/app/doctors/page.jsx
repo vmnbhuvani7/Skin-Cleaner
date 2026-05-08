@@ -86,7 +86,7 @@ export default function DoctorsPage() {
       header: 'Doctor',
       accessor: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 overflow-hidden shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 overflow-hidden shrink-0">
             {row.image ? (
               <img src={row.image} alt={row.name} className="w-full h-full object-cover" />
             ) : (
@@ -95,7 +95,7 @@ export default function DoctorsPage() {
           </div>
           <div>
             <p className="font-bold text-[var(--foreground)] leading-none mb-1">{row.name}</p>
-            <p className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest">{row.specialization}</p>
+            <p className="text-[10px] font-bold text-teal-400/60 uppercase tracking-widest">{row.specialization}</p>
           </div>
         </div>
       )
@@ -104,7 +104,7 @@ export default function DoctorsPage() {
       header: 'Experience',
       accessor: (row) => (
         <div className="flex items-center gap-2">
-          <Award size={14} className="text-indigo-400 opacity-60" />
+          <Award size={14} className="text-teal-400 opacity-60" />
           <span className="text-xs font-bold text-[var(--foreground)]">{row.experience} Years</span>
         </div>
       )
@@ -141,7 +141,7 @@ export default function DoctorsPage() {
       align: 'right',
       accessor: (row) => (
         <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => router.push(`/doctors/edit/${row.id}`)} className="p-2 hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-400 transition-all">
+          <button onClick={() => router.push(`/doctors/edit/${row.id}`)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-400 transition-all">
             <Edit size={16} />
           </button>
           <button onClick={() => handleDeleteClick(row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
@@ -183,7 +183,7 @@ export default function DoctorsPage() {
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Clinical Staff</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage your specialized medical team</p>
             </div>
-            <Button onClick={() => router.push('/doctors/add')} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-indigo-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+            <Button onClick={() => router.push('/doctors/add')} className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
               <Plus size={18} />
               <span>Add Doctor</span>
             </Button>
@@ -196,14 +196,14 @@ export default function DoctorsPage() {
                 placeholder="Search name or specialty..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-indigo-500 bg-[var(--surface)] shadow-sm"
+                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-teal-500 bg-[var(--surface)] shadow-sm"
               />
             </div>
             
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="flex bg-[var(--surface)] border border-[var(--border)] p-1.5 rounded-2xl shadow-sm">
                 {['both', 'active', 'inactive'].map((f) => (
-                  <button key={f} onClick={() => setStatusFilter(f)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}>
+                  <button key={f} onClick={() => setStatusFilter(f)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}>
                     {f}
                   </button>
                 ))}
@@ -222,7 +222,7 @@ export default function DoctorsPage() {
             </div>
           ) : currentItems.length === 0 ? (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
-              <div className="bg-indigo-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-400">
+              <div className="bg-teal-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-teal-400">
                 <Award size={40} />
               </div>
               <p className="text-[var(--text-muted)] text-lg font-medium">No doctors found matching your search.</p>
@@ -232,16 +232,16 @@ export default function DoctorsPage() {
               {currentItems.map((doctor) => (
                 <div key={doctor.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm flex flex-col h-full">
                   <div className="flex items-start justify-between mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 overflow-hidden">
+                    <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 overflow-hidden">
                       {doctor.image ? <img src={doctor.image} alt={doctor.name} className="w-full h-full object-cover" /> : <Award size={32} />}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => router.push(`/doctors/edit/${doctor.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-indigo-500/10 rounded-xl text-[var(--text-muted)] hover:text-indigo-500 transition-all"><Edit size={16} /></button>
+                      <button onClick={() => router.push(`/doctors/edit/${doctor.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-500 transition-all"><Edit size={16} /></button>
                       <button onClick={() => handleDeleteClick(doctor.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--foreground)] mb-1">{doctor.name}</h3>
-                  <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">{doctor.specialization} Specialist</p>
+                  <p className="text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">{doctor.specialization} Specialist</p>
                   <div className="space-y-4 mb-8 flex-1">
                     <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm"><Phone size={16} className="opacity-50" /><span className="font-medium">{doctor.mobile}</span></div>
                     <div className="flex items-center gap-3 text-[var(--text-muted)] text-sm"><Award size={16} className="opacity-50" /><span className="font-medium">{doctor.experience} Years Experience</span></div>
@@ -252,7 +252,7 @@ export default function DoctorsPage() {
                       <div className={`w-2 h-2 rounded-full ${doctor.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
                       <span className={`text-[10px] font-bold uppercase tracking-widest ${doctor.isActive ? 'text-emerald-500' : 'text-gray-500'}`}>{doctor.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
-                    <button onClick={() => toggleStatus(doctor.id, doctor.isActive)} className="text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded-lg border border-indigo-500/10 text-indigo-400 hover:bg-indigo-500/10 transition-all">
+                    <button onClick={() => toggleStatus(doctor.id, doctor.isActive)} className="text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded-lg border border-teal-500/10 text-teal-400 hover:bg-teal-500/10 transition-all">
                       {doctor.isActive ? 'Hide' : 'Show'}
                     </button>
                   </div>
