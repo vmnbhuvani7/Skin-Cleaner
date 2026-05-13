@@ -183,14 +183,14 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
             <button
               type="button"
               onClick={() => setValue('type', 'ONE_TIME')}
-              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'ONE_TIME' ? 'bg-teal-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'ONE_TIME' ? 'bg-primary-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
               One-Time
             </button>
             <button
               type="button"
               onClick={() => setValue('type', 'MULTI_SESSION')}
-              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'MULTI_SESSION' ? 'bg-teal-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${watchType === 'MULTI_SESSION' ? 'bg-primary-600 text-white shadow-lg' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
             >
               Multi-Session
             </button>
@@ -204,7 +204,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment || !!appointmentId}>
-                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.patientId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.patientId ? 'border-danger-500 ring-danger-500/10' : ''}`}>
                       <SelectValue placeholder="Select Patient" />
                     </SelectTrigger>
                     <SelectContent>
@@ -213,7 +213,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                   </Select>
                 )}
               />
-              {errors.patientId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.patientId.message}</p>}
+              {errors.patientId && <p className="text-[9px] text-danger-500 font-bold uppercase tracking-wider ml-1">{errors.patientId.message}</p>}
             </div>
             <div className="space-y-1">
               <Controller
@@ -221,7 +221,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange} disabled={!!treatment || !!appointmentId}>
-                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.serviceId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.serviceId ? 'border-danger-500 ring-danger-500/10' : ''}`}>
                       <SelectValue placeholder="Select Service" />
                     </SelectTrigger>
                     <SelectContent>
@@ -230,7 +230,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                   </Select>
                 )}
               />
-              {errors.serviceId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.serviceId.message}</p>}
+              {errors.serviceId && <p className="text-[9px] text-danger-500 font-bold uppercase tracking-wider ml-1">{errors.serviceId.message}</p>}
             </div>
             <div className="space-y-1">
               <Controller
@@ -238,7 +238,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.doctorId ? 'border-rose-500 ring-rose-500/10' : ''}`}>
+                    <SelectTrigger className={`h-11 rounded-xl bg-[var(--surface-hover)] border-[var(--border)] font-bold text-xs ${errors.doctorId ? 'border-danger-500 ring-danger-500/10' : ''}`}>
                       <SelectValue placeholder="Select Doctor" />
                     </SelectTrigger>
                     <SelectContent>
@@ -247,7 +247,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                   </Select>
                 )}
               />
-              {errors.doctorId && <p className="text-[9px] text-rose-500 font-bold uppercase tracking-wider ml-1">{errors.doctorId.message}</p>}
+              {errors.doctorId && <p className="text-[9px] text-danger-500 font-bold uppercase tracking-wider ml-1">{errors.doctorId.message}</p>}
             </div>
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
         {/* Full Width Initial Payment Details */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-success-500"></div>
             <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Initial Payment Details</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -312,29 +312,29 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
                 className="h-11 rounded-xl bg-[var(--surface)] border-[var(--border)] font-bold pl-10 text-sm"
               />
             </div>
-            <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/10">
+            <div className="bg-danger-500/5 p-4 rounded-2xl border border-danger-500/10">
               <CurrencyInput
                 label="Session Discount"
                 {...register('sessionDiscount', { valueAsNumber: true })}
-                className="h-12 rounded-xl bg-[var(--surface)] border-rose-500/20 text-rose-500 font-bold pl-10 placeholder:text-rose-200"
+                className="h-12 rounded-xl bg-[var(--surface)] border-danger-500/20 text-danger-500 font-bold pl-10 placeholder:text-danger-200"
               />
             </div>
           </div>
         </div>
         {errors.paidAmount && (
-          <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-4 mt-4 animate-in fade-in slide-in-from-top-2 shadow-sm">
-            <div className="w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center">
-              <Activity size={16} className="text-rose-500" />
+          <div className="bg-danger-500/10 border border-danger-500/20 p-4 rounded-2xl flex items-center gap-4 mt-4 animate-in fade-in slide-in-from-top-2 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-danger-500/20 flex items-center justify-center">
+              <Activity size={16} className="text-danger-500" />
             </div>
             <div className="flex-1">
-              <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.1em]">Validation Error</p>
-              <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">{errors.paidAmount.message}</p>
+              <p className="text-[11px] font-black text-danger-500 uppercase tracking-[0.1em]">Validation Error</p>
+              <p className="text-[9px] font-bold text-danger-400 uppercase tracking-widest mt-0.5">{errors.paidAmount.message}</p>
             </div>
-            <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+            <div className="w-2 h-2 rounded-full bg-danger-500"></div>
           </div>
         )}
         {/* Highlight Summary Bar */}
-        <div className="p-6 bg-teal-600 rounded-[2rem] text-white shadow-xl shadow-teal-600/20 flex items-center justify-between overflow-hidden relative group">
+        <div className="p-6 bg-primary-600 rounded-[2rem] text-white shadow-xl shadow-primary-600/20 flex items-center justify-between overflow-hidden relative group">
           <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
             <Activity size={100} />
           </div>
@@ -347,12 +347,12 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
             <div className="w-px h-12 bg-white/20"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Paid Today</span>
-              <span className="text-2xl md:text-3xl font-black text-emerald-300">₹{formatAmount(watch('paidAmount'))}</span>
+              <span className="text-2xl md:text-3xl font-black text-success-300">₹{formatAmount(watch('paidAmount'))}</span>
             </div>
             <div className="w-px h-12 bg-white/20"></div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Remaining</span>
-              <span className="text-2xl md:text-3xl font-black text-rose-300">₹{formatAmount(Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0)))}</span>
+              <span className="text-2xl md:text-3xl font-black text-danger-300">₹{formatAmount(Math.max(0, watch('finalAmount') - watch('paidAmount') - (watch('sessionDiscount') || 0)))}</span>
             </div>
           </div>
         </div>
@@ -365,7 +365,7 @@ export default function TreatmentForm({ treatment, initialPatientId, appointment
         <Button
           type="submit"
           disabled={creating || updating}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-10 h-11 rounded-xl font-black shadow-xl shadow-teal-600/20 tracking-widest uppercase text-[10px] min-w-fit"
+          className="bg-primary-600 hover:bg-primary-700 text-white px-10 h-11 rounded-xl font-black shadow-xl shadow-primary-600/20 tracking-widest uppercase text-[10px] min-w-fit"
         >
           {creating || updating ? 'Processing...' : (treatment ? 'Update Plan' : 'Create Treatment')}
         </Button>

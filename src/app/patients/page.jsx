@@ -89,7 +89,7 @@ export default function PatientsPage() {
       header: 'Patient',
       accessor: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 overflow-hidden shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400 overflow-hidden shrink-0">
             {row.image ? (
               <img src={row.image} alt={row.name} className="w-full h-full object-cover" />
             ) : (
@@ -98,7 +98,7 @@ export default function PatientsPage() {
           </div>
           <div>
             <p className="font-bold text-[var(--foreground)] leading-none mb-1">{row.name}</p>
-            <p className="text-[10px] font-bold text-teal-400/60 uppercase tracking-widest">ID: {row.id?.slice(-6)}</p>
+            <p className="text-[10px] font-bold text-primary-400/60 uppercase tracking-widest">ID: {row.id?.slice(-6)}</p>
           </div>
         </div>
       )
@@ -108,7 +108,7 @@ export default function PatientsPage() {
       accessor: (row) => (
         <div className="space-y-1">
           <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Phone size={12} className="text-teal-400" /> {row.mobile}
+            <Phone size={12} className="text-primary-400" /> {row.mobile}
           </p>
           <p className="text-[10px] font-medium text-[var(--text-muted)] flex items-center gap-2 opacity-60">
             <Mail size={12} /> {row.email}
@@ -123,7 +123,7 @@ export default function PatientsPage() {
           <span className="text-[10px] font-black uppercase tracking-widest bg-[var(--surface-hover)] px-2 py-1 rounded-lg border border-[var(--border)]">
             {row.gender || '-'}
           </span>
-          <span className="text-[10px] font-black uppercase tracking-widest bg-[var(--surface-hover)] px-2 py-1 rounded-lg border border-[var(--border)] text-teal-400">
+          <span className="text-[10px] font-black uppercase tracking-widest bg-[var(--surface-hover)] px-2 py-1 rounded-lg border border-[var(--border)] text-primary-400">
             {row.age ? `${row.age}Y` : '-'}
           </span>
         </div>
@@ -133,13 +133,13 @@ export default function PatientsPage() {
       header: 'Status',
       accessor: (row) => (
         <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-          <div className={`w-2 h-2 rounded-full ${row.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
+          <div className={`w-2 h-2 rounded-full ${row.isActive ? 'bg-success-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
           <button 
             onClick={(e) => toggleStatus(e, row.id, row.isActive)}
             className={`text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1 rounded-full border transition-all ${
               row.isActive 
-                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-rose-500/10 hover:text-rose-500' 
-                : 'bg-gray-500/10 text-gray-500 border-gray-500/20 hover:bg-emerald-500/10 hover:text-emerald-500'
+                ? 'bg-success-500/10 text-success-500 border-success-500/20 hover:bg-danger-500/10 hover:text-danger-500' 
+                : 'bg-gray-500/10 text-gray-500 border-gray-500/20 hover:bg-success-500/10 hover:text-success-500'
             }`}
           >
             {row.isActive ? 'Active' : 'Inactive'}
@@ -152,18 +152,15 @@ export default function PatientsPage() {
       align: 'right',
       accessor: (row) => (
         <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => router.push(`/patients/edit/${row.id}`)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-400 transition-all">
+          <Button variant="ghost" size="icon" onClick={() => router.push(`/patients/edit/${row.id}`)} className="hover:bg-primary-500/10 text-[var(--text-muted)] hover:text-primary-400">
             <Edit size={16} />
-          </button>
-          <button onClick={(e) => handleDeleteClick(e, row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
+          </Button>
+          <Button variant="ghost" size="icon" onClick={(e) => handleDeleteClick(e, row.id)} className="hover:bg-danger-500/10 text-[var(--text-muted)] hover:text-danger-500">
             <Trash2 size={16} />
-          </button>
-          <button 
-            onClick={() => router.push(`/patients/${row.id}`)}
-            className="p-2 hover:bg-emerald-500/10 rounded-xl text-emerald-500 transition-all"
-          >
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => router.push(`/patients/${row.id}`)} className="hover:bg-success-500/10 text-success-500">
             <ArrowRight size={16} />
-          </button>
+          </Button>
         </div>
       )
     }
@@ -179,14 +176,14 @@ export default function PatientsPage() {
         
         <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirm Deletion" size="max-w-md">
           <div className="text-center pt-2">
-            <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+            <div className="w-20 h-20 bg-danger-500/10 rounded-[2rem] flex items-center justify-center text-danger-500 mx-auto mb-6">
               <Trash2 size={40} />
             </div>
             <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you sure?</h4>
             <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">This will permanently remove the patient record.</p>
             <div className="flex gap-4">
-              <button onClick={() => setDeleteModalOpen(false)} className="flex-1 py-4 px-6 bg-[var(--surface-hover)] font-bold rounded-2xl border border-[var(--border)]">Cancel</button>
-              <button onClick={confirmDelete} className="flex-1 py-4 px-6 bg-rose-500 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 uppercase tracking-widest text-xs">Delete</button>
+              <Button variant="secondary" onClick={() => setDeleteModalOpen(false)} className="flex-1">Cancel</Button>
+              <Button variant="danger" onClick={confirmDelete} className="flex-1">Delete</Button>
             </div>
           </div>
         </Modal>
@@ -197,7 +194,7 @@ export default function PatientsPage() {
               <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">Patients</h1>
               <p className="text-[var(--text-muted)] text-sm font-medium opacity-80">Manage patient records and medical history</p>
             </div>
-            <Button onClick={() => router.push('/patients/add')} className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+            <Button onClick={() => router.push('/patients/add')} className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-primary-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
               <Plus size={18} />
               <span>Add Patient</span>
             </Button>
@@ -210,7 +207,7 @@ export default function PatientsPage() {
                 placeholder="Search name, phone, email..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-teal-500 bg-[var(--surface)] shadow-sm"
+                className="pl-12 h-14 rounded-2xl border border-[var(--border)] focus:ring-primary-500 bg-[var(--surface)] shadow-sm"
               />
             </div>
             
@@ -220,7 +217,7 @@ export default function PatientsPage() {
                   <button 
                     key={f}
                     onClick={() => setStatusFilter(f)}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
                   >
                     {f}
                   </button>
@@ -245,7 +242,7 @@ export default function PatientsPage() {
             </div>
           ) : currentItems.length === 0 ? (
             <div className="py-20 text-center space-y-4 bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[2.5rem]">
-              <div className="bg-teal-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-teal-400">
+              <div className="bg-primary-500/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto text-primary-400">
                 <User size={40} />
               </div>
               <p className="text-[var(--text-muted)] text-lg font-medium">No patients found matching your search.</p>
@@ -255,7 +252,7 @@ export default function PatientsPage() {
               {currentItems.map((patient) => (
                 <div key={patient.id} onClick={() => router.push(`/patients/${patient.id}`)} className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-8 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm cursor-pointer flex flex-col h-full">
                   <div className="flex items-start justify-between mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 overflow-hidden">
+                    <div className="w-16 h-16 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400 overflow-hidden">
                       {patient.image ? (
                         <img src={patient.image} alt={patient.name} className="w-full h-full object-cover" />
                       ) : (
@@ -263,16 +260,16 @@ export default function PatientsPage() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); router.push(`/patients/edit/${patient.id}`); }} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-500 transition-all">
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); router.push(`/patients/edit/${patient.id}`); }} className="bg-[var(--surface-hover)] hover:bg-primary-500/10 text-[var(--text-muted)] hover:text-primary-500">
                         <Edit size={16} />
-                      </button>
-                      <button onClick={(e) => handleDeleteClick(e, patient.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all">
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={(e) => handleDeleteClick(e, patient.id)} className="bg-[var(--surface-hover)] hover:bg-danger-500/10 text-[var(--text-muted)] hover:text-danger-500">
                         <Trash2 size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--foreground)] mb-1">{patient.name}</h3>
-                  <p className="text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                  <p className="text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
                     {patient.gender || '-'}, {patient.age ? `${patient.age}Y` : '-'}
                   </p>
                   <div className="space-y-4 mb-8 flex-1">
@@ -287,8 +284,8 @@ export default function PatientsPage() {
                   </div>
                   <div className="pt-6 border-t border-[var(--border)] flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${patient.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${patient.isActive ? 'text-emerald-500' : 'text-gray-500'}`}>{patient.isActive ? 'Active' : 'Inactive'}</span>
+                      <div className={`w-2 h-2 rounded-full ${patient.isActive ? 'bg-success-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`}></div>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${patient.isActive ? 'text-success-500' : 'text-gray-500'}`}>{patient.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
                     <ChevronRight size={16} className="text-[var(--text-muted)] opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                   </div>

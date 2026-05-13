@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, User, Award, DollarSign, Phone, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, Award, IndianRupee, Phone, Sparkles } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -81,20 +81,22 @@ export default function AddDoctorPage() {
         <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
 
         <div className="max-w-3xl mx-auto">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors text-sm font-bold mb-8 group"
+            className="mb-8 px-0 text-primary-400 hover:text-primary-300 hover:bg-transparent"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Back to List
-          </button>
+          </Button>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-teal-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
 
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
-                <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400 shrink-0">
                   <Sparkles size={24} />
                 </div>
                 <div>
@@ -136,7 +138,7 @@ export default function AddDoctorPage() {
                           if (errors.specialization) setErrors({ ...errors, specialization: null });
                         }}
                       >
-                        <SelectTrigger className={twMerge("h-12", errors.specialization && "border-rose-500 ring-rose-500/10")}>
+                        <SelectTrigger className={twMerge("h-12", errors.specialization && "border-danger-500 ring-danger-500/10")}>
                           <SelectValue placeholder="Select Specialization" />
                         </SelectTrigger>
                         <SelectContent>
@@ -147,7 +149,7 @@ export default function AddDoctorPage() {
                           })}
                         </SelectContent>
                       </Select>
-                      {errors.specialization && <p className="text-[10px] font-bold text-rose-500 ml-1 mt-1 uppercase tracking-wider">{errors.specialization}</p>}
+                      {errors.specialization && <p className="text-[10px] font-bold text-danger-500 ml-1 mt-1 uppercase tracking-wider">{errors.specialization}</p>}
                     </div>
 
                     <Input
@@ -165,7 +167,7 @@ export default function AddDoctorPage() {
 
                     <Input
                       label="Consultation Fee (₹)"
-                      icon={DollarSign}
+                      icon={IndianRupee}
                       type="number"
                       placeholder="e.g. 500"
                       value={formData.consultationFee}

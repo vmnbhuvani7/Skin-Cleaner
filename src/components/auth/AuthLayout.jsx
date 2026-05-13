@@ -20,9 +20,9 @@ export default function AuthLayout({
       
       {/* Global Background Decor */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-teal-500/5 dark:bg-teal-500/10 blur-[120px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 dark:bg-emerald-500/10 blur-[120px] rounded-full animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-400/5 blur-[150px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-primary-500/5 dark:bg-primary-500/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-success-500/5 dark:bg-success-500/10 blur-[120px] rounded-full animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 blur-[150px] rounded-full"></div>
       </div>
 
       {/* Theme Toggle (Top Right) */}
@@ -34,7 +34,7 @@ export default function AuthLayout({
           {activeTheme === 'dark' ? (
             <Sun className="text-yellow-400" size={22} />
           ) : (
-            <Moon className="text-teal-600" size={22} />
+            <Moon className="text-primary-600" size={22} />
           )}
         </button>
       </div>
@@ -48,18 +48,18 @@ export default function AuthLayout({
           className="relative z-10 p-12 max-w-2xl text-center lg:text-left"
         >
           <div className="flex items-center gap-3 mb-8 justify-center lg:justify-start">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-xl shadow-teal-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-success-600 flex items-center justify-center shadow-xl shadow-primary-500/20">
               <Zap size={26} className="text-white fill-white" />
             </div>
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Skin Cleaner</h2>
-              <p className="text-[10px] font-bold text-teal-500 dark:text-teal-400 uppercase tracking-widest">Medical Aesthetic Clinic</p>
+              <p className="text-[10px] font-bold text-primary-500 dark:text-primary-400 uppercase tracking-widest">Medical Aesthetic Clinic</p>
             </div>
           </div>
 
           <h1 className="text-5xl xl:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
             {title} <br />
-            <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary-500 to-success-500 bg-clip-text text-transparent">
               {subtitle}
             </span>
           </h1>

@@ -208,12 +208,12 @@ export default function AppointmentsPage() {
       header: 'Patient',
       accessor: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
+          <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400">
             <User size={18} />
           </div>
           <div>
             <p className="font-bold text-[var(--foreground)] leading-none mb-1">{row.patient.name}</p>
-            <p className="text-[10px] font-bold text-teal-400/60 uppercase tracking-widest">{row.service.title}</p>
+            <p className="text-[10px] font-bold text-primary-400/60 uppercase tracking-widest">{row.service.title}</p>
           </div>
         </div>
       )
@@ -223,7 +223,7 @@ export default function AppointmentsPage() {
       accessor: (row) => (
         <div className="space-y-1">
           <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Calendar size={12} className="text-teal-400" /> {formatDate(row.appointmentDate)}
+            <Calendar size={12} className="text-primary-400" /> {formatDate(row.appointmentDate)}
           </p>
           <p className="text-[10px] font-medium text-[var(--text-muted)] flex items-center gap-2 opacity-60">
             <Clock size={12} /> {formatTime(row.appointmentDate)}
@@ -235,10 +235,10 @@ export default function AppointmentsPage() {
       header: 'Status',
       accessor: (row) => (
         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-          row.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-          row.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-          row.status === 'Completed' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
-          'bg-rose-500/10 text-rose-500 border-rose-500/20'
+          row.status === 'Pending' ? 'bg-warning-500/10 text-warning-500 border-warning-500/20' :
+          row.status === 'Approved' ? 'bg-success-500/10 text-success-500 border-success-500/20' :
+          row.status === 'Completed' ? 'bg-primary-500/10 text-primary-500 border-primary-500/20' :
+          'bg-danger-500/10 text-danger-500 border-danger-500/20'
         }`}>
           {row.status}
         </span>
@@ -251,21 +251,23 @@ export default function AppointmentsPage() {
         <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
           {isOrg && row.status === 'Pending' && (
             <>
-              <button onClick={(e) => handleApprove(e, row.id)} className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl text-emerald-500 transition-all"><Check size={16} /></button>
-              <button onClick={(e) => handleReject(e, row.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl text-rose-500 transition-all"><X size={16} /></button>
+              <Button variant="ghost" size="icon" onClick={(e) => handleApprove(e, row.id)} className="bg-success-500/10 hover:bg-success-500/20 text-success-500"><Check size={16} /></Button>
+              <Button variant="ghost" size="icon" onClick={(e) => handleReject(e, row.id)} className="bg-danger-500/10 hover:bg-danger-500/20 text-danger-500"><X size={16} /></Button>
             </>
           )}
           {isOrg && row.status === 'Approved' && (
-            <button 
-              onClick={() => router.push(`/treatments?appointmentId=${row.id}`)} 
-              className="p-2 bg-teal-500/10 hover:bg-teal-500/20 rounded-xl text-teal-500 transition-all flex items-center gap-1"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`/treatments?appointmentId=${row.id}`)}
+              className="bg-primary-500/10 hover:bg-primary-500/20 text-primary-500"
               title="Start Treatment"
             >
               <Activity size={16} />
-            </button>
+            </Button>
           )}
-          <button onClick={() => router.push(`/appointments/edit/${row.id}`)} className="p-2 hover:bg-teal-500/10 rounded-xl text-[var(--text-muted)] hover:text-teal-500 transition-all"><Edit2 size={16} /></button>
-          <button onClick={(e) => handleDeleteClick(e, row.id)} className="p-2 hover:bg-rose-500/10 rounded-xl text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
+          <Button variant="ghost" size="icon" onClick={() => router.push(`/appointments/edit/${row.id}`)} className="hover:bg-primary-500/10 text-[var(--text-muted)] hover:text-primary-500"><Edit2 size={16} /></Button>
+          <Button variant="ghost" size="icon" onClick={(e) => handleDeleteClick(e, row.id)} className="hover:bg-danger-500/10 text-[var(--text-muted)] hover:text-danger-500"><Trash2 size={16} /></Button>
         </div>
       )
     }
@@ -279,14 +281,14 @@ export default function AppointmentsPage() {
         
         <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirm Deletion" size="max-w-md">
           <div className="text-center pt-2">
-            <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-6">
+            <div className="w-20 h-20 bg-danger-500/10 rounded-[2rem] flex items-center justify-center text-danger-500 mx-auto mb-6">
               <Trash2 size={40} />
             </div>
             <h4 className="text-[var(--foreground)] text-lg font-black tracking-tight mb-2">Are you sure?</h4>
             <p className="text-[var(--text-muted)] text-sm mb-10 font-medium">This will permanently remove the appointment.</p>
             <div className="flex gap-4">
-              <button onClick={() => setDeleteModalOpen(false)} className="flex-1 py-4 px-6 bg-[var(--surface-hover)] font-bold rounded-2xl border border-[var(--border)]">Cancel</button>
-              <button onClick={confirmDelete} className="flex-1 py-4 px-6 bg-rose-500 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 uppercase tracking-widest text-xs">Delete</button>
+              <Button variant="secondary" onClick={() => setDeleteModalOpen(false)} className="flex-1">Cancel</Button>
+              <Button variant="danger" onClick={confirmDelete} className="flex-1">Delete</Button>
             </div>
           </div>
         </Modal>
@@ -303,12 +305,19 @@ export default function AppointmentsPage() {
               {/* Stats Strip */}
               <div className="hidden lg:flex items-center gap-6 pl-6 border-l border-[var(--border)]">
                 {[
-                  { label: 'Pending', count: stats.totalPending, icon: Clock, color: 'amber', filter: 'Pending' },
-                  { label: 'Approved', count: stats.totalApproved, icon: Check, color: 'emerald', filter: 'Approved' },
-                  { label: 'Rejected', count: stats.totalRejected, icon: X, color: 'rose', filter: 'Rejected' },
-                  { label: 'Today', count: stats.todayAppointments, icon: Calendar, color: 'teal', filter: 'today' }
-                ].map((s) => (
-                  <div 
+                  { label: 'Pending', count: stats.totalPending, icon: Clock, tone: 'warning', filter: 'Pending' },
+                  { label: 'Approved', count: stats.totalApproved, icon: Check, tone: 'success', filter: 'Approved' },
+                  { label: 'Rejected', count: stats.totalRejected, icon: X, tone: 'danger', filter: 'Rejected' },
+                  { label: 'Today', count: stats.todayAppointments, icon: Calendar, tone: 'primary', filter: 'today' }
+                ].map((s) => {
+                  const toneClasses = {
+                    warning: 'bg-warning-500/10 text-warning-500',
+                    success: 'bg-success-500/10 text-success-500',
+                    danger:  'bg-danger-500/10 text-danger-500',
+                    primary: 'bg-primary-500/10 text-primary-500',
+                  }[s.tone];
+                  return (
+                  <div
                     key={s.label}
                     onClick={() => {
                       setFilters(prev => ({ ...prev, status: s.filter }));
@@ -316,7 +325,7 @@ export default function AppointmentsPage() {
                     }}
                     className={`flex items-center gap-2.5 cursor-pointer transition-all hover:scale-105 ${filters.status === s.filter ? 'opacity-100 scale-105' : 'opacity-50 hover:opacity-100'}`}
                   >
-                    <div className={`w-7 h-7 rounded-lg bg-${s.color}-500/10 flex items-center justify-center text-${s.color}-500`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${toneClasses}`}>
                       <s.icon size={14} />
                     </div>
                     <div>
@@ -324,7 +333,8 @@ export default function AppointmentsPage() {
                       <p className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-wider">{s.label}</p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -335,18 +345,18 @@ export default function AppointmentsPage() {
                 onClick={() => {
                   setIsFilterDrawerOpen(true);
                 }}
-                className="relative h-[42px] px-4 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-xl border border-[var(--border)] text-[var(--foreground)] transition-all flex items-center gap-2"
+                className="relative h-[42px] px-4 bg-[var(--surface-hover)] hover:bg-primary-500/10 rounded-xl border border-[var(--border)] text-[var(--foreground)] transition-all flex items-center gap-2"
               >
-                <Filter size={16} className="text-teal-500" />
+                <Filter size={16} className="text-primary-500" />
                 <span className="text-xs font-bold uppercase tracking-widest">Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[var(--surface)] shadow-sm">
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[var(--surface)] shadow-sm">
                     {activeFiltersCount}
                   </span>
                 )}
               </button>
 
-              <Button onClick={() => router.push('/appointments/add')} className="h-[42px] bg-teal-600 hover:bg-teal-700 text-white px-5 rounded-xl flex items-center gap-2 shadow-lg shadow-teal-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
+              <Button onClick={() => router.push('/appointments/add')} className="h-[42px] bg-primary-600 hover:bg-primary-700 text-white px-5 rounded-xl flex items-center gap-2 shadow-lg shadow-primary-600/20 transition-all active:scale-95 font-black uppercase tracking-widest text-[10px]">
                 <Plus size={16} />
                 <span className="hidden sm:inline">Book Appointment</span>
               </Button>
@@ -358,11 +368,11 @@ export default function AppointmentsPage() {
             <div className="flex flex-wrap items-center gap-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3 px-4 shadow-sm">
               <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mr-2">Active Filters:</span>
               {activeFilters.map(filter => (
-                <span key={filter.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 text-teal-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                <span key={filter.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-500/10 text-primary-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">
                   {filter.label}
                   <X 
                     size={14} 
-                    className="cursor-pointer hover:text-rose-500 transition-colors ml-1" 
+                    className="cursor-pointer hover:text-danger-500 transition-colors ml-1" 
                     onClick={() => removeFilter(filter.id)} 
                   />
                 </span>
@@ -372,7 +382,7 @@ export default function AppointmentsPage() {
                   setFilters({ search: '', status: 'all', patient: 'all', dateFrom: '', dateTo: '' });
                   setCurrentPage(1);
                 }}
-                className="text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 px-3 py-1.5 rounded-lg uppercase tracking-wider ml-auto transition-colors"
+                className="text-[10px] font-bold text-danger-500 hover:bg-danger-500/10 px-3 py-1.5 rounded-lg uppercase tracking-wider ml-auto transition-colors"
               >
                 Clear All
               </button>
@@ -389,7 +399,7 @@ export default function AppointmentsPage() {
             </div>
           ) : currentItems.length === 0 ? (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] shadow-sm">
-              <div className="w-16 h-16 bg-teal-500/10 rounded-full flex items-center justify-center text-teal-500 mb-4">
+              <div className="w-16 h-16 bg-primary-500/10 rounded-full flex items-center justify-center text-primary-500 mb-4">
                 <Calendar size={32} />
               </div>
               <h3 className="text-lg font-black text-[var(--foreground)] mb-2">No Appointments Found</h3>
@@ -400,20 +410,20 @@ export default function AppointmentsPage() {
               {currentItems.map((appointment) => (
                 <div key={appointment.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 hover:bg-[var(--surface-hover)] transition-all relative overflow-hidden group shadow-sm flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/10 to-teal-700/10 flex items-center justify-center text-teal-500 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-primary-700/10 flex items-center justify-center text-primary-500 shrink-0">
                       <User size={20} />
                     </div>
                     <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
-                      appointment.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                      appointment.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                      appointment.status === 'Completed' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
-                      'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                      appointment.status === 'Pending' ? 'bg-warning-500/10 text-warning-500 border-warning-500/20' :
+                      appointment.status === 'Approved' ? 'bg-success-500/10 text-success-500 border-success-500/20' :
+                      appointment.status === 'Completed' ? 'bg-primary-500/10 text-primary-500 border-primary-500/20' :
+                      'bg-danger-500/10 text-danger-500 border-danger-500/20'
                     }`}>
                       {appointment.status}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-[var(--foreground)] mb-0.5 truncate">{appointment.patient.name}</h3>
-                  <p className="text-teal-400 text-[9px] font-black uppercase tracking-[0.15em] mb-4 truncate">{appointment.service.title}</p>
+                  <p className="text-primary-400 text-[9px] font-black uppercase tracking-[0.15em] mb-4 truncate">{appointment.service.title}</p>
                   <div className="space-y-2 mb-6 flex-1">
                     <div className="flex items-center gap-2 text-[var(--text-muted)] text-[11px] font-medium opacity-80">
                       <Calendar size={12} className="opacity-50" />
@@ -427,20 +437,21 @@ export default function AppointmentsPage() {
                   <div className="pt-4 border-t border-[var(--border)] flex items-center justify-end gap-2 mt-auto">
                     {isOrg && appointment.status === 'Pending' && (
                       <>
-                        <button onClick={(e) => handleApprove(e, appointment.id)} className="flex-1 py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all hover:bg-emerald-600 shadow-md">Approve</button>
-                        <button onClick={(e) => handleReject(e, appointment.id)} className="flex-1 py-2 bg-rose-500/10 text-rose-500 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all hover:bg-rose-500/20 border border-rose-500/20">Reject</button>
+                        <Button size="sm" onClick={(e) => handleApprove(e, appointment.id)} className="flex-1 bg-success-500 hover:bg-success-600 text-[8px] uppercase tracking-widest from-success-500 via-success-500 to-success-500 hover:from-success-600 hover:via-success-600 hover:to-success-600 shadow-success-500/20">Approve</Button>
+                        <Button size="sm" variant="ghost" onClick={(e) => handleReject(e, appointment.id)} className="flex-1 bg-danger-500/10 hover:bg-danger-500/20 text-danger-500 border border-danger-500/20 text-[8px] uppercase tracking-widest">Reject</Button>
                       </>
                     )}
                     {isOrg && appointment.status === 'Approved' && (
-                      <button 
-                        onClick={() => router.push(`/treatments?appointmentId=${appointment.id}`)} 
-                        className="flex-1 py-2 bg-teal-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all hover:bg-teal-600 shadow-md flex items-center justify-center gap-2"
+                      <Button
+                        size="sm"
+                        onClick={() => router.push(`/treatments?appointmentId=${appointment.id}`)}
+                        className="flex-1 text-[8px] uppercase tracking-widest"
                       >
                         <Activity size={12} /> Start Treatment
-                      </button>
+                      </Button>
                     )}
-                    <button onClick={() => router.push(`/appointments/edit/${appointment.id}`)} className="p-2 bg-[var(--surface-hover)] hover:bg-teal-500/10 rounded-lg text-[var(--text-muted)] hover:text-teal-500 transition-all"><Edit2 size={14} /></button>
-                    <button onClick={(e) => handleDeleteClick(e, appointment.id)} className="p-2 bg-[var(--surface-hover)] hover:bg-rose-500/10 rounded-lg text-[var(--text-muted)] hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
+                    <Button variant="ghost" size="icon" onClick={() => router.push(`/appointments/edit/${appointment.id}`)} className="bg-[var(--surface-hover)] hover:bg-primary-500/10 text-[var(--text-muted)] hover:text-primary-500"><Edit2 size={14} /></Button>
+                    <Button variant="ghost" size="icon" onClick={(e) => handleDeleteClick(e, appointment.id)} className="bg-[var(--surface-hover)] hover:bg-danger-500/10 text-[var(--text-muted)] hover:text-danger-500"><Trash2 size={14} /></Button>
                   </div>
                 </div>
               ))}

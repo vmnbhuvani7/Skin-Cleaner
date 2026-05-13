@@ -100,20 +100,22 @@ function AddAppointmentContent() {
         <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
         
         <div className="max-w-3xl mx-auto pb-20">
-          <button 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors text-sm font-bold mb-8 group"
+            className="mb-8 px-0 text-primary-400 hover:text-primary-300 hover:bg-transparent"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Back to Appointments
-          </button>
+          </Button>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-teal-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400 shrink-0">
                   <Calendar size={24} />
                 </div>
                 <div>
@@ -145,7 +147,7 @@ function AddAppointmentContent() {
                       ))}
                     </SelectContent>
                   </Select>
-                    {errors.patient && <p className="text-[11px] text-rose-500 ml-1 mt-1">{errors.patient}</p>}
+                    {errors.patient && <p className="text-[11px] text-danger-500 ml-1 mt-1">{errors.patient}</p>}
                   </div>
                 )}
 
@@ -169,7 +171,7 @@ function AddAppointmentContent() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.service && <p className="text-[11px] text-rose-500 ml-1 mt-1">{errors.service}</p>}
+                  {errors.service && <p className="text-[11px] text-danger-500 ml-1 mt-1">{errors.service}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -211,7 +213,7 @@ function AddAppointmentContent() {
                     <ClipboardList size={16} className="absolute left-4 top-3 text-gray-500" />
                     <textarea 
                       placeholder="Add any additional notes or instructions..."
-                      className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-sm min-h-[80px] max-h-[150px]"
+                      className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all text-sm min-h-[80px] max-h-[150px]"
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     />

@@ -1,44 +1,8 @@
+@import "../styles/theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --background: #fdfdfd;
-  --foreground: #1a1f2c;
-  --primary: #0d9488;
-  --primary-rgb: 13, 148, 136;
-  --primary-gradient: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
-  --secondary: #d4af37;
-  --surface: #ffffff;
-  --surface-hover: #f1f5f9;
-  --border: rgba(0, 0, 0, 0.05);
-  --card-bg: rgba(255, 255, 255, 0.7);
-  --sidebar: #f8fafc; /* Lighter color for sidebar background in light mode */
-  --sidebar-active: #ffffff;
-  --text-muted: #64748b;
-  --accent-soft: rgba(13, 148, 136, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.4);
-}
-
-.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --primary: #2dd4bf;
-  --primary-rgb: 45, 212, 191;
-  --primary-gradient: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
-  --secondary: #fbbf24;
-  --surface: #0f172a;
-  --surface-hover: rgba(255, 255, 255, 0.03);
-  --border: rgba(255, 255, 255, 0.06);
-  --card-bg: rgba(15, 23, 42, 0.6);
-  --sidebar: #0f172a;
-  --sidebar-active: rgba(255, 255, 255, 0.04);
-  --text-muted: #94a3b8;
-  --accent-soft: rgba(45, 212, 191, 0.08);
-  --glass-bg: rgba(15, 23, 42, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.05);
-}
 
 body {
   background: var(--background);
@@ -52,7 +16,7 @@ body {
   * {
     border-color: var(--border);
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
@@ -65,7 +29,7 @@ body {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
   }
-  
+
   .glass-card {
     background: var(--card-bg);
     backdrop-filter: blur(8px);
@@ -123,7 +87,7 @@ body {
 }
 
 
-.react-datepicker__current-month, 
+.react-datepicker__current-month,
 .react-datepicker-time__header,
 .react-datepicker__day-name {
   color: var(--foreground) !important;
@@ -148,7 +112,7 @@ body {
   background-color: var(--primary) !important;
   color: white !important;
   font-weight: 700 !important;
-  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3) !important;
+  box-shadow: 0 4px 12px rgb(var(--primary-rgb) / 0.3) !important;
 }
 
 .react-datepicker__day--today {

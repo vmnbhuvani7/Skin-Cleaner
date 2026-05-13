@@ -13,7 +13,7 @@ const Input = React.forwardRef(({ className, icon: Icon, label, error, ...props 
       <div className="relative group">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Icon size={18} className="text-[var(--text-muted)] group-focus-within:text-teal-400 transition-colors" />
+            <Icon size={18} className="text-[var(--text-muted)] group-focus-within:text-primary-400 transition-colors" />
           </div>
         )}
         <input
@@ -21,9 +21,9 @@ const Input = React.forwardRef(({ className, icon: Icon, label, error, ...props 
           className={twMerge(
             clsx(
               "w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-2xl py-3.5 px-4 text-[var(--foreground)] placeholder:text-[var(--text-muted)]",
-              "focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-sm shadow-sm",
+              "focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all text-sm shadow-sm",
               Icon && "pl-12",
-              error && "border-rose-500 focus:ring-rose-500/10 focus:border-rose-500"
+              error && "border-danger-500 focus:ring-danger-500/10 focus:border-danger-500"
             ),
             className
           )}
@@ -36,7 +36,7 @@ const Input = React.forwardRef(({ className, icon: Icon, label, error, ...props 
           {...props}
         />
       </div>
-      {error && <p className="text-[10px] text-rose-500 font-bold uppercase tracking-wider ml-1 mt-1">{error}</p>}
+      {error && <p className="text-[10px] text-danger-500 font-bold uppercase tracking-wider ml-1 mt-1">{error}</p>}
     </div>
   );
 });

@@ -53,7 +53,7 @@ export default function DataTable({
                 onClick={() => onRowClick && onRowClick(row)}
                 className={twMerge(
                   "group transition-all duration-200",
-                  onRowClick ? "cursor-pointer hover:bg-teal-500/[0.03]" : "hover:bg-[var(--surface-hover)]/30"
+                  onRowClick ? "cursor-pointer hover:bg-primary-500/[0.03]" : "hover:bg-[var(--surface-hover)]/30"
                 )}
               >
                 {columns?.map((col, colIdx) => (

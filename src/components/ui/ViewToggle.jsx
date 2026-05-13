@@ -16,7 +16,7 @@ export default function ViewToggle({ mode, setMode }) {
         className={twMerge(
           "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
           mode === 'list' 
-            ? "bg-teal-600 text-white shadow-xl shadow-teal-600/20 active:scale-95" 
+            ? "bg-primary-600 text-white shadow-xl shadow-primary-600/20 active:scale-95" 
             : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
         )}
       >
@@ -28,7 +28,7 @@ export default function ViewToggle({ mode, setMode }) {
         className={twMerge(
           "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
           mode === 'grid' 
-            ? "bg-teal-600 text-white shadow-xl shadow-teal-600/20 active:scale-95" 
+            ? "bg-primary-600 text-white shadow-xl shadow-primary-600/20 active:scale-95" 
             : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
         )}
       >

@@ -36,14 +36,14 @@ export default function LandingHeader() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
             <Zap size={22} className="text-white fill-white" />
           </div>
           <div>
             <span className="font-bold text-xl tracking-tight transition-colors text-gray-900 dark:text-white">
               Skin Cleaner
             </span>
-            <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest leading-none">Aesthetic Clinic</p>
+            <p className="text-[10px] text-primary-600 dark:text-primary-400 font-bold uppercase tracking-widest leading-none">Aesthetic Clinic</p>
           </div>
         </Link>
 
@@ -53,7 +53,7 @@ export default function LandingHeader() {
             <Link
               key={link.label}
               href={link.href}
-              className="text-sm font-semibold transition-colors hover:text-teal-600 text-gray-600 dark:text-gray-300 dark:hover:text-teal-400"
+              className="text-sm font-semibold transition-colors hover:text-primary-600 text-gray-600 dark:text-gray-300 dark:hover:text-primary-400"
             >
               {link.label}
             </Link>
@@ -64,12 +64,12 @@ export default function LandingHeader() {
         <div className="hidden md:flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className="p-2 text-gray-600 hover:text-teal-600 dark:text-gray-300 dark:hover:text-teal-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2 text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             aria-label="Toggle Theme"
           >
             {activeTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <Link href="/login" className="text-sm font-bold transition-colors text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
+          <Link href="/login" className="text-sm font-bold transition-colors text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
             Login
           </Link>
           <Button onClick={() => window.location.href = '#appointment'} size="sm">
@@ -81,7 +81,7 @@ export default function LandingHeader() {
         <div className="md:hidden flex items-center gap-2">
           <button
             onClick={toggleTheme}
-            className="p-2 text-gray-600 hover:text-teal-600 dark:text-gray-300 dark:hover:text-teal-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2 text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             aria-label="Toggle Theme"
           >
             {activeTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -109,7 +109,7 @@ export default function LandingHeader() {
             </Link>
           ))}
           <hr className="border-gray-100 dark:border-white/10" />
-          <Link href="/login" className="text-lg font-bold text-teal-600 dark:text-teal-400">
+          <Link href="/login" className="text-lg font-bold text-primary-600 dark:text-primary-400">
             Login
           </Link>
           <Button onClick={() => { setIsMobileMenuOpen(false); window.location.href = '#appointment'; }}>

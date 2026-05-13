@@ -92,20 +92,22 @@ export default function AddPatientPage() {
         <ToastContainer theme={theme === 'system' ? 'dark' : theme} />
         
         <div className="max-w-4xl mx-auto pb-20">
-          <button 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors text-sm font-bold mb-8 group"
+            className="mb-8 px-0 text-primary-400 hover:text-primary-300 hover:bg-transparent"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Back to List
-          </button>
+          </Button>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-teal-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary-600/5 blur-[100px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400 shrink-0">
                   <User size={24} />
                 </div>
                 <div>
@@ -209,7 +211,7 @@ export default function AddPatientPage() {
                       <MapPin size={16} className="absolute left-4 top-3 text-gray-500" />
                       <textarea 
                         placeholder="Enter full address..."
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-xs min-h-[50px] max-h-[80px]"
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all text-xs min-h-[50px] max-h-[80px]"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       />
@@ -224,7 +226,7 @@ export default function AddPatientPage() {
                       <ClipboardList size={16} className="absolute left-4 top-3 text-gray-500" />
                       <textarea 
                         placeholder="Conditions, allergies..."
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
                         value={formData.medicalHistory}
                         onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
                       />
@@ -236,7 +238,7 @@ export default function AddPatientPage() {
                       <Activity size={16} className="absolute left-4 top-3 text-gray-500" />
                       <textarea 
                         placeholder="Current medications..."
-                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
+                        className="w-full bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl py-2.5 pl-11 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all text-xs min-h-[60px] max-h-[100px]"
                         value={formData.ongoingTreatments}
                         onChange={(e) => setFormData({ ...formData, ongoingTreatments: e.target.value })}
                       />

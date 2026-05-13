@@ -4,12 +4,13 @@ import React from 'react';
 import Sidebar from '@/components/Sidebar';
 import { motion } from 'framer-motion';
 import { Sparkles, Activity, Users, ShieldCheck } from 'lucide-react';
+import Button from '@/components/ui/Button';
 
 export default function DashboardPage() {
   const stats = [
-    { label: 'Active Doctors', value: '12', icon: Users, color: 'text-teal-400' },
-    { label: 'Analyses Done', value: '1,284', icon: Activity, color: 'text-emerald-400' },
-    { label: 'System Status', value: 'Secure', icon: ShieldCheck, color: 'text-teal-400' },
+    { label: 'Active Doctors', value: '12', icon: Users, color: 'text-primary-400' },
+    { label: 'Analyses Done', value: '1,284', icon: Activity, color: 'text-success-400' },
+    { label: 'System Status', value: 'Secure', icon: ShieldCheck, color: 'text-primary-400' },
   ];
 
   return (
@@ -17,7 +18,7 @@ export default function DashboardPage() {
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 md:p-10 pt-24 lg:pt-10 relative">
         {/* Background Decor */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/5 blur-[120px] rounded-full -z-0 pointer-events-none"></div>
         
         <div className="max-w-5xl mx-auto relative z-10">
           <motion.div 
@@ -25,12 +26,12 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-12"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-widest mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-[10px] font-bold uppercase tracking-widest mb-6">
               <Sparkles size={12} />
               Admin Portal
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-[var(--foreground)] tracking-tight mb-4">
-              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">Skin Cleaner</span>
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-success-400">Skin Cleaner</span>
             </h1>
             <p className="text-gray-500 text-lg max-w-2xl leading-relaxed">
               Your intelligent companion for professional skincare management. Monitor analyses, manage medical staff, and leverage AI insights to deliver premium care.
@@ -55,15 +56,15 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div className="bg-gradient-to-br from-teal-600/10 to-emerald-600/10 border border-white/10 rounded-[2.5rem] p-12 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-600/10 to-success-600/10 border border-white/10 rounded-[2.5rem] p-12 relative overflow-hidden">
             <div className="relative z-10">
               <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Start your daily review</h2>
               <p className="text-[var(--text-muted)] text-sm max-w-md mb-8 leading-relaxed">
                 Check recent AI analysis reports or manage your clinical team through the sidebar navigation.
               </p>
-              <button className="px-8 py-4 bg-teal-500 text-white font-bold rounded-2xl hover:bg-teal-600 transition-all text-sm shadow-lg shadow-teal-500/20">
+              <Button>
                 View Reports
-              </button>
+              </Button>
             </div>
             <Sparkles className="absolute right-[-20px] bottom-[-20px] text-white/5 w-64 h-64 rotate-12" />
           </div>

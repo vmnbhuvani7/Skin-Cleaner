@@ -13,7 +13,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   <SelectPrimitive.Trigger
     ref={ref}
     className={twMerge(
-      "flex h-12 w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--sidebar)] px-4 py-2 text-sm text-[var(--foreground)] ring-offset-background placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm",
+      "flex h-12 w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--sidebar)] px-4 py-2 text-sm text-[var(--foreground)] ring-offset-background placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm",
       className
     )}
     {...props}
@@ -72,7 +72,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   <SelectPrimitive.Item
     ref={ref}
     className={twMerge(
-      "relative flex w-full cursor-default select-none items-center rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:bg-teal-500/10 focus:text-teal-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors",
+      "relative flex w-full cursor-default select-none items-center rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:bg-primary-500/10 focus:text-primary-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors",
       className
     )}
     {...props}

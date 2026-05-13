@@ -21,12 +21,12 @@ const ChatMessage = ({ message }) => {
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className={twMerge("font-semibold text-sm mb-2", isUser ? "text-teal-200" : "text-teal-400")}>
+      <h3 className={twMerge("font-semibold text-sm mb-2", isUser ? "text-primary-200" : "text-primary-400")}>
         {children}
       </h3>
     ),
     p: ({ children }) => (
-      <p className={twMerge("mb-2 last:mb-0 leading-relaxed", isUser ? "text-teal-50" : "text-[var(--foreground)]/90")}>
+      <p className={twMerge("mb-2 last:mb-0 leading-relaxed", isUser ? "text-primary-50" : "text-[var(--foreground)]/90")}>
         {children}
       </p>
     ),
@@ -34,7 +34,7 @@ const ChatMessage = ({ message }) => {
       <strong className={twMerge("font-bold", isUser ? "text-white" : "text-[var(--foreground)]")}>{children}</strong>
     ),
     em: ({ children }) => (
-      <em className={twMerge("italic", isUser ? "text-teal-200" : "text-teal-500")}>{children}</em>
+      <em className={twMerge("italic", isUser ? "text-primary-200" : "text-primary-500")}>{children}</em>
     ),
     ul: ({ children }) => (
       <ul className="list-disc list-inside mb-3 ml-2 space-y-1">
@@ -47,7 +47,7 @@ const ChatMessage = ({ message }) => {
       </ol>
     ),
     li: ({ children }) => (
-      <li className={twMerge(isUser ? "text-teal-50" : "text-[var(--foreground)]/90")}>{children}</li>
+      <li className={twMerge(isUser ? "text-primary-50" : "text-[var(--foreground)]/90")}>{children}</li>
     ),
     pre: ({ children }) => (
       <pre className="bg-black/20 p-4 rounded-xl overflow-x-auto my-4 border border-white/5 backdrop-blur-sm">
@@ -58,7 +58,7 @@ const ChatMessage = ({ message }) => {
       <code className={twMerge(
         "font-mono text-xs px-1.5 py-0.5 rounded",
         inline 
-          ? (isUser ? "bg-white/10 text-white" : "bg-teal-500/10 text-teal-400 border border-teal-500/20") 
+          ? (isUser ? "bg-white/10 text-white" : "bg-primary-500/10 text-primary-400 border border-primary-500/20") 
           : "text-[var(--foreground)]/90"
       )}>
         {children}
@@ -67,7 +67,7 @@ const ChatMessage = ({ message }) => {
     blockquote: ({ children }) => (
       <blockquote className={twMerge(
         "border-l-4 pl-4 py-2 my-4 rounded-r bg-white/5",
-        isUser ? "border-white/30 text-teal-100" : "border-teal-500 text-[var(--text-muted)]"
+        isUser ? "border-white/30 text-primary-100" : "border-primary-500 text-[var(--text-muted)]"
       )}>
         {children}
       </blockquote>
@@ -79,7 +79,7 @@ const ChatMessage = ({ message }) => {
         rel="noopener noreferrer"
         className={twMerge(
           "underline decoration-2 underline-offset-4 transition-all font-bold",
-          isUser ? "text-white hover:text-teal-100" : "text-teal-400 hover:text-teal-500"
+          isUser ? "text-white hover:text-primary-100" : "text-primary-400 hover:text-primary-500"
         )}
       >
         {children}
@@ -93,7 +93,7 @@ const ChatMessage = ({ message }) => {
       </div>
     ),
     thead: ({ children }) => (
-      <thead className={isUser ? "bg-white/10" : "bg-teal-500/5"}>
+      <thead className={isUser ? "bg-white/10" : "bg-primary-500/5"}>
         {children}
       </thead>
     ),
@@ -105,7 +105,7 @@ const ChatMessage = ({ message }) => {
     th: ({ children }) => (
       <th className={twMerge(
         "px-4 py-3 text-left font-bold text-xs uppercase tracking-wider",
-        isUser ? "text-white" : "text-teal-400"
+        isUser ? "text-white" : "text-primary-400"
       )}>
         {children}
       </th>
@@ -113,7 +113,7 @@ const ChatMessage = ({ message }) => {
     td: ({ children }) => (
       <td className={twMerge(
         "px-4 py-3",
-        isUser ? "text-teal-50" : "text-[var(--foreground)]/80"
+        isUser ? "text-primary-50" : "text-[var(--foreground)]/80"
       )}>
         {children}
       </td>
@@ -133,15 +133,15 @@ const ChatMessage = ({ message }) => {
       <div className={twMerge(
         "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all",
         isUser 
-          ? "bg-teal-600 border-teal-500 text-white shadow-lg shadow-teal-600/20" 
-          : "bg-[var(--surface)] border-[var(--border)] text-teal-400"
+          ? "bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-600/20" 
+          : "bg-[var(--surface)] border-[var(--border)] text-primary-400"
       )}>
         {isUser ? <User size={18} /> : <Bot size={18} />}
       </div>
       <div className={twMerge(
         "max-w-[85%] md:max-w-[75%] px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm",
         isUser 
-          ? "bg-teal-600 text-white rounded-tr-none" 
+          ? "bg-primary-600 text-white rounded-tr-none" 
           : "bg-[var(--surface)] text-[var(--foreground)] rounded-tl-none border border-[var(--border)]"
       )}>
         <ReactMarkdown 
